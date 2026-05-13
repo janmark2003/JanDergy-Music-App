@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -101,7 +102,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 supportFinishAfterTransition();
-                finish();
             }
         });
     }
@@ -390,6 +390,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                 Bitmap bitmap = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     bitmap = resolver.loadThumbnail(uri, new Size(800, 800), null);
+                } else {
+                    bitmap = MediaStore.Images.Media.getBitmap(resolver, uri);
                 }
 
                 final Bitmap finalBitmap = bitmap;
