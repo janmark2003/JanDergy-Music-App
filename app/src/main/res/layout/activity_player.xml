@@ -13,11 +13,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Shrunken/Shifted Logo -->
+    <!-- Shrunken/Shifted Logo (0.75x size: 135dp) -->
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="135dp"
+        android:layout_height="135dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="7dp"
         android:src="@drawable/logo"
@@ -25,6 +25,21 @@
         android:contentDescription="App Logo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Rounded Search Bar (Integrated in Player) -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/player_search_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rounded_search_bg"
+        app:iconifiedByDefault="false"
+        app:queryHint="Search and play..."
+        app:queryBackground="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo" />
 
     <!-- Full-screen Content Container -->
     <LinearLayout

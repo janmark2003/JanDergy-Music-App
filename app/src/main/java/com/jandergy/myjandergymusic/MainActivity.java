@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         initializeController();
-        // UI might have been hidden during transition
         setUIVisibility(true);
     }
 
@@ -177,8 +176,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 updatePlayPauseIcon();
-                if (isPlaying) handler.post(updateProgressAction);
-                else handler.removeCallbacks(updateProgressAction);
+                if (isPlaying) {
+                    handler.removeCallbacks(updateProgressAction);
+                    handler.post(updateProgressAction);
+                } else {
+                    handler.removeCallbacks(updateProgressAction);
+                }
             }
             @Override
             public void onRepeatModeChanged(int repeatMode) {
@@ -324,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
     private void openPlayerActivity(AudioAdapter.AudioItem item, View albumArtView) {
         playAudio(item);
         
-        // Hide UI elements to prevent overlap during transition
         setUIVisibility(false);
 
         Intent intent = new Intent(this, PlayerActivity.class);
