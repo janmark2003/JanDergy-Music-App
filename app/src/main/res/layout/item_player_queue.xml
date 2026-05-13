@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="10dp">
+
+    <TextView
+        android:id="@+id/queue_song_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/queue_artist_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#B0FFFFFF"
+        android:textSize="12sp" />
+
+</LinearLayout>

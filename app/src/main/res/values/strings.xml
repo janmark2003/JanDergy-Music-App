@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">My JanDergy Music</string>
+    <string name="app_logo_content_description">App Logo</string>
+    <string name="album_art_content_description">Album Art</string>
+    <string name="search_current_playlist_hint">Search in current playlist...</string>
 </resources>
