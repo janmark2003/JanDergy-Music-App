@@ -34,6 +34,11 @@ public class MusicListFragment extends Fragment {
         recyclerView = new RecyclerView(requireContext());
         recyclerView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        int verticalPadding = (int) (12 * requireContext().getResources().getDisplayMetrics().density);
+        recyclerView.setClipToPadding(false);
+        recyclerView.setPadding(0, verticalPadding, 0, verticalPadding * 2);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         adapter = new AudioAdapter(audioItems, listener);
         recyclerView.setAdapter(adapter);
         return recyclerView;

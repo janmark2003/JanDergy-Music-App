@@ -4,22 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="6dp"
-    app:cardBackgroundColor="#20FFFFFF"
-    app:cardCornerRadius="16dp"
+    android:layout_marginVertical="7dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="22dp"
     app:cardElevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_glass_panel"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="14dp"
         android:gravity="center_vertical">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/album_art"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:scaleType="centerCrop"
             android:src="@drawable/blank_icon_album"
             android:transitionName="album_art_transition"
@@ -40,7 +41,7 @@
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:textColor="@android:color/white"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -49,15 +50,15 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="#B0FFFFFF"
+                android:textColor="@color/glass_text_secondary"
                 android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/file_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#80FFFFFF"
-                android:textSize="11sp" />
+                android:textColor="#96FFFFFF"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <ImageButton
@@ -66,7 +67,8 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_heart_outline"
-            android:contentDescription="Favorite" />
+            android:contentDescription="Favorite"
+            app:tint="@android:color/white" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
