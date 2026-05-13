@@ -217,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout = findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            tab.setText(sectionsAdapter.getTitle(position));
             switch (position) {
                 case 0: tab.setIcon(R.drawable.ic_all_music); break;
                 case 1: tab.setIcon(R.drawable.ic_artists); break;
@@ -327,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         // Hide UI elements to prevent overlap during transition
         setUIVisibility(false);
 
-        Intent intent = new Intent(this, PlayerActivity.class);
+        Intent intent = new Intent(this, FullScreenPlayerActivity.class);
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
         Pair<View, String> playerPair = Pair.create(findViewById(R.id.player_controls), "player_box_transition");
         Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");

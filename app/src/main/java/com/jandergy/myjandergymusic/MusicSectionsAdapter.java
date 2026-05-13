@@ -11,7 +11,7 @@ import java.util.List;
 public class MusicSectionsAdapter extends FragmentStateAdapter {
 
     private final List<MusicListFragment> fragments = new ArrayList<>();
-    private final String[] titles = {"All", "Artists", "Recent", "Favorites"};
+    private final String[] titles = {"All", "Artist", "Recent", "Favorites"};
 
     public MusicSectionsAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
