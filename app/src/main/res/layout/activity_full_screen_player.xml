@@ -18,7 +18,7 @@
         android:layout_height="45dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:contentDescription="App Logo"
+        android:contentDescription="@string/app_logo_content_description"
         android:src="@drawable/logo"
         android:transitionName="logo_transition"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,7 +41,7 @@
             android:layout_width="280dp"
             android:layout_height="280dp"
             android:layout_marginTop="8dp"
-            android:contentDescription="Album Art"
+            android:contentDescription="@string/album_art_content_description"
             android:scaleType="centerCrop"
             android:src="@drawable/blank_icon_album"
             android:transitionName="album_art_transition"
@@ -93,7 +93,7 @@
                     android:background="@drawable/rounded_search_bg"
                     app:iconifiedByDefault="false"
                     app:queryBackground="@android:color/transparent"
-                    app:queryHint="Search in current playlist..." />
+                    app:queryHint="@string/search_current_playlist_hint" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/queue_recycler_view"

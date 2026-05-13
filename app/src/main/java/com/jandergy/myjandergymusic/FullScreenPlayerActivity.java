@@ -20,6 +20,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -95,6 +96,14 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
 
         initUI();
         applyBubblyEntrance();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                supportFinishAfterTransition();
+                finish();
+            }
+        });
     }
 
     private void initUI() {
@@ -463,12 +472,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         } else {
             return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        supportFinishAfterTransition();
-        super.onBackPressed();
     }
 
     private static class QueueItem {
