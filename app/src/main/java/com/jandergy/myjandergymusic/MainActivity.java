@@ -32,6 +32,7 @@ import androidx.core.util.Pair;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
@@ -47,16 +48,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final String PREFS_NAME = "MusicPrefs";
     private static final String FAVORITES_KEY = "Favorites";
+    private static final String UNKNOWN_ARTIST_TAG = "<unknown>";
+    private static final String UNKNOWN_ARTIST_LABEL = "Unknown Artist";
 
-    private MediaController player;
+    private volatile MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
     private final List<AudioAdapter.AudioItem> allAudioItems = new ArrayList<>();
     private SharedPreferences sharedPreferences;
@@ -72,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnPrev, btnNext;
     private SearchView searchView;
     private TabLayout tabLayout;
+    private ExecutorService playlistExecutor;
+    private final AtomicInteger playlistRequestCounter = new AtomicInteger(0);
+    private volatile int libraryVersion = 0;
+    private volatile int playerQueueVersion = -1;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable updateProgressAction = new Runnable() {
@@ -102,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet(FAVORITES_KEY, new HashSet<>()));
+        playlistExecutor = Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "playlist-worker");
+            thread.setDaemon(true);
+            return thread;
+        });
 
         initUI();
         registerMusicObserver();
@@ -148,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         getContentResolver().unregisterContentObserver(musicObserver);
+        if (playlistExecutor != null) {
+            playlistExecutor.shutdownNow();
+            playlistExecutor = null;
+        }
     }
 
     private void initializeController() {
@@ -322,18 +342,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openPlayerActivity(AudioAdapter.AudioItem item, View albumArtView) {
-        playAudio(item);
-        
-        // Hide UI elements to prevent overlap during transition
-        setUIVisibility(false);
-
         Intent intent = new Intent(this, PlayerActivity.class);
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
         Pair<View, String> playerPair = Pair.create(findViewById(R.id.player_controls), "player_box_transition");
-        Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");
-        
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair, artPair);
+        ActivityOptionsCompat options;
+        if (albumArtView != null && albumArtView.isAttachedToWindow()) {
+            Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");
+            options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair, artPair);
+        } else {
+            options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair);
+        }
         startActivity(intent, options.toBundle());
+        playAudio(item);
     }
 
     private void setUIVisibility(boolean visible) {
@@ -437,6 +457,8 @@ public class MainActivity extends AppCompatActivity {
                     allAudioItems.clear();
                     allAudioItems.addAll(newList);
                 }
+                libraryVersion++;
+                playerQueueVersion = -1;
                 setupFragments();
             });
         }).start();
@@ -456,10 +478,9 @@ public class MainActivity extends AppCompatActivity {
 
         synchronized (allAudioItems) {
             allFragment = MusicListFragment.newInstance(new ArrayList<>(allAudioItems), itemClickListener);
-            
-            List<AudioAdapter.AudioItem> folderSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(folderSorted, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
-            artistFragment = MusicListFragment.newInstance(folderSorted, itemClickListener);
+
+            List<AudioAdapter.AudioItem> artistSorted = getArtistSortedList(allAudioItems);
+            artistFragment = MusicListFragment.newInstance(artistSorted, itemClickListener);
 
             List<AudioAdapter.AudioItem> recentSorted = new ArrayList<>(allAudioItems);
             Collections.sort(recentSorted, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
@@ -499,10 +520,9 @@ public class MainActivity extends AppCompatActivity {
     private void updateAllFragments() {
         synchronized (allAudioItems) {
             if (allFragment != null) allFragment.updateList(new ArrayList<>(allAudioItems));
-            
-            List<AudioAdapter.AudioItem> folderSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(folderSorted, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
-            if (artistFragment != null) artistFragment.updateList(folderSorted);
+
+            List<AudioAdapter.AudioItem> artistSorted = getArtistSortedList(allAudioItems);
+            if (artistFragment != null) artistFragment.updateList(artistSorted);
 
             List<AudioAdapter.AudioItem> recentSorted = new ArrayList<>(allAudioItems);
             Collections.sort(recentSorted, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
@@ -517,30 +537,99 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playAudio(AudioAdapter.AudioItem item) {
-        if (player == null) return;
-        player.stop();
-        player.clearMediaItems();
-        
+        final MediaController currentPlayer = player;
+        if (currentPlayer == null) return;
+        final List<AudioAdapter.AudioItem> snapshot;
+        final int startIndex;
         synchronized (allAudioItems) {
-            int startIndex = allAudioItems.indexOf(item);
-            for (AudioAdapter.AudioItem audio : allAudioItems) {
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setUri(audio.uri)
-                        .setMediaId(String.valueOf(audio.id))
-                        .setMediaMetadata(new androidx.media3.common.MediaMetadata.Builder()
-                                .setTitle(audio.title)
-                                .setArtist(audio.artist)
-                                .build())
-                        .setRequestMetadata(new androidx.media3.common.MediaItem.RequestMetadata.Builder()
-                                .setMediaUri(audio.uri)
-                                .build())
-                        .build();
-                player.addMediaItem(mediaItem);
-            }
-            player.seekTo(startIndex, 0);
+            snapshot = new ArrayList<>(allAudioItems);
+            startIndex = snapshot.indexOf(item);
         }
-        player.prepare();
-        player.play();
+        if (startIndex < 0 || snapshot.isEmpty()) return;
+
+        if (isPlaylistInSync(currentPlayer, snapshot.size())) {
+            if (currentPlayer.getPlaybackState() == Player.STATE_IDLE) {
+                currentPlayer.prepare();
+            }
+            currentPlayer.seekTo(startIndex, 0);
+            currentPlayer.play();
+            return;
+        }
+
+        final int requestId = playlistRequestCounter.incrementAndGet();
+        final String selectedMediaId = String.valueOf(item.id);
+        final int requestLibraryVersion = libraryVersion;
+
+        currentPlayer.stop();
+        currentPlayer.setMediaItem(toMediaItem(item));
+        playerQueueVersion = -1;
+        currentPlayer.prepare();
+        currentPlayer.play();
+
+        ExecutorService executor = playlistExecutor;
+        if (executor == null) return;
+        executor.execute(() -> {
+            List<MediaItem> mediaItems = new ArrayList<>(snapshot.size());
+            for (AudioAdapter.AudioItem audio : snapshot) {
+                mediaItems.add(toMediaItem(audio));
+            }
+            handler.post(() -> {
+                MediaController uiPlayer = player;
+                if (uiPlayer == null
+                        || requestId != playlistRequestCounter.get()
+                        || requestLibraryVersion != libraryVersion) {
+                    return;
+                }
+                MediaItem current = uiPlayer.getCurrentMediaItem();
+                if (current == null || !Objects.equals(current.mediaId, selectedMediaId)) return;
+
+                long currentPosition = Math.max(0L, uiPlayer.getCurrentPosition());
+                boolean shouldPlay = uiPlayer.getPlayWhenReady();
+                uiPlayer.setMediaItems(mediaItems, startIndex, currentPosition);
+                playerQueueVersion = requestLibraryVersion;
+                uiPlayer.prepare();
+                uiPlayer.setPlayWhenReady(shouldPlay);
+            });
+        });
+    }
+
+    private List<AudioAdapter.AudioItem> getArtistSortedList(List<AudioAdapter.AudioItem> source) {
+        List<AudioAdapter.AudioItem> artistSorted = new ArrayList<>(source);
+        Collections.sort(artistSorted, (a, b) -> {
+            String artistA = normalizeArtist(a.artist);
+            String artistB = normalizeArtist(b.artist);
+            int byArtist = artistA.compareToIgnoreCase(artistB);
+            if (byArtist != 0) return byArtist;
+            return a.title.compareToIgnoreCase(b.title);
+        });
+        return artistSorted;
+    }
+
+    private String normalizeArtist(String artist) {
+        String value = artist == null ? "" : artist.trim();
+        if (value.isEmpty() || UNKNOWN_ARTIST_TAG.equalsIgnoreCase(value)) {
+            return UNKNOWN_ARTIST_LABEL;
+        }
+        return value;
+    }
+
+    private boolean isPlaylistInSync(MediaController currentPlayer, int expectedSize) {
+        return playerQueueVersion == libraryVersion && currentPlayer.getMediaItemCount() == expectedSize;
+    }
+
+    private MediaItem toMediaItem(AudioAdapter.AudioItem audio) {
+        String artist = normalizeArtist(audio.artist);
+        return new MediaItem.Builder()
+                .setUri(audio.uri)
+                .setMediaId(String.valueOf(audio.id))
+                .setMediaMetadata(new MediaMetadata.Builder()
+                        .setTitle(audio.title)
+                        .setArtist(artist)
+                        .build())
+                .setRequestMetadata(new MediaItem.RequestMetadata.Builder()
+                        .setMediaUri(audio.uri)
+                        .build())
+                .build();
     }
 
     private void updateTimers(long currentPos, long duration) {
