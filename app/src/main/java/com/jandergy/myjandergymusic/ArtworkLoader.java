@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 
 public final class ArtworkLoader {
 
+    private static final int CACHE_SIZE_DIVISOR = 16;
+
     interface BitmapCallback {
         void onBitmapLoaded(@Nullable Bitmap bitmap);
     }
@@ -35,7 +37,7 @@ public final class ArtworkLoader {
 
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
-    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 1024L / 16L)) {
+    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 1024L / CACHE_SIZE_DIVISOR)) {
         @Override
         protected int sizeOf(@NonNull String key, @NonNull Bitmap value) {
             return value.getByteCount() / 1024;
