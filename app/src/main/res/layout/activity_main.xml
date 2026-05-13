@@ -5,136 +5,191 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/surface_dark"
     tools:context=".MainActivity">
 
-    <!-- Moving Blur Background -->
     <com.jandergy.myjandergymusic.MovingBlurView
         android:id="@+id/background_blur"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:alpha="0.58" />
 
-    <!-- Settings Gear top right -->
-    <ImageButton
-        android:id="@+id/btn_settings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_settings"
-        android:contentDescription="Settings"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@android:color/white" />
-
-    <!-- Centered Logo with 1.5x increase (180dp) -->
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:layout_marginTop="7dp"
-        android:src="@drawable/logo"
-        android:transitionName="logo_transition"
-        android:contentDescription="App Logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Rounded Search Bar (Elevated) -->
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/search_view"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/header_panel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/rounded_search_bg"
-        app:iconifiedByDefault="false"
-        app:queryHint="Search your music..."
-        app:queryBackground="@android:color/transparent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:backgroundTint="@android:color/transparent"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="30dp"
+        app:cardElevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/glass_stroke"
+        app:strokeWidth="1dp">
 
-    <!-- Centered Tabs -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:background="@android:color/transparent"
-        app:tabIndicatorColor="#4CAF50"
-        app:tabSelectedTextColor="#4CAF50"
-        app:tabTextColor="@android:color/white"
-        app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:layout_constraintTop_toBottomOf="@+id/search_view" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_glass_panel_strong"
+            android:paddingStart="18dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="14dp">
 
-    <!-- ViewPager for sections -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/view_pager"
+            <ImageButton
+                android:id="@+id/btn_settings"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Settings"
+                android:src="@drawable/ic_settings"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white" />
+
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:contentDescription="App Logo"
+                android:src="@drawable/logo"
+                android:transitionName="logo_transition"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/rounded_search_bg"
+                android:elevation="0dp"
+                app:iconifiedByDefault="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/logo"
+                app:queryBackground="@android:color/transparent"
+                app:queryHint="Search your music..." />
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@android:color/transparent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/search_view"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="@color/accent_green"
+                app:tabIndicatorFullWidth="false"
+                app:tabMode="fixed"
+                app:tabRippleColor="@android:color/transparent"
+                app:tabSelectedTextColor="@color/accent_green"
+                app:tabTextColor="@color/glass_text_secondary" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/library_panel"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@android:color/transparent"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toTopOf="@+id/player_controls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tab_layout" />
+        app:layout_constraintTop_toBottomOf="@+id/header_panel"
+        app:strokeColor="@color/glass_stroke"
+        app:strokeWidth="1dp">
 
-    <!-- Redesigned Minimalistic Floating Player Controls -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_glass_panel"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingStart="4dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="4dp"
+            android:paddingBottom="2dp" />
+    </com.google.android.material.card.MaterialCardView>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/player_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="18dp"
         android:transitionName="player_box_transition"
-        app:cardBackgroundColor="#CC000000"
-        app:cardCornerRadius="24dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="30dp"
         app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_glass_panel_strong"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="16dp">
+            android:paddingHorizontal="22dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="16dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/now_playing"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:layout_toStartOf="@+id/btn_fav_now"
                     android:ellipsize="marquee"
-                    android:gravity="center"
+                    android:gravity="start|center_vertical"
                     android:singleLine="true"
                     android:text="Select a song"
                     android:textColor="@android:color/white"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_fav_now"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
                     android:id="@+id/btn_fav_now"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_heart_outline"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:tint="@android:color/white" />
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <SeekBar
                 android:id="@+id/seek_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
-                android:progressTint="#4CAF50"
-                android:thumbTint="#4CAF50" />
+                android:progressTint="@color/accent_green"
+                android:thumbTint="@color/accent_green" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -147,8 +202,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:text="00:00"
-                    android:textColor="#B0FFFFFF"
-                    android:textSize="11sp" />
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/remaining_time"
@@ -156,8 +211,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:text="-00:00"
-                    android:textColor="#B0FFFFFF"
-                    android:textSize="11sp" />
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
             </RelativeLayout>
 
             <LinearLayout
@@ -165,7 +220,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:layout_marginTop="8dp">
 
                 <ImageButton
                     android:id="@+id/btn_shuffle"
@@ -178,8 +233,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_prev"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_marginStart="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_prev"
@@ -187,8 +242,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_play_pause"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
                     android:layout_marginHorizontal="16dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_play"
@@ -196,8 +251,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_next"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_next"
