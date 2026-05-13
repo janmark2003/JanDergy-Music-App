@@ -4,12 +4,12 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -391,7 +391,11 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     bitmap = resolver.loadThumbnail(uri, new Size(800, 800), null);
                 } else {
-                    bitmap = MediaStore.Images.Media.getBitmap(resolver, uri);
+                    try (java.io.InputStream inputStream = resolver.openInputStream(uri)) {
+                        if (inputStream != null) {
+                            bitmap = BitmapFactory.decodeStream(inputStream);
+                        }
+                    }
                 }
 
                 final Bitmap finalBitmap = bitmap;
