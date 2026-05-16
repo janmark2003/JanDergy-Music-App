@@ -87,63 +87,69 @@
         app:layout_constraintBottom_toTopOf="@+id/player_controls"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Redesigned Minimalistic Floating Player Controls (Stationary) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/player_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="18dp"
         android:transitionName="player_box_transition"
-        app:cardBackgroundColor="#CC000000"
-        app:cardCornerRadius="24dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="30dp"
         app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_glass_panel_strong"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="16dp">
+            android:paddingHorizontal="22dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="16dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/now_playing"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:layout_toStartOf="@+id/btn_fav_now"
                     android:ellipsize="marquee"
-                    android:gravity="center"
+                    android:gravity="start|center_vertical"
                     android:singleLine="true"
                     android:text="Select a song"
                     android:textColor="@android:color/white"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_fav_now"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
                     android:id="@+id/btn_fav_now"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_heart_outline"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:tint="@android:color/white" />
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <SeekBar
                 android:id="@+id/seek_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
-                android:progressTint="#4CAF50"
-                android:thumbTint="#4CAF50" />
+                android:progressTint="@color/accent_green"
+                android:thumbTint="@color/accent_green" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -156,8 +162,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:text="00:00"
-                    android:textColor="#B0FFFFFF"
-                    android:textSize="11sp" />
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/remaining_time"
@@ -165,30 +171,30 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:text="-00:00"
-                    android:textColor="#B0FFFFFF"
-                    android:textSize="11sp" />
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
             </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/btn_shuffle"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:alpha="0.6"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_directions"
-                    android:alpha="0.4"
                     app:tint="@android:color/white" />
 
                 <ImageButton
                     android:id="@+id/btn_prev"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_marginStart="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_prev"
@@ -196,8 +202,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_play_pause"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
                     android:layout_marginHorizontal="16dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_play"
@@ -205,8 +211,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_next"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_next"
@@ -216,9 +222,9 @@
                     android:id="@+id/btn_repeat"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:alpha="0.6"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_revert"
-                    android:alpha="0.4"
                     app:tint="@android:color/white" />
             </LinearLayout>
         </LinearLayout>

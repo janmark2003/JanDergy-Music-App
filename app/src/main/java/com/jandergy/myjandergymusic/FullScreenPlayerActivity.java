@@ -26,7 +26,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -54,7 +53,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
-    private TextView nowPlayingText, currentTimeText, remainingTimeText;
+    private TextView currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
@@ -62,7 +61,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     private ImageView fullAlbumArt;
     private TextView fullSongTitle, fullArtistName;
     private MovingBlurView backgroundBlur;
-    private SearchView queueSearchView;
     private RecyclerView queueRecyclerView;
     private QueueAdapter queueAdapter;
     private String activeArtworkRequestKey;
@@ -117,7 +115,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         fullAlbumArt = findViewById(R.id.full_album_art);
         fullSongTitle = findViewById(R.id.full_song_title);
         fullArtistName = findViewById(R.id.full_artist_name);
-        queueSearchView = findViewById(R.id.queue_search_view);
         queueRecyclerView = findViewById(R.id.queue_recycler_view);
 
         queueAdapter = new QueueAdapter(index -> {
@@ -130,20 +127,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         queueRecyclerView.setHasFixedSize(true);
         queueRecyclerView.setAdapter(queueAdapter);
 
-        queueSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                queueAdapter.filter(newText);
-                return true;
-            }
-        });
-
-        nowPlayingText = findViewById(R.id.now_playing);
         currentTimeText = findViewById(R.id.current_time);
         remainingTimeText = findViewById(R.id.remaining_time);
         seekBar = findViewById(R.id.seek_bar);
@@ -215,7 +198,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void applyBubblyEntrance() {
-        View[] elements = {fullAlbumArt, fullSongTitle, fullArtistName, queueSearchView, queueRecyclerView};
+        View[] elements = {fullAlbumArt, fullSongTitle, fullArtistName, queueRecyclerView};
         for (int i = 0; i < elements.length; i++) {
             elements[i].setScaleX(0.7f);
             elements[i].setScaleY(0.7f);
@@ -366,7 +349,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown";
             String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown";
 
-            nowPlayingText.setText(title);
             fullSongTitle.setText(title);
             fullArtistName.setText(artist);
 
@@ -376,7 +358,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             if (mediaItem.requestMetadata != null) uri = mediaItem.requestMetadata.mediaUri;
             loadAlbumArtAndPalette(uri);
         } else {
-            nowPlayingText.setText("Select a song");
             fullSongTitle.setText("Select a song");
             fullArtistName.setText("");
             fullAlbumArt.setImageResource(R.drawable.blank_icon_album);

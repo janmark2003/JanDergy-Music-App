@@ -555,6 +555,17 @@ public class MainActivity extends AppCompatActivity {
 
         boolean shouldReplaceQueue = appliedPlayerQueueVersion != queueVersionSnapshot
                 || player.getMediaItemCount() != queueSnapshot.size();
+        MediaItem current = player.getCurrentMediaItem();
+        boolean isSameItem = current != null && current.mediaId.equals(String.valueOf(item.id));
+        if (isSameItem && !shouldReplaceQueue) {
+            if (player.getPlaybackState() == Player.STATE_IDLE) {
+                player.prepare();
+            }
+            if (!player.isPlaying()) {
+                player.play();
+            }
+            return;
+        }
         if (shouldReplaceQueue) {
             player.setMediaItems(queueSnapshot, startIndex, 0L);
             player.prepare();
