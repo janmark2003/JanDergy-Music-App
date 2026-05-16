@@ -54,23 +54,35 @@
         app:strokeWidth="0dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/text_container"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:layout_marginHorizontal="50dp"
             android:orientation="vertical"
-            android:paddingHorizontal="10dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/full_album_art"
-                android:layout_width="320dp"
-                android:layout_height="320dp"
-                android:contentDescription="@string/album_art_content_description"
-                android:scaleType="centerCrop"
-                android:src="@drawable/blank_icon_album"
-                android:transitionName="album_art_transition"
-                app:shapeAppearanceOverlay="@style/RoundedImageViewLarge" />
+            <TextView
+                android:id="@+id/full_song_title"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:ellipsize="none" android:singleLine="true"
+                android:gravity="center"
+                android:text="Select a song"
+                android:textColor="@android:color/white"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/full_artist_name"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:ellipsize="none" android:singleLine="true"
+                android:gravity="center"
+                android:textColor="@color/glass_text_secondary"
+                android:textSize="16sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

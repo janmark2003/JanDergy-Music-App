@@ -13,12 +13,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Centered Logo (Increased size) -->
+    <!-- Centered Logo (Increased size to 250dp) -->
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginTop="32dp"
         android:src="@drawable/logo"
         android:transitionName="logo_transition"
         android:contentDescription="App Logo"
@@ -26,7 +26,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Full-screen Content Container (Transparent) -->
+    <!-- Full-screen Content Container (Purely Transparent) -->
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
@@ -34,14 +34,15 @@
         android:orientation="vertical"
         android:gravity="center"
         android:paddingHorizontal="24dp"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toTopOf="@+id/player_controls"
         app:layout_constraintTop_toBottomOf="@+id/logo">
 
         <!-- Large Album Art (Zoomed) -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/full_album_art"
-            android:layout_width="320dp"
-            android:layout_height="320dp"
+            android:layout_width="340dp"
+            android:layout_height="340dp"
             android:scaleType="centerCrop"
             android:src="@drawable/blank_icon_album"
             android:transitionName="album_art_transition"
@@ -58,7 +59,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:textColor="@android:color/white"
-            android:textSize="24sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
         <TextView

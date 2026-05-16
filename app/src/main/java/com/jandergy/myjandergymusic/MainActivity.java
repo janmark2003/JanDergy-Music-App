@@ -1,6 +1,9 @@
 package com.jandergy.myjandergymusic;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.SharedPreferences;
@@ -20,6 +23,7 @@ import android.transition.Fade;
 import android.transition.TransitionSet;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -204,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 syncUIWithPlayer();
-                updatePlayPauseIcon();
             }
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
@@ -240,6 +243,8 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
+        updatePlayPauseIcon();
+
         if (player.isPlaying()) {
             handler.removeCallbacks(updateProgressAction);
             handler.post(updateProgressAction);
@@ -258,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout = findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            // Text string setup removed here to create an icon-only layout
             switch (position) {
                 case 0: tab.setIcon(R.drawable.ic_all_music); break;
                 case 1: tab.setIcon(R.drawable.ic_artists); break;
@@ -357,12 +361,74 @@ public class MainActivity extends AppCompatActivity {
 
             nowPlayingTitle.setText(title);
             nowPlayingArtist.setText(artist);
+            nowPlayingTitle.setScrollX(0);
+            nowPlayingArtist.setScrollX(0);
+
+            nowPlayingTitle.post(() -> syncMarquees(nowPlayingTitle, title, nowPlayingArtist, artist));
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             nowPlayingTitle.setText("Select a song");
             nowPlayingArtist.setText("");
+            nowPlayingTitle.setScrollX(0);
+            nowPlayingArtist.setScrollX(0);
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
+    }
+
+    private void syncMarquees(TextView tv1, String text1, TextView tv2, String text2) {
+        if (tv1.getTag() instanceof ValueAnimator) ((ValueAnimator) tv1.getTag()).cancel();
+        if (tv2.getTag() instanceof ValueAnimator) ((ValueAnimator) tv2.getTag()).cancel();
+
+        float w1 = tv1.getPaint().measureText(text1) - (tv1.getWidth() - tv1.getPaddingLeft() - tv1.getPaddingRight());
+        float w2 = tv2.getPaint().measureText(text2) - (tv2.getWidth() - tv2.getPaddingLeft() - tv2.getPaddingRight());
+
+        int maxScroll1 = Math.max(0, (int) w1);
+        int maxScroll2 = Math.max(0, (int) w2);
+
+        if (maxScroll1 == 0 && maxScroll2 == 0) return;
+
+        int longestScroll = Math.max(maxScroll1, maxScroll2);
+        long totalDuration = Math.max(3000, longestScroll * 15L);
+
+        ValueAnimator masterAnimator = ValueAnimator.ofFloat(0f, 1f);
+        masterAnimator.setInterpolator(new LinearInterpolator());
+        masterAnimator.setDuration(totalDuration);
+
+        masterAnimator.addUpdateListener(animation -> {
+            float fraction = (float) animation.getAnimatedValue();
+            if (maxScroll1 > 0) tv1.setScrollX((int) (fraction * maxScroll1));
+            if (maxScroll2 > 0) tv2.setScrollX((int) (fraction * maxScroll2));
+        });
+
+        masterAnimator.addListener(new AnimatorListenerAdapter() {
+            private final Handler marqueeHandler = new Handler(Looper.getMainLooper());
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (tv1.getTag() == masterAnimator) {
+                    marqueeHandler.postDelayed(() -> {
+                        if (tv1.getTag() == masterAnimator) {
+                            tv1.setScrollX(0);
+                            tv2.setScrollX(0);
+                            marqueeHandler.postDelayed(() -> {
+                                if (tv1.getTag() == masterAnimator) {
+                                    masterAnimator.start();
+                                }
+                            }, 2000);
+                        }
+                    }, 5000);
+                }
+            }
+        });
+
+        tv1.setTag(masterAnimator);
+        tv2.setTag(masterAnimator);
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (tv1.getTag() == masterAnimator) {
+                masterAnimator.start();
+            }
+        }, 2000);
     }
 
     private void updatePlayPauseIcon() {
@@ -526,13 +592,6 @@ public class MainActivity extends AppCompatActivity {
                 applySectionData(sectionData);
             });
         });
-    }
-
-    private void applySectionData(SectionData sectionData) {
-        sectionsAdapter.getFragment(0).updateList(sectionData.allItems);
-        sectionsAdapter.getFragment(1).updateList(sectionData.artistItems);
-        sectionsAdapter.getFragment(2).updateList(sectionData.recentItems);
-        sectionsAdapter.getFragment(3).updateList(sectionData.favoriteItems);
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {

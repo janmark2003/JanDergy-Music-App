@@ -1,5 +1,8 @@
 package com.jandergy.myjandergymusic;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -14,6 +17,7 @@ import android.transition.Fade;
 import android.transition.TransitionSet;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -288,6 +292,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
+        updatePlayPauseIcon();
+
         if (player.isPlaying()) {
             handler.removeCallbacks(updateProgressAction);
             handler.post(updateProgressAction);
@@ -301,7 +307,10 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
 
             fullSongTitle.setText(title);
             fullArtistName.setText(artist);
+            fullSongTitle.setScrollX(0);
+            fullArtistName.setScrollX(0);
 
+            fullSongTitle.post(() -> syncMarquees(fullSongTitle, title, fullArtistName, artist));
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
 
             Uri uri = null;
@@ -310,10 +319,68 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         } else {
             fullSongTitle.setText("Select a song");
             fullArtistName.setText("");
+            fullSongTitle.setScrollX(0);
+            fullArtistName.setScrollX(0);
             fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
             backgroundBlur.setPalette(null);
             activeArtworkRequestKey = null;
         }
+    }
+
+    private void syncMarquees(TextView tv1, String text1, TextView tv2, String text2) {
+        if (tv1.getTag() instanceof ValueAnimator) ((ValueAnimator) tv1.getTag()).cancel();
+        if (tv2.getTag() instanceof ValueAnimator) ((ValueAnimator) tv2.getTag()).cancel();
+
+        float w1 = tv1.getPaint().measureText(text1) - (tv1.getWidth() - tv1.getPaddingLeft() - tv1.getPaddingRight());
+        float w2 = tv2.getPaint().measureText(text2) - (tv2.getWidth() - tv2.getPaddingLeft() - tv2.getPaddingRight());
+
+        int maxScroll1 = Math.max(0, (int) w1);
+        int maxScroll2 = Math.max(0, (int) w2);
+
+        if (maxScroll1 == 0 && maxScroll2 == 0) return;
+
+        int longestScroll = Math.max(maxScroll1, maxScroll2);
+        long totalDuration = Math.max(3000, longestScroll * 15L);
+
+        ValueAnimator masterAnimator = ValueAnimator.ofFloat(0f, 1f);
+        masterAnimator.setInterpolator(new LinearInterpolator());
+        masterAnimator.setDuration(totalDuration);
+
+        masterAnimator.addUpdateListener(animation -> {
+            float fraction = (float) animation.getAnimatedValue();
+            if (maxScroll1 > 0) tv1.setScrollX((int) (fraction * maxScroll1));
+            if (maxScroll2 > 0) tv2.setScrollX((int) (fraction * maxScroll2));
+        });
+
+        masterAnimator.addListener(new AnimatorListenerAdapter() {
+            private final Handler marqueeHandler = new Handler(Looper.getMainLooper());
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (tv1.getTag() == masterAnimator) {
+                    marqueeHandler.postDelayed(() -> {
+                        if (tv1.getTag() == masterAnimator) {
+                            tv1.setScrollX(0);
+                            tv2.setScrollX(0);
+                            marqueeHandler.postDelayed(() -> {
+                                if (tv1.getTag() == masterAnimator) {
+                                    masterAnimator.start();
+                                }
+                            }, 2000);
+                        }
+                    }, 5000);
+                }
+            }
+        });
+
+        tv1.setTag(masterAnimator);
+        tv2.setTag(masterAnimator);
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (tv1.getTag() == masterAnimator) {
+                masterAnimator.start();
+            }
+        }, 2000);
     }
 
     private void loadAlbumArtAndPalette(Uri uri) {
@@ -382,11 +449,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         getWindow().setSharedElementReturnTransition(sharedTransition);
         getWindow().setEnterTransition(new Fade().setDuration(220L));
         getWindow().setReturnTransition(new Fade().setDuration(180L));
-    }
-
-    private void updatePlayPauseIcon() {
-        if (player != null && player.isPlaying()) btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
-        else btnPlayPause.setImageResource(R.drawable.ic_modern_play);
     }
 
     private void updateShuffleIcon(boolean enabled) {

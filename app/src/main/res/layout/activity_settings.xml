@@ -151,40 +151,6 @@
                     app:tint="@android:color/white" />
             </RelativeLayout>
 
-            <SeekBar
-                android:id="@+id/seek_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
-                android:progressTint="@color/accent_green"
-                android:thumbTint="@color/accent_green" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp">
-
-                <TextView
-                    android:id="@+id/current_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:text="00:00"
-                    android:textColor="@color/glass_text_secondary"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/remaining_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="-00:00"
-                    android:textColor="@color/glass_text_secondary"
-                    android:textSize="12sp" />
-            </RelativeLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
