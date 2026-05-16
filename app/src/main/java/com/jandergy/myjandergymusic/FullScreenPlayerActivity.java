@@ -1,19 +1,21 @@
 package com.jandergy.myjandergymusic;
 
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Size;
+import android.transition.ChangeBounds;
+import android.transition.ChangeImageTransform;
+import android.transition.ChangeTransform;
+import android.transition.Fade;
+import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -47,7 +49,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class FullScreenPlayerActivity extends AppCompatActivity {
+public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity {
 
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
@@ -63,6 +65,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     private SearchView queueSearchView;
     private RecyclerView queueRecyclerView;
     private QueueAdapter queueAdapter;
+    private String activeArtworkRequestKey;
 
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
@@ -85,6 +88,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        configureTransitions();
+        supportPostponeEnterTransition();
         setContentView(R.layout.activity_full_screen_player);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.player_root), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -96,6 +101,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
 
         initUI();
+        findViewById(R.id.player_root).post(this::supportStartPostponedEnterTransition);
         applyBubblyEntrance();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -121,6 +127,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             }
         });
         queueRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        queueRecyclerView.setHasFixedSize(true);
         queueRecyclerView.setAdapter(queueAdapter);
 
         queueSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -374,6 +381,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             fullArtistName.setText("");
             fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
             backgroundBlur.setPalette(null);
+            activeArtworkRequestKey = null;
         }
     }
 
@@ -381,43 +389,24 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         if (uri == null) {
             fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
             backgroundBlur.setPalette(null);
+            activeArtworkRequestKey = null;
             return;
         }
 
-        new Thread(() -> {
-            try {
-                ContentResolver resolver = getContentResolver();
-                Bitmap bitmap = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                    bitmap = resolver.loadThumbnail(uri, new Size(800, 800), null);
-                } else {
-                    try (java.io.InputStream inputStream = resolver.openInputStream(uri)) {
-                        if (inputStream != null) {
-                            bitmap = BitmapFactory.decodeStream(inputStream);
-                        }
-                    }
-                }
-
-                final Bitmap finalBitmap = bitmap;
-                runOnUiThread(() -> {
-                    if (finalBitmap != null) {
-                        fullAlbumArt.setImageBitmap(finalBitmap);
-                        Palette.from(finalBitmap).generate(palette -> {
-                            int[] huePalette = paletteToHuePalette(palette);
-                            backgroundBlur.setPalette(huePalette);
-                        });
-                    } else {
-                        fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
-                        backgroundBlur.setPalette(null);
-                    }
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
-                    backgroundBlur.setPalette(null);
-                });
+        activeArtworkRequestKey = uri.toString();
+        String requestKey = activeArtworkRequestKey;
+        ArtworkLoader.loadBitmapAndPalette(getContentResolver(), uri, 480, this::paletteToHuePalette, (bitmap, palette) -> {
+            if (!requestKey.equals(activeArtworkRequestKey)) {
+                return;
             }
-        }).start();
+            if (bitmap != null) {
+                fullAlbumArt.setImageBitmap(bitmap);
+                backgroundBlur.setPalette(palette);
+            } else {
+                fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
+                backgroundBlur.setPalette(null);
+            }
+        });
     }
 
     private int[] paletteToHuePalette(Palette palette) {
@@ -448,6 +437,20 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         float normalized = hue % 360f;
         if (normalized < 0f) normalized += 360f;
         return normalized;
+    }
+
+    private void configureTransitions() {
+        TransitionSet sharedTransition = new TransitionSet()
+                .addTransition(new ChangeBounds())
+                .addTransition(new ChangeTransform())
+                .addTransition(new ChangeImageTransform())
+                .setDuration(320L)
+                .setInterpolator(new DecelerateInterpolator());
+        getWindow().setSharedElementsUseOverlay(false);
+        getWindow().setSharedElementEnterTransition(sharedTransition);
+        getWindow().setSharedElementReturnTransition(sharedTransition);
+        getWindow().setEnterTransition(new Fade().setDuration(220L));
+        getWindow().setReturnTransition(new Fade().setDuration(180L));
     }
 
     private void updatePlayPauseIcon() {

@@ -1,9 +1,6 @@
 package com.jandergy.myjandergymusic;
 
-import android.content.ContentResolver;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -29,33 +27,23 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
     private List<AudioItem> items;
     private List<AudioItem> filteredItems;
     private final OnItemClickListener listener;
+    private String currentQuery = "";
 
     public AudioAdapter(List<AudioItem> items, OnItemClickListener listener) {
         this.items = items;
         this.filteredItems = new ArrayList<>(items);
         this.listener = listener;
+        setHasStableIds(true);
     }
 
     public void updateList(List<AudioItem> newList) {
         this.items = newList;
-        this.filteredItems = new ArrayList<>(newList);
-        notifyDataSetChanged();
+        applyFilter(currentQuery);
     }
 
     public void filter(String query) {
-        filteredItems.clear();
-        if (query.isEmpty()) {
-            filteredItems.addAll(items);
-        } else {
-            String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
-            for (AudioItem item : items) {
-                if (item.title.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery) ||
-                    item.artist.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
-                    filteredItems.add(item);
-                }
-            }
-        }
-        notifyDataSetChanged();
+        currentQuery = query == null ? "" : query.trim();
+        applyFilter(currentQuery);
     }
 
     @NonNull
@@ -74,18 +62,19 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
         
         holder.favBtn.setImageResource(item.isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         
-        // Load Album Art
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            try {
-                ContentResolver resolver = holder.itemView.getContext().getContentResolver();
-                Bitmap thumbnail = resolver.loadThumbnail(item.uri, new Size(200, 200), null);
-                holder.albumArt.setImageBitmap(thumbnail);
-            } catch (Exception e) {
+        holder.albumArt.setTag(item.id);
+        holder.albumArt.setImageResource(R.drawable.blank_icon_album);
+        ArtworkLoader.loadBitmap(holder.itemView.getContext().getContentResolver(), item.uri, 160, bitmap -> {
+            Object tag = holder.albumArt.getTag();
+            if (!(tag instanceof Long) || !tag.equals(item.id)) {
+                return;
+            }
+            if (bitmap != null) {
+                holder.albumArt.setImageBitmap(bitmap);
+            } else {
                 holder.albumArt.setImageResource(R.drawable.blank_icon_album);
             }
-        } else {
-            holder.albumArt.setImageResource(R.drawable.blank_icon_album);
-        }
+        });
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
         holder.favBtn.setOnClickListener(v -> listener.onFavoriteClick(item));
@@ -101,6 +90,60 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
     @Override
     public int getItemCount() {
         return filteredItems.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return filteredItems.get(position).id;
+    }
+
+    private void applyFilter(String query) {
+        List<AudioItem> nextFilteredItems = new ArrayList<>();
+        if (query.isEmpty()) {
+            nextFilteredItems.addAll(items);
+        } else {
+            String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
+            for (AudioItem item : items) {
+                if (item.title.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)
+                        || item.artist.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
+                    nextFilteredItems.add(item);
+                }
+            }
+        }
+
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return filteredItems.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return nextFilteredItems.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return filteredItems.get(oldItemPosition).id == nextFilteredItems.get(newItemPosition).id;
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                AudioItem oldItem = filteredItems.get(oldItemPosition);
+                AudioItem newItem = nextFilteredItems.get(newItemPosition);
+                return oldItem.id == newItem.id
+                        && oldItem.duration == newItem.duration
+                        && oldItem.dateAdded == newItem.dateAdded
+                        && oldItem.isFavorite == newItem.isFavorite
+                        && oldItem.title.equals(newItem.title)
+                        && oldItem.artist.equals(newItem.artist)
+                        && oldItem.folderName.equals(newItem.folderName)
+                        && oldItem.uri.equals(newItem.uri);
+            }
+        });
+
+        filteredItems = nextFilteredItems;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

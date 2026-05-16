@@ -12,6 +12,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/app_logo_content_description"
+        android:src="@drawable/logo"
+        android:transitionName="logo_transition"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="0dp"
@@ -230,15 +242,5 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="64dp"
-        android:layout_height="56dp"
-        android:contentDescription="@string/app_logo_content_description"
-        android:src="@drawable/logo"
-        android:transitionName="logo_transition"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

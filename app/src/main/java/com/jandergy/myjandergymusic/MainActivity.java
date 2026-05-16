@@ -13,7 +13,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.transition.ChangeBounds;
+import android.transition.ChangeImageTransform;
+import android.transition.ChangeTransform;
+import android.transition.Fade;
+import android.transition.TransitionSet;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -48,7 +54,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
     private final List<AudioAdapter.AudioItem> allAudioItems = new ArrayList<>();
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
+    private final ExecutorService libraryExecutor = Executors.newSingleThreadExecutor();
+    private final AtomicInteger libraryLoadVersion = new AtomicInteger();
+    private final List<MediaItem> playbackQueue = new ArrayList<>();
+    private int playbackQueueVersion = 0;
+    private int appliedPlayerQueueVersion = -1;
 
     private ViewPager2 viewPager;
     private MusicSectionsAdapter sectionsAdapter;
@@ -72,6 +86,22 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnPrev, btnNext;
     private SearchView searchView;
     private TabLayout tabLayout;
+    private final AudioAdapter.OnItemClickListener itemClickListener = new AudioAdapter.OnItemClickListener() {
+        @Override
+        public void onItemClick(AudioAdapter.AudioItem item) {
+            playAudio(item);
+        }
+
+        @Override
+        public void onFavoriteClick(AudioAdapter.AudioItem item) {
+            toggleFavorite(item);
+        }
+
+        @Override
+        public void onAlbumArtClick(AudioAdapter.AudioItem item, View albumArtView) {
+            openPlayerActivity(item, albumArtView);
+        }
+    };
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable updateProgressAction = new Runnable() {
@@ -93,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        configureTransitions();
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -147,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         getContentResolver().unregisterContentObserver(musicObserver);
+        libraryExecutor.shutdownNow();
     }
 
     private void initializeController() {
@@ -388,7 +420,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadAudioFiles() {
-        new Thread(() -> {
+        final int requestVersion = libraryLoadVersion.incrementAndGet();
+        libraryExecutor.execute(() -> {
             Uri collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
             String[] projection = new String[]{
                     MediaStore.Audio.Media._ID,
@@ -396,17 +429,24 @@ public class MainActivity extends AppCompatActivity {
                     MediaStore.Audio.Media.ARTIST,
                     MediaStore.Audio.Media.DURATION,
                     MediaStore.Audio.Media.DATE_ADDED,
+                    MediaStore.Audio.Media.BUCKET_DISPLAY_NAME,
                     MediaStore.Audio.Media.DATA
             };
 
             List<AudioAdapter.AudioItem> newList = new ArrayList<>();
-            try (Cursor cursor = getContentResolver().query(collection, projection, null, null, null)) {
+            try (Cursor cursor = getContentResolver().query(
+                    collection,
+                    projection,
+                    MediaStore.Audio.Media.IS_MUSIC + "!= 0",
+                    null,
+                    MediaStore.Audio.Media.TITLE + " COLLATE NOCASE ASC")) {
                 if (cursor != null) {
                     int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
                     int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
                     int artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
                     int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION);
                     int dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED);
+                    int bucketColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.BUCKET_DISPLAY_NAME);
                     int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
 
                     while (cursor.moveToNext()) {
@@ -415,10 +455,11 @@ public class MainActivity extends AppCompatActivity {
                         String artist = cursor.getString(artistColumn);
                         long duration = cursor.getLong(durationColumn);
                         long date = cursor.getLong(dateColumn);
+                        String bucketName = cursor.getString(bucketColumn);
                         String data = cursor.getString(dataColumn);
-                        
-                        String folderName = "Unknown";
-                        if (data != null) {
+
+                        String folderName = bucketName != null && !bucketName.trim().isEmpty() ? bucketName : "Unknown";
+                        if ("Unknown".equals(folderName) && data != null) {
                             File file = new File(data);
                             if (file.getParentFile() != null) {
                                 folderName = file.getParentFile().getName();
@@ -426,7 +467,14 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-                        AudioAdapter.AudioItem item = new AudioAdapter.AudioItem(id, contentUri, title, artist, folderName, duration, date);
+                        AudioAdapter.AudioItem item = new AudioAdapter.AudioItem(
+                                id,
+                                contentUri,
+                                title != null && !title.trim().isEmpty() ? title : "Unknown title",
+                                artist != null && !artist.trim().isEmpty() ? artist : "Unknown artist",
+                                folderName,
+                                duration,
+                                date);
                         item.isFavorite = favoriteIds.contains(String.valueOf(id));
                         newList.add(item);
                     }
@@ -435,50 +483,41 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            SectionData sectionData = buildSectionData(newList);
+            List<MediaItem> nextPlaybackQueue = buildPlaybackQueue(newList);
             runOnUiThread(() -> {
+                if (requestVersion != libraryLoadVersion.get() || isFinishing() || isDestroyed()) {
+                    return;
+                }
                 synchronized (allAudioItems) {
                     allAudioItems.clear();
                     allAudioItems.addAll(newList);
+                    playbackQueue.clear();
+                    playbackQueue.addAll(nextPlaybackQueue);
+                    playbackQueueVersion++;
                 }
-                setupFragments();
+                applySectionData(sectionData);
             });
-        }).start();
+        });
     }
 
-    private void setupFragments() {
-        AudioAdapter.OnItemClickListener itemClickListener = new AudioAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(AudioAdapter.AudioItem item) { playAudio(item); }
-            @Override
-            public void onFavoriteClick(AudioAdapter.AudioItem item) { toggleFavorite(item); }
-            @Override
-            public void onAlbumArtClick(AudioAdapter.AudioItem item, View albumArtView) {
-                openPlayerActivity(item, albumArtView);
-            }
-        };
-
-        synchronized (allAudioItems) {
-            allFragment = MusicListFragment.newInstance(new ArrayList<>(allAudioItems), itemClickListener);
-            
-            List<AudioAdapter.AudioItem> folderSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(folderSorted, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
-            artistFragment = MusicListFragment.newInstance(folderSorted, itemClickListener);
-
-            List<AudioAdapter.AudioItem> recentSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(recentSorted, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
-            recentFragment = MusicListFragment.newInstance(recentSorted, itemClickListener);
-
-            List<AudioAdapter.AudioItem> favorites = new ArrayList<>();
-            for (AudioAdapter.AudioItem item : allAudioItems) {
-                if (item.isFavorite) favorites.add(item);
-            }
-            favoritesFragment = MusicListFragment.newInstance(favorites, itemClickListener);
+    private void applySectionData(SectionData sectionData) {
+        if (allFragment == null) {
+            allFragment = MusicListFragment.newInstance(sectionData.allItems, itemClickListener);
+            artistFragment = MusicListFragment.newInstance(sectionData.artistItems, itemClickListener);
+            recentFragment = MusicListFragment.newInstance(sectionData.recentItems, itemClickListener);
+            favoritesFragment = MusicListFragment.newInstance(sectionData.favoriteItems, itemClickListener);
+            sectionsAdapter.setFragment(0, allFragment);
+            sectionsAdapter.setFragment(1, artistFragment);
+            sectionsAdapter.setFragment(2, recentFragment);
+            sectionsAdapter.setFragment(3, favoritesFragment);
+            return;
         }
 
-        sectionsAdapter.setFragment(0, allFragment);
-        sectionsAdapter.setFragment(1, artistFragment);
-        sectionsAdapter.setFragment(2, recentFragment);
-        sectionsAdapter.setFragment(3, favoritesFragment);
+        allFragment.updateList(sectionData.allItems);
+        artistFragment.updateList(sectionData.artistItems);
+        recentFragment.updateList(sectionData.recentItems);
+        favoritesFragment.updateList(sectionData.favoriteItems);
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {
@@ -496,54 +535,121 @@ public class MainActivity extends AppCompatActivity {
             btnFavNow.setImageResource(item.isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         }
 
-        updateAllFragments();
-    }
-
-    private void updateAllFragments() {
-        synchronized (allAudioItems) {
-            if (allFragment != null) allFragment.updateList(new ArrayList<>(allAudioItems));
-            
-            List<AudioAdapter.AudioItem> folderSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(folderSorted, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
-            if (artistFragment != null) artistFragment.updateList(folderSorted);
-
-            List<AudioAdapter.AudioItem> recentSorted = new ArrayList<>(allAudioItems);
-            Collections.sort(recentSorted, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
-            if (recentFragment != null) recentFragment.updateList(recentSorted);
-
-            List<AudioAdapter.AudioItem> favorites = new ArrayList<>();
-            for (AudioAdapter.AudioItem item : allAudioItems) {
-                if (item.isFavorite) favorites.add(item);
-            }
-            if (favoritesFragment != null) favoritesFragment.updateList(favorites);
-        }
+        refreshSections();
     }
 
     private void playAudio(AudioAdapter.AudioItem item) {
         if (player == null) return;
-        player.stop();
-        player.clearMediaItems();
-        
+        int startIndex = -1;
+        List<MediaItem> queueSnapshot;
+        int queueVersionSnapshot;
         synchronized (allAudioItems) {
-            int startIndex = allAudioItems.indexOf(item);
-            for (AudioAdapter.AudioItem audio : allAudioItems) {
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setUri(audio.uri)
-                        .setMediaId(String.valueOf(audio.id))
-                        .setMediaMetadata(new androidx.media3.common.MediaMetadata.Builder()
-                                .setTitle(audio.title)
-                                .setArtist(audio.artist)
-                                .build())
-                        .setRequestMetadata(new androidx.media3.common.MediaItem.RequestMetadata.Builder()
-                                .setMediaUri(audio.uri)
-                                .build())
-                        .build();
-                player.addMediaItem(mediaItem);
+            for (int i = 0; i < allAudioItems.size(); i++) {
+                if (allAudioItems.get(i).id == item.id) {
+                    startIndex = i;
+                    break;
+                }
             }
-            player.seekTo(startIndex, 0);
+            queueSnapshot = new ArrayList<>(playbackQueue);
+            queueVersionSnapshot = playbackQueueVersion;
         }
-        player.prepare();
+        if (startIndex < 0 || queueSnapshot.isEmpty()) return;
+
+        boolean shouldReplaceQueue = appliedPlayerQueueVersion != queueVersionSnapshot
+                || player.getMediaItemCount() != queueSnapshot.size();
+        if (shouldReplaceQueue) {
+            player.setMediaItems(queueSnapshot, startIndex, 0L);
+            player.prepare();
+            appliedPlayerQueueVersion = queueVersionSnapshot;
+        } else {
+            player.seekToDefaultPosition(startIndex);
+            if (player.getPlaybackState() == Player.STATE_IDLE) {
+                player.prepare();
+            }
+        }
         player.play();
+    }
+
+    private void refreshSections() {
+        List<AudioAdapter.AudioItem> snapshot;
+        synchronized (allAudioItems) {
+            snapshot = new ArrayList<>(allAudioItems);
+        }
+
+        libraryExecutor.execute(() -> {
+            SectionData sectionData = buildSectionData(snapshot);
+            runOnUiThread(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    applySectionData(sectionData);
+                }
+            });
+        });
+    }
+
+    private SectionData buildSectionData(List<AudioAdapter.AudioItem> sourceItems) {
+        List<AudioAdapter.AudioItem> allItems = new ArrayList<>(sourceItems);
+        List<AudioAdapter.AudioItem> artistItems = new ArrayList<>(sourceItems);
+        Collections.sort(artistItems, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
+
+        List<AudioAdapter.AudioItem> recentItems = new ArrayList<>(sourceItems);
+        Collections.sort(recentItems, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
+
+        List<AudioAdapter.AudioItem> favoriteItems = new ArrayList<>();
+        for (AudioAdapter.AudioItem item : sourceItems) {
+            if (item.isFavorite) {
+                favoriteItems.add(item);
+            }
+        }
+        return new SectionData(allItems, artistItems, recentItems, favoriteItems);
+    }
+
+    private List<MediaItem> buildPlaybackQueue(List<AudioAdapter.AudioItem> audioItems) {
+        List<MediaItem> items = new ArrayList<>(audioItems.size());
+        for (AudioAdapter.AudioItem audio : audioItems) {
+            items.add(new MediaItem.Builder()
+                    .setUri(audio.uri)
+                    .setMediaId(String.valueOf(audio.id))
+                    .setMediaMetadata(new androidx.media3.common.MediaMetadata.Builder()
+                            .setTitle(audio.title)
+                            .setArtist(audio.artist)
+                            .build())
+                    .setRequestMetadata(new androidx.media3.common.MediaItem.RequestMetadata.Builder()
+                            .setMediaUri(audio.uri)
+                            .build())
+                    .build());
+        }
+        return items;
+    }
+
+    private void configureTransitions() {
+        TransitionSet sharedTransition = new TransitionSet()
+                .addTransition(new ChangeBounds())
+                .addTransition(new ChangeTransform())
+                .addTransition(new ChangeImageTransform())
+                .setDuration(320L)
+                .setInterpolator(new DecelerateInterpolator());
+        getWindow().setSharedElementsUseOverlay(false);
+        getWindow().setSharedElementEnterTransition(sharedTransition);
+        getWindow().setSharedElementReturnTransition(sharedTransition);
+        getWindow().setEnterTransition(new Fade().setDuration(220L));
+        getWindow().setReturnTransition(new Fade().setDuration(180L));
+    }
+
+    private static class SectionData {
+        final List<AudioAdapter.AudioItem> allItems;
+        final List<AudioAdapter.AudioItem> artistItems;
+        final List<AudioAdapter.AudioItem> recentItems;
+        final List<AudioAdapter.AudioItem> favoriteItems;
+
+        SectionData(List<AudioAdapter.AudioItem> allItems,
+                    List<AudioAdapter.AudioItem> artistItems,
+                    List<AudioAdapter.AudioItem> recentItems,
+                    List<AudioAdapter.AudioItem> favoriteItems) {
+            this.allItems = allItems;
+            this.artistItems = artistItems;
+            this.recentItems = recentItems;
+            this.favoriteItems = favoriteItems;
+        }
     }
 
     private void updateTimers(long currentPos, long duration) {
