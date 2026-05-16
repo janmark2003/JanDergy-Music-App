@@ -25,7 +25,6 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -49,7 +48,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class FullScreenPlayerActivity extends AppCompatActivity {
+public class FullScreenPlayerActivity extends androidx.appcompat.app.AppCompatActivity {
 
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
