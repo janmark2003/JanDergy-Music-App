@@ -21,11 +21,9 @@ public class MusicListFragment extends Fragment {
     private List<AudioAdapter.AudioItem> audioItems = new ArrayList<>();
     private AudioAdapter.OnItemClickListener listener;
 
-    public static MusicListFragment newInstance(List<AudioAdapter.AudioItem> items, AudioAdapter.OnItemClickListener listener) {
-        MusicListFragment fragment = new MusicListFragment();
-        fragment.audioItems = items;
-        fragment.listener = listener;
-        return fragment;
+    // Added setter to wire up clicks on early-allocated instances
+    public void setOnItemClickListener(AudioAdapter.OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @Nullable

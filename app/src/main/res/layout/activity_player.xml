@@ -13,42 +13,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Shrunken/Shifted Logo (0.75x size: 135dp) -->
+    <!-- Centered Logo (Increased size) -->
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="135dp"
-        android:layout_height="135dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="7dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_marginTop="24dp"
         android:src="@drawable/logo"
         android:transitionName="logo_transition"
         android:contentDescription="App Logo"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Rounded Search Bar (Integrated in Player) -->
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/player_search_view"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/rounded_search_bg"
-        app:iconifiedByDefault="false"
-        app:queryHint="Search and play..."
-        app:queryBackground="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo" />
-
-    <!-- Full-screen Content Container -->
+    <!-- Full-screen Content Container (Transparent) -->
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingHorizontal="32dp"
+        android:paddingHorizontal="24dp"
         app:layout_constraintBottom_toTopOf="@+id/player_controls"
         app:layout_constraintTop_toBottomOf="@+id/logo">
 
@@ -68,7 +53,7 @@
             android:id="@+id/full_song_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="32dp"
             android:ellipsize="marquee"
             android:gravity="center"
             android:singleLine="true"
@@ -80,7 +65,7 @@
             android:id="@+id/full_artist_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:gravity="center"
             android:textColor="#B0FFFFFF"
             android:textSize="18sp" />

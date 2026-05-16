@@ -5,35 +5,27 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MusicSectionsAdapter extends FragmentStateAdapter {
 
-    private final List<MusicListFragment> fragments = new ArrayList<>();
+    private final MusicListFragment[] fragments = new MusicListFragment[4];
     private final String[] titles = {"All", "Artist", "Recent", "Favorites"};
 
     public MusicSectionsAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
-        for (int i = 0; i < titles.length; i++) {
-            fragments.add(null);
+        // Instantiated immediately so they always match what ViewPager2 renders
+        for (int i = 0; i < fragments.length; i++) {
+            fragments[i] = new MusicListFragment();
         }
     }
 
-    public void setFragment(int position, MusicListFragment fragment) {
-        fragments.set(position, fragment);
-        notifyItemChanged(position);
+    public MusicListFragment getFragment(int position) {
+        return fragments[position];
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        MusicListFragment fragment = fragments.get(position);
-        if (fragment == null) {
-            // This should ideally not happen as we set them in setupFragments
-            return new MusicListFragment();
-        }
-        return fragment;
+        return fragments[position];
     }
 
     @Override

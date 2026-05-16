@@ -1,6 +1,7 @@
 package com.jandergy.myjandergymusic;
 
 import android.content.ComponentName;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,8 @@ import androidx.media3.session.SessionToken;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -32,13 +35,17 @@ public class SettingsActivity extends AppCompatActivity {
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
-    private TextView nowPlayingText, currentTimeText, remainingTimeText;
+    // Updated variables to match split Title + Artist UI design elements
+    private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
 
     private View settingsContent;
     private ImageView characterImg;
+
+    private SharedPreferences sharedPreferences;
+    private Set<String> favoriteIds = new HashSet<>();
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable updateProgressAction = new Runnable() {
@@ -65,6 +72,10 @@ public class SettingsActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Initialize user preference stores to bind active favorites heart data state
+        sharedPreferences = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
+        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
+
         initUI();
         populateSettings();
         startFadeInAnimations();
@@ -74,7 +85,10 @@ public class SettingsActivity extends AppCompatActivity {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
 
-        nowPlayingText = findViewById(R.id.now_playing);
+        // Fixed target endpoints pointing to updated title and artist layout IDs
+        nowPlayingTitle = findViewById(R.id.now_playing_title);
+        nowPlayingArtist = findViewById(R.id.now_playing_artist);
+
         currentTimeText = findViewById(R.id.current_time);
         remainingTimeText = findViewById(R.id.remaining_time);
         seekBar = findViewById(R.id.seek_bar);
@@ -104,6 +118,21 @@ public class SettingsActivity extends AppCompatActivity {
                 if (mode == Player.REPEAT_MODE_OFF) player.setRepeatMode(Player.REPEAT_MODE_ONE);
                 else if (mode == Player.REPEAT_MODE_ONE) player.setRepeatMode(Player.REPEAT_MODE_ALL);
                 else player.setRepeatMode(Player.REPEAT_MODE_OFF);
+            }
+        });
+
+        // Integrated runtime interactive response binding to toggle favorites seamlessly
+        btnFavNow.setOnClickListener(v -> {
+            MediaItem item = (player != null) ? player.getCurrentMediaItem() : null;
+            if (item != null) {
+                String mediaId = item.mediaId;
+                if (favoriteIds.contains(mediaId)) {
+                    favoriteIds.remove(mediaId);
+                } else {
+                    favoriteIds.add(mediaId);
+                }
+                sharedPreferences.edit().putStringSet("Favorites", favoriteIds).apply();
+                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
             }
         });
 
@@ -153,6 +182,8 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Dynamically fetch and synchronize active local storage state keys on page wake updates
+        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
         if (player != null) syncUIWithPlayer();
     }
 
@@ -204,7 +235,7 @@ public class SettingsActivity extends AppCompatActivity {
                 updateShuffleIcon(shuffleModeEnabled);
             }
         });
-        
+
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
@@ -218,7 +249,7 @@ public class SettingsActivity extends AppCompatActivity {
         seekBar.setMax((int) duration);
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
-        
+
         if (player.isPlaying()) {
             handler.removeCallbacks(updateProgressAction);
             handler.post(updateProgressAction);
@@ -227,9 +258,16 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            nowPlayingText.setText(mediaItem.mediaMetadata.title);
+            String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
+            String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
+
+            nowPlayingTitle.setText(title);
+            nowPlayingArtist.setText(artist);
+            btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
-            nowPlayingText.setText("Select a song");
+            nowPlayingTitle.setText("Select a song");
+            nowPlayingArtist.setText("");
+            btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
     }
 

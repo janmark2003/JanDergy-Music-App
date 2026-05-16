@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_REQUEST_CODE = 100;
+    private static final int PERMISSION_REQUEST_CODES = 100;
     private static final String PREFS_NAME = "MusicPrefs";
     private static final String FAVORITES_KEY = "Favorites";
 
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private MusicSectionsAdapter sectionsAdapter;
     private MusicListFragment allFragment, artistFragment, recentFragment, favoritesFragment;
 
-    private TextView nowPlayingText, currentTimeText, remainingTimeText;
+    private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow, btnSettings;
     private ImageButton btnPrev, btnNext;
@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        setUIVisibility(true);
         if (player != null) {
             syncUIWithPlayer();
         }
@@ -224,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                 updateShuffleIcon(shuffleModeEnabled);
             }
         });
-        
+
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
@@ -238,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setMax((int) duration);
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
-        
+
         if (player.isPlaying()) {
             handler.removeCallbacks(updateProgressAction);
             handler.post(updateProgressAction);
@@ -248,11 +249,16 @@ public class MainActivity extends AppCompatActivity {
     private void initUI() {
         viewPager = findViewById(R.id.view_pager);
         sectionsAdapter = new MusicSectionsAdapter(this);
+
+        for (int i = 0; i < 4; i++) {
+            sectionsAdapter.getFragment(i).setOnItemClickListener(itemClickListener);
+        }
+
         viewPager.setAdapter(sectionsAdapter);
 
         tabLayout = findViewById(R.id.tab_layout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            tab.setText(sectionsAdapter.getTitle(position));
+            // Text string setup removed here to create an icon-only layout
             switch (position) {
                 case 0: tab.setIcon(R.drawable.ic_all_music); break;
                 case 1: tab.setIcon(R.drawable.ic_artists); break;
@@ -261,7 +267,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }).attach();
 
-        nowPlayingText = findViewById(R.id.now_playing);
+        nowPlayingTitle = findViewById(R.id.now_playing_title);
+        nowPlayingArtist = findViewById(R.id.now_playing_artist);
         currentTimeText = findViewById(R.id.current_time);
         remainingTimeText = findViewById(R.id.remaining_time);
         seekBar = findViewById(R.id.seek_bar);
@@ -274,6 +281,16 @@ public class MainActivity extends AppCompatActivity {
         btnSettings = findViewById(R.id.btn_settings);
         searchView = findViewById(R.id.search_view);
 
+        View miniPlayerBox = findViewById(R.id.player_controls);
+        miniPlayerBox.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FullScreenPlayerActivity.class);
+            Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
+            Pair<View, String> playerPair = Pair.create(miniPlayerBox, "player_box_transition");
+
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair);
+            startActivity(intent, options.toBundle());
+        });
+
         btnSettings.setOnClickListener(v -> launchSettings());
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -281,10 +298,9 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) { return false; }
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (allFragment != null) allFragment.filter(newText);
-                if (artistFragment != null) artistFragment.filter(newText);
-                if (recentFragment != null) recentFragment.filter(newText);
-                if (favoritesFragment != null) favoritesFragment.filter(newText);
+                for (int i = 0; i < 4; i++) {
+                    sectionsAdapter.getFragment(i).filter(newText);
+                }
                 return true;
             }
         });
@@ -336,10 +352,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            nowPlayingText.setText(mediaItem.mediaMetadata.title);
+            String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
+            String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
+
+            nowPlayingTitle.setText(title);
+            nowPlayingArtist.setText(artist);
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
-            nowPlayingText.setText("Select a song");
+            nowPlayingTitle.setText("Select a song");
+            nowPlayingArtist.setText("");
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
     }
@@ -359,14 +380,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void openPlayerActivity(AudioAdapter.AudioItem item, View albumArtView) {
         playAudio(item);
-        
+
         setUIVisibility(false);
 
         Intent intent = new Intent(this, FullScreenPlayerActivity.class);
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
         Pair<View, String> playerPair = Pair.create(findViewById(R.id.player_controls), "player_box_transition");
         Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");
-        
+
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair, artPair);
         startActivity(intent, options.toBundle());
     }
@@ -376,6 +397,12 @@ public class MainActivity extends AppCompatActivity {
         searchView.setVisibility(visibility);
         tabLayout.setVisibility(visibility);
         viewPager.setVisibility(visibility);
+
+        if (visible) {
+            searchView.setAlpha(1.0f);
+            tabLayout.setAlpha(1.0f);
+            viewPager.setAlpha(1.0f);
+        }
     }
 
     private void updateShuffleIcon(boolean enabled) {
@@ -401,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
                 : Manifest.permission.READ_EXTERNAL_STORAGE;
 
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{permission}, 100);
         } else {
             loadAudioFiles();
         }
@@ -410,7 +437,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CODE) {
+        if (requestCode == 100) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 loadAudioFiles();
             } else {
@@ -502,22 +529,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applySectionData(SectionData sectionData) {
-        if (allFragment == null) {
-            allFragment = MusicListFragment.newInstance(sectionData.allItems, itemClickListener);
-            artistFragment = MusicListFragment.newInstance(sectionData.artistItems, itemClickListener);
-            recentFragment = MusicListFragment.newInstance(sectionData.recentItems, itemClickListener);
-            favoritesFragment = MusicListFragment.newInstance(sectionData.favoriteItems, itemClickListener);
-            sectionsAdapter.setFragment(0, allFragment);
-            sectionsAdapter.setFragment(1, artistFragment);
-            sectionsAdapter.setFragment(2, recentFragment);
-            sectionsAdapter.setFragment(3, favoritesFragment);
-            return;
-        }
-
-        allFragment.updateList(sectionData.allItems);
-        artistFragment.updateList(sectionData.artistItems);
-        recentFragment.updateList(sectionData.recentItems);
-        favoritesFragment.updateList(sectionData.favoriteItems);
+        sectionsAdapter.getFragment(0).updateList(sectionData.allItems);
+        sectionsAdapter.getFragment(1).updateList(sectionData.artistItems);
+        sectionsAdapter.getFragment(2).updateList(sectionData.recentItems);
+        sectionsAdapter.getFragment(3).updateList(sectionData.favoriteItems);
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {
@@ -527,9 +542,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             favoriteIds.remove(String.valueOf(item.id));
         }
-        
+
         sharedPreferences.edit().putStringSet(FAVORITES_KEY, favoriteIds).apply();
-        
+
         MediaItem current = (player != null) ? player.getCurrentMediaItem() : null;
         if (current != null && current.mediaId.equals(String.valueOf(item.id))) {
             btnFavNow.setImageResource(item.isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
@@ -540,6 +555,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void playAudio(AudioAdapter.AudioItem item) {
         if (player == null) return;
+
+        MediaItem currentItem = player.getCurrentMediaItem();
+        if (currentItem != null && currentItem.mediaId.equals(String.valueOf(item.id))) {
+            if (!player.isPlaying()) {
+                player.play();
+            }
+            return;
+        }
+
         int startIndex = -1;
         List<MediaItem> queueSnapshot;
         int queueVersionSnapshot;

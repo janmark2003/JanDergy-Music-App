@@ -12,9 +12,7 @@ import android.transition.ChangeImageTransform;
 import android.transition.ChangeTransform;
 import android.transition.Fade;
 import android.transition.TransitionSet;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
@@ -24,37 +22,30 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
-import androidx.media3.common.Timeline;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
 import androidx.palette.graphics.Palette;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity {
+public class FullScreenPlayerActivity extends AppCompatActivity {
 
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
-    private TextView nowPlayingText, currentTimeText, remainingTimeText;
+    private TextView currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
@@ -62,9 +53,6 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
     private ImageView fullAlbumArt;
     private TextView fullSongTitle, fullArtistName;
     private MovingBlurView backgroundBlur;
-    private SearchView queueSearchView;
-    private RecyclerView queueRecyclerView;
-    private QueueAdapter queueAdapter;
     private String activeArtworkRequestKey;
 
     private SharedPreferences sharedPreferences;
@@ -117,33 +105,7 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
         fullAlbumArt = findViewById(R.id.full_album_art);
         fullSongTitle = findViewById(R.id.full_song_title);
         fullArtistName = findViewById(R.id.full_artist_name);
-        queueSearchView = findViewById(R.id.queue_search_view);
-        queueRecyclerView = findViewById(R.id.queue_recycler_view);
 
-        queueAdapter = new QueueAdapter(index -> {
-            if (player != null) {
-                player.seekToDefaultPosition(index);
-                player.play();
-            }
-        });
-        queueRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        queueRecyclerView.setHasFixedSize(true);
-        queueRecyclerView.setAdapter(queueAdapter);
-
-        queueSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                queueAdapter.filter(newText);
-                return true;
-            }
-        });
-
-        nowPlayingText = findViewById(R.id.now_playing);
         currentTimeText = findViewById(R.id.current_time);
         remainingTimeText = findViewById(R.id.remaining_time);
         seekBar = findViewById(R.id.seek_bar);
@@ -203,19 +165,15 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
                     updateTimers(progress, player.getDuration());
                 }
             }
-
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
+            public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 
     private void applyBubblyEntrance() {
-        View[] elements = {fullAlbumArt, fullSongTitle, fullArtistName, queueSearchView, queueRecyclerView};
+        View[] elements = {fullAlbumArt, fullSongTitle, fullArtistName};
         for (int i = 0; i < elements.length; i++) {
             elements[i].setScaleX(0.7f);
             elements[i].setScaleY(0.7f);
@@ -286,7 +244,6 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
                 updateUIForNowPlaying(mediaItem);
-                queueAdapter.setNowPlayingMediaId(mediaItem != null ? mediaItem.mediaId : null);
             }
 
             @Override
@@ -315,35 +272,11 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
             public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
                 updateShuffleIcon(shuffleModeEnabled);
             }
-
-            @Override
-            public void onTimelineChanged(Timeline timeline, int reason) {
-                rebuildQueueFromPlayer();
-            }
         });
 
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
-        rebuildQueueFromPlayer();
-    }
-
-    private void rebuildQueueFromPlayer() {
-        if (player == null) return;
-        List<QueueItem> queueItems = new ArrayList<>();
-        for (int i = 0; i < player.getMediaItemCount(); i++) {
-            MediaItem mediaItem = player.getMediaItemAt(i);
-            String title = (mediaItem.mediaMetadata.title != null)
-                    ? mediaItem.mediaMetadata.title.toString()
-                    : "Unknown";
-            String artist = (mediaItem.mediaMetadata.artist != null)
-                    ? mediaItem.mediaMetadata.artist.toString()
-                    : "Unknown";
-            queueItems.add(new QueueItem(i, mediaItem.mediaId, title, artist));
-        }
-        queueAdapter.updateItems(queueItems);
-        MediaItem current = player.getCurrentMediaItem();
-        queueAdapter.setNowPlayingMediaId(current != null ? current.mediaId : null);
     }
 
     private void syncUIWithPlayer() {
@@ -366,7 +299,6 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
             String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown";
             String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown";
 
-            nowPlayingText.setText(title);
             fullSongTitle.setText(title);
             fullArtistName.setText(artist);
 
@@ -376,7 +308,6 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
             if (mediaItem.requestMetadata != null) uri = mediaItem.requestMetadata.mediaUri;
             loadAlbumArtAndPalette(uri);
         } else {
-            nowPlayingText.setText("Select a song");
             fullSongTitle.setText("Select a song");
             fullArtistName.setText("");
             fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
@@ -480,97 +411,6 @@ public class git checkout mainFullScreenPlayerActivity extends AppCompatActivity
             return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
         } else {
             return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
-        }
-    }
-
-    private static class QueueItem {
-        final int index;
-        final String mediaId;
-        final String title;
-        final String artist;
-
-        QueueItem(int index, String mediaId, String title, String artist) {
-            this.index = index;
-            this.mediaId = mediaId;
-            this.title = title;
-            this.artist = artist;
-        }
-    }
-
-    private interface OnQueueItemClickListener {
-        void onQueueItemClick(int index);
-    }
-
-    private static class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHolder> {
-        private final List<QueueItem> allItems = new ArrayList<>();
-        private final List<QueueItem> filteredItems = new ArrayList<>();
-        private final OnQueueItemClickListener listener;
-        private String nowPlayingMediaId;
-
-        QueueAdapter(OnQueueItemClickListener listener) {
-            this.listener = listener;
-        }
-
-        void updateItems(List<QueueItem> items) {
-            allItems.clear();
-            allItems.addAll(items);
-            filteredItems.clear();
-            filteredItems.addAll(items);
-            notifyDataSetChanged();
-        }
-
-        void filter(String query) {
-            filteredItems.clear();
-            if (query == null || query.trim().isEmpty()) {
-                filteredItems.addAll(allItems);
-            } else {
-                String lowered = query.toLowerCase(Locale.getDefault());
-                for (QueueItem item : allItems) {
-                    if (item.title.toLowerCase(Locale.getDefault()).contains(lowered)
-                            || item.artist.toLowerCase(Locale.getDefault()).contains(lowered)) {
-                        filteredItems.add(item);
-                    }
-                }
-            }
-            notifyDataSetChanged();
-        }
-
-        void setNowPlayingMediaId(String mediaId) {
-            nowPlayingMediaId = mediaId;
-            notifyDataSetChanged();
-        }
-
-        @NonNull
-        @Override
-        public QueueViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_player_queue, parent, false);
-            return new QueueViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull QueueViewHolder holder, int position) {
-            QueueItem item = filteredItems.get(position);
-            holder.titleView.setText(item.title);
-            holder.artistView.setText(item.artist);
-            boolean isNowPlaying = item.mediaId != null && item.mediaId.equals(nowPlayingMediaId);
-            holder.itemView.setAlpha(isNowPlaying ? 1f : 0.82f);
-            holder.itemView.setOnClickListener(v -> listener.onQueueItemClick(item.index));
-        }
-
-        @Override
-        public int getItemCount() {
-            return filteredItems.size();
-        }
-
-        static class QueueViewHolder extends RecyclerView.ViewHolder {
-            final TextView titleView;
-            final TextView artistView;
-
-            QueueViewHolder(@NonNull View itemView) {
-                super(itemView);
-                titleView = itemView.findViewById(R.id.queue_song_title);
-                artistView = itemView.findViewById(R.id.queue_artist_name);
-            }
         }
     }
 }
