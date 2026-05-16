@@ -2,6 +2,7 @@ package com.jandergy.myjandergymusic;
 
 import android.content.ComponentName;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -268,7 +269,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         player.addListener(new Player.Listener() {
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
-                updateUIForNowPlaying(mediaItem);
+                updateUIForNowPlaying(mediaItem, true);
                 queueAdapter.setNowPlayingMediaId(mediaItem != null ? mediaItem.mediaId : null);
             }
 
@@ -331,7 +332,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
 
     private void syncUIWithPlayer() {
         if (player == null) return;
-        updateUIForNowPlaying(player.getCurrentMediaItem());
+        updateUIForNowPlaying(player.getCurrentMediaItem(), false);
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
         seekBar.setMax((int) duration);
@@ -344,32 +345,63 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUIForNowPlaying(MediaItem mediaItem) {
+    private void updateUIForNowPlaying(MediaItem mediaItem, boolean animate) {
         if (mediaItem != null) {
             String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown";
             String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown";
 
-            fullSongTitle.setText(title);
-            fullArtistName.setText(artist);
+            updateTitleAndArtist(title, artist, animate);
 
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
 
             Uri uri = null;
             if (mediaItem.requestMetadata != null) uri = mediaItem.requestMetadata.mediaUri;
-            loadAlbumArtAndPalette(uri);
+            loadAlbumArtAndPalette(uri, animate);
         } else {
-            fullSongTitle.setText("Select a song");
-            fullArtistName.setText("");
-            fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
-            backgroundBlur.setPalette(null);
+            updateTitleAndArtist("Select a song", "", animate);
+            loadAlbumArtAndPalette(null, animate);
             activeArtworkRequestKey = null;
         }
     }
 
-    private void loadAlbumArtAndPalette(Uri uri) {
+    private void updateTitleAndArtist(String title, String artist, boolean animate) {
+        if (!animate) {
+            fullSongTitle.animate().cancel();
+            fullArtistName.animate().cancel();
+            fullSongTitle.setText(title);
+            fullArtistName.setText(artist);
+            fullSongTitle.setAlpha(1f);
+            fullArtistName.setAlpha(1f);
+            fullSongTitle.setTranslationY(0f);
+            fullArtistName.setTranslationY(0f);
+            return;
+        }
+        animateTextChange(fullSongTitle, title);
+        animateTextChange(fullArtistName, artist);
+    }
+
+    private void animateTextChange(TextView view, String text) {
+        view.animate().cancel();
+        view.animate()
+                .alpha(0f)
+                .translationY(-12f)
+                .setDuration(120)
+                .withEndAction(() -> {
+                    view.setText(text);
+                    view.setTranslationY(12f);
+                    view.animate()
+                            .alpha(1f)
+                            .translationY(0f)
+                            .setDuration(200)
+                            .setInterpolator(new DecelerateInterpolator())
+                            .start();
+                })
+                .start();
+    }
+
+    private void loadAlbumArtAndPalette(Uri uri, boolean animate) {
         if (uri == null) {
-            fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
-            backgroundBlur.setPalette(null);
+            applyAlbumArt(null, null, animate);
             activeArtworkRequestKey = null;
             return;
         }
@@ -380,6 +412,12 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             if (!requestKey.equals(activeArtworkRequestKey)) {
                 return;
             }
+            applyAlbumArt(bitmap, palette, animate);
+        });
+    }
+
+    private void applyAlbumArt(Bitmap bitmap, Palette palette, boolean animate) {
+        Runnable applyImage = () -> {
             if (bitmap != null) {
                 fullAlbumArt.setImageBitmap(bitmap);
                 backgroundBlur.setPalette(palette);
@@ -387,7 +425,36 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                 fullAlbumArt.setImageResource(R.drawable.blank_icon_album);
                 backgroundBlur.setPalette(null);
             }
-        });
+        };
+
+        if (!animate) {
+            fullAlbumArt.animate().cancel();
+            fullAlbumArt.setAlpha(1f);
+            fullAlbumArt.setScaleX(1f);
+            fullAlbumArt.setScaleY(1f);
+            applyImage.run();
+            return;
+        }
+
+        fullAlbumArt.animate().cancel();
+        fullAlbumArt.animate()
+                .alpha(0f)
+                .scaleX(0.92f)
+                .scaleY(0.92f)
+                .setDuration(140)
+                .withEndAction(() -> {
+                    applyImage.run();
+                    fullAlbumArt.setScaleX(0.92f);
+                    fullAlbumArt.setScaleY(0.92f);
+                    fullAlbumArt.animate()
+                            .alpha(1f)
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(220)
+                            .setInterpolator(new DecelerateInterpolator())
+                            .start();
+                })
+                .start();
     }
 
     private int[] paletteToHuePalette(Palette palette) {
