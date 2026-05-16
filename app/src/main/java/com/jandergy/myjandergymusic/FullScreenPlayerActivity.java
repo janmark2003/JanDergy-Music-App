@@ -51,7 +51,7 @@ import java.util.concurrent.ExecutionException;
 
 public class FullScreenPlayerActivity extends AppCompatActivity {
 
-    private static final float TEXT_TRANSLATION_OFFSET_PX = 12f;
+    private static final float TEXT_TRANSLATION_OFFSET_DP = 12f;
     private static final int TEXT_FADE_OUT_DURATION_MS = 120;
     private static final int TEXT_FADE_IN_DURATION_MS = 200;
     private static final float ALBUM_ART_SCALE = 0.92f;
@@ -388,15 +388,16 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void animateTextChange(TextView view, String text) {
+        float translationOffset = dpToPx(TEXT_TRANSLATION_OFFSET_DP);
         view.animate().cancel();
         view.animate()
                 .alpha(0f)
-                .translationY(-TEXT_TRANSLATION_OFFSET_PX)
+                .translationY(-translationOffset)
                 .setDuration(TEXT_FADE_OUT_DURATION_MS)
                 .setInterpolator(new DecelerateInterpolator())
                 .withEndAction(() -> {
                     view.setText(text);
-                    view.setTranslationY(TEXT_TRANSLATION_OFFSET_PX);
+                    view.setTranslationY(translationOffset);
                     view.animate()
                             .alpha(1f)
                             .translationY(0f)
@@ -405,6 +406,10 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                             .start();
                 })
                 .start();
+    }
+
+    private float dpToPx(float dp) {
+        return dp * getResources().getDisplayMetrics().density;
     }
 
     private void loadAlbumArtAndPalette(Uri uri, boolean animate) {
