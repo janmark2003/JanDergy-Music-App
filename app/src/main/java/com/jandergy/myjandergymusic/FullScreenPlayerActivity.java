@@ -51,6 +51,13 @@ import java.util.concurrent.ExecutionException;
 
 public class FullScreenPlayerActivity extends AppCompatActivity {
 
+    private static final float TEXT_TRANSLATION_OFFSET = 12f;
+    private static final int TEXT_FADE_OUT_DURATION_MS = 120;
+    private static final int TEXT_FADE_IN_DURATION_MS = 200;
+    private static final float ALBUM_ART_SCALE = 0.92f;
+    private static final int ALBUM_ART_FADE_OUT_DURATION_MS = 140;
+    private static final int ALBUM_ART_FADE_IN_DURATION_MS = 220;
+
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
@@ -384,15 +391,15 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         view.animate().cancel();
         view.animate()
                 .alpha(0f)
-                .translationY(-12f)
-                .setDuration(120)
+                .translationY(-TEXT_TRANSLATION_OFFSET)
+                .setDuration(TEXT_FADE_OUT_DURATION_MS)
                 .withEndAction(() -> {
                     view.setText(text);
-                    view.setTranslationY(12f);
+                    view.setTranslationY(TEXT_TRANSLATION_OFFSET);
                     view.animate()
                             .alpha(1f)
                             .translationY(0f)
-                            .setDuration(200)
+                            .setDuration(TEXT_FADE_IN_DURATION_MS)
                             .setInterpolator(new DecelerateInterpolator())
                             .start();
                 })
@@ -439,18 +446,18 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         fullAlbumArt.animate().cancel();
         fullAlbumArt.animate()
                 .alpha(0f)
-                .scaleX(0.92f)
-                .scaleY(0.92f)
-                .setDuration(140)
+                .scaleX(ALBUM_ART_SCALE)
+                .scaleY(ALBUM_ART_SCALE)
+                .setDuration(ALBUM_ART_FADE_OUT_DURATION_MS)
                 .withEndAction(() -> {
                     applyImage.run();
-                    fullAlbumArt.setScaleX(0.92f);
-                    fullAlbumArt.setScaleY(0.92f);
+                    fullAlbumArt.setScaleX(ALBUM_ART_SCALE);
+                    fullAlbumArt.setScaleY(ALBUM_ART_SCALE);
                     fullAlbumArt.animate()
                             .alpha(1f)
                             .scaleX(1f)
                             .scaleY(1f)
-                            .setDuration(220)
+                            .setDuration(ALBUM_ART_FADE_IN_DURATION_MS)
                             .setInterpolator(new DecelerateInterpolator())
                             .start();
                 })
