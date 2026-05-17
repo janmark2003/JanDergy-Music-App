@@ -417,6 +417,16 @@ public class MainActivity extends AppCompatActivity {
             nowPlayingTitle.setText(title);
             nowPlayingArtist.setText(artist);
             
+            // Kick marquee
+            nowPlayingTitle.postDelayed(() -> {
+                nowPlayingTitle.setSelected(false);
+                nowPlayingTitle.setSelected(true);
+            }, 500);
+            nowPlayingArtist.postDelayed(() -> {
+                nowPlayingArtist.setSelected(false);
+                nowPlayingArtist.setSelected(true);
+            }, 500);
+            
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             nowPlayingTitle.setText("Select a song");

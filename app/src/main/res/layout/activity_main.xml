@@ -144,47 +144,62 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:strokeWidth="0dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_glass_panel_strong"
+            android:orientation="vertical"
             android:paddingHorizontal="22dp"
             android:paddingTop="18dp"
             android:paddingBottom="16dp">
 
-            <com.jandergy.myjandergymusic.MarqueeTextView
-                android:id="@+id/now_playing_title"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="60dp"
-                android:text="Select a song"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <com.jandergy.myjandergymusic.MarqueeTextView
-                android:id="@+id/now_playing_artist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="60dp"
-                android:textColor="@color/glass_text_secondary"
-                android:textSize="13sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/now_playing_title" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/btn_fav_now"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_heart_outline"
-                app:layout_constraintBottom_toBottomOf="@+id/now_playing_artist"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/now_playing_title"
-                app:tint="@android:color/white" />
+                    <com.jandergy.myjandergymusic.MarqueeTextView
+                        android:id="@+id/now_playing_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:text="Select a song"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.jandergy.myjandergymusic.MarqueeTextView
+                        android:id="@+id/now_playing_artist"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:textColor="@color/glass_text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_fav_now"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="16dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_heart_outline"
+                    app:tint="@android:color/white" />
+            </LinearLayout>
 
             <SeekBar
                 android:id="@+id/seek_bar"
@@ -194,41 +209,38 @@
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
                 android:progressTint="@color/logo_blue"
-                android:thumbTint="@color/logo_blue"
-                app:layout_constraintTop_toBottomOf="@+id/now_playing_artist" />
+                android:thumbTint="@color/logo_blue" />
 
-            <TextView
-                android:id="@+id/current_time"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="00:00"
-                android:textColor="@color/glass_text_secondary"
-                android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
+                android:layout_marginTop="2dp">
 
-            <TextView
-                android:id="@+id/remaining_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-00:00"
-                android:textColor="@color/glass_text_secondary"
-                android:textSize="12sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/current_time" />
+                <TextView
+                    android:id="@+id/current_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="00:00"
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/remaining_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="-00:00"
+                    android:textColor="@color/glass_text_secondary"
+                    android:textSize="12sp" />
+            </RelativeLayout>
 
             <LinearLayout
-                android:id="@+id/controls_row"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:gravity="center"
-                android:orientation="horizontal"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/current_time">
+                android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/btn_shuffle"
@@ -277,7 +289,7 @@
                     android:src="@android:drawable/ic_menu_revert"
                     app:tint="@android:color/white" />
             </LinearLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <FrameLayout
