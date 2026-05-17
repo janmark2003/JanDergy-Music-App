@@ -224,7 +224,7 @@
                     android:padding="6dp"
                     android:scaleType="fitCenter"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_menu_revert"
+                    android:src="@android:drawable/ic_menu_revert"
                     app:tint="@android:color/white" />
             </LinearLayout>
         </LinearLayout>
