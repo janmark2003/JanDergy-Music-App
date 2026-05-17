@@ -97,32 +97,22 @@
                     android:layout_marginEnd="16dp"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.jandergy.myjandergymusic.MarqueeTextView
                         android:id="@+id/full_song_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:ellipsize="marquee"
-                        android:marqueeRepeatLimit="marquee_forever"
-                        android:maxLines="1"
-                        android:scrollHorizontally="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
+                        android:singleLine="true"
                         android:text="Select a song"
                         android:textColor="@android:color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
-                    <TextView
+                    <com.jandergy.myjandergymusic.MarqueeTextView
                         android:id="@+id/full_artist_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:ellipsize="marquee"
-                        android:marqueeRepeatLimit="marquee_forever"
-                        android:maxLines="1"
-                        android:scrollHorizontally="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
+                        android:singleLine="true"
                         android:textColor="@color/glass_text_secondary"
                         android:textSize="14sp" />
                 </LinearLayout>

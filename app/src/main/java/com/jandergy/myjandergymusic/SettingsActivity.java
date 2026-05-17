@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -34,8 +35,10 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -55,19 +58,20 @@ public class SettingsActivity extends AppCompatActivity {
     private View settingsContent, eqContainer;
     private ImageView characterImg;
     private LinearLayout bandsList;
-    
+
     private Spinner presetSpinner;
     private SwitchCompat eqSwitch;
     private SeekBar bassBoostSeekBar, spatializerSeekBar;
     private TextView bassBoostValue, spatializerValue;
 
-    private Equalizer localEqualizer; // Only for metadata query
+    private Equalizer localEqualizer;
     private short numberOfBands;
     private final int[] uiFrequencies = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
     private final float[] uiBandLevels = new float[10];
 
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
+    private boolean isSpinnerInitializing = true;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable updateProgressAction = new Runnable() {
@@ -105,12 +109,12 @@ public class SettingsActivity extends AppCompatActivity {
     private void initUI() {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
-        
+
         eqContainer = findViewById(R.id.eq_container);
         bandsList = findViewById(R.id.bands_list);
         presetSpinner = findViewById(R.id.preset_spinner);
         eqSwitch = findViewById(R.id.eq_switch);
-        
+
         bassBoostSeekBar = findViewById(R.id.bass_boost_seekbar);
         bassBoostValue = findViewById(R.id.bass_boost_value);
         spatializerSeekBar = findViewById(R.id.spatializer_seekbar);
@@ -152,8 +156,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
-        
-        // Ensure marquee can work
+
         nowPlayingTitle.setSelected(true);
         nowPlayingArtist.setSelected(true);
 
@@ -166,6 +169,12 @@ public class SettingsActivity extends AppCompatActivity {
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnRepeat = findViewById(R.id.btn_repeat);
         btnFavNow = findViewById(R.id.btn_fav_now);
+
+        androidx.cardview.widget.CardView playerControls = findViewById(R.id.player_controls);
+        playerControls.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, FullScreenPlayerActivity.class);
+            startActivity(intent);
+        });
 
         btnPlayPause.setOnClickListener(v -> {
             if (player == null) return;
@@ -230,28 +239,33 @@ public class SettingsActivity extends AppCompatActivity {
 
         try {
             localEqualizer = new Equalizer(0, sessionId);
-            numberOfBands = localEqualizer.getNumberOfBands();
-
-            boolean isEnabled = sharedPreferences.getBoolean("EQ_Enabled", true);
-            eqSwitch.setChecked(isEnabled);
-
-            int savedBassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
-            bassBoostSeekBar.setProgress(savedBassBoost);
-            bassBoostValue.setText(String.format(Locale.US, "%d%%", savedBassBoost / 10));
-            updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) savedBassBoost);
-
-            int savedSpatializer = sharedPreferences.getInt("Spatializer_Strength", 0);
-            spatializerSeekBar.setProgress(savedSpatializer);
-            spatializerValue.setText(String.format(Locale.US, "%d%%", savedSpatializer / 10));
-            updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) savedSpatializer);
-
-            setupPresetSpinner();
-            setupBandSliders();
-
         } catch (Exception e) {
-            Log.e("SettingsActivity", "Error setting up equalizer", e);
-            eqContainer.setVisibility(View.GONE);
+            try {
+                localEqualizer = new Equalizer(0, 0);
+            } catch (Exception ex) {
+                Log.e("SettingsActivity", "Error setting up equalizer entirely", ex);
+                eqContainer.setVisibility(View.GONE);
+                return;
+            }
         }
+
+        numberOfBands = localEqualizer.getNumberOfBands();
+
+        boolean isEnabled = sharedPreferences.getBoolean("EQ_Enabled", true);
+        eqSwitch.setChecked(isEnabled);
+
+        int savedBassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
+        bassBoostSeekBar.setProgress(savedBassBoost);
+        bassBoostValue.setText(String.format(Locale.US, "%d%%", savedBassBoost / 10));
+        updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) savedBassBoost);
+
+        int savedSpatializer = sharedPreferences.getInt("Spatializer_Strength", 0);
+        spatializerSeekBar.setProgress(savedSpatializer);
+        spatializerValue.setText(String.format(Locale.US, "%d%%", savedSpatializer / 10));
+        updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) savedSpatializer);
+
+        setupPresetSpinner();
+        setupBandSliders();
     }
 
     private void updateEffectInService(String action, boolean enabled, short strength) {
@@ -274,6 +288,7 @@ public class SettingsActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         presetSpinner.setAdapter(adapter);
 
+        isSpinnerInitializing = true;
         int savedPreset = sharedPreferences.getInt("EQ_Preset", 0);
         if (savedPreset < numPresets) {
             presetSpinner.setSelection(savedPreset);
@@ -282,15 +297,64 @@ public class SettingsActivity extends AppCompatActivity {
         presetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (isSpinnerInitializing) {
+                    isSpinnerInitializing = false;
+                    return;
+                }
                 sharedPreferences.edit().putInt("EQ_Preset", position).apply();
+                applyPresetToUI(position);
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
+    private void applyPresetToUI(int presetIndex) {
+        if (localEqualizer == null) return;
+        try {
+            localEqualizer.usePreset((short) presetIndex);
+            short hwBands = localEqualizer.getNumberOfBands();
+
+            for (int i = 0; i < uiFrequencies.length; i++) {
+                int uiFreqMilliHz = uiFrequencies[i] * 1000;
+                short bestHwBand = 0;
+                int minDiff = Integer.MAX_VALUE;
+
+                for (short j = 0; j < hwBands; j++) {
+                    int hwFreqMilliHz = localEqualizer.getCenterFreq(j);
+                    int diff = Math.abs(hwFreqMilliHz - uiFreqMilliHz);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        bestHwBand = j;
+                    }
+                }
+
+                short hwLevelMillibels = localEqualizer.getBandLevel(bestHwBand);
+                float levelDb = hwLevelMillibels / 100f;
+
+                uiBandLevels[i] = levelDb;
+                sharedPreferences.edit().putFloat("UI_EQ_Band_" + i, levelDb).apply();
+
+                View bandView = bandsList.getChildAt(i);
+                if (bandView != null) {
+                    SeekBar slider = bandView.findViewById(R.id.band_seekbar);
+                    TextView levelText = bandView.findViewById(R.id.band_level);
+                    if (slider != null && levelText != null) {
+                        slider.setProgress((int) ((levelDb + 15) * 100));
+                        levelText.setText(String.format(Locale.US, "%.1f dB", levelDb));
+                    }
+                }
+            }
+
+            applyInterpolatedEQ();
+
+        } catch (Exception e) {
+            Log.e("SettingsActivity", "Error applying preset to UI", e);
+        }
+    }
+
     private void setupBandSliders() {
         if (localEqualizer == null) return;
-        
+
         bandsList.removeAllViews();
         for (int i = 0; i < uiFrequencies.length; i++) {
             final int bandIndex = i;
@@ -302,8 +366,8 @@ public class SettingsActivity extends AppCompatActivity {
 
             String freqStr = (uiFrequencies[i] < 1000) ? uiFrequencies[i] + " Hz" : (uiFrequencies[i] / 1000) + " kHz";
             freqText.setText(freqStr);
-            slider.setMax(3000); // -15.0 to +15.0 dB, 0.01 step resolution
-            
+            slider.setMax(3000);
+
             float savedLevel = sharedPreferences.getFloat("UI_EQ_Band_" + bandIndex, 0f);
             uiBandLevels[bandIndex] = savedLevel;
             slider.setProgress((int) ((savedLevel + 15) * 100));
@@ -332,7 +396,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void applyInterpolatedEQ() {
         if (localEqualizer == null) return;
         short[] hardwareLevels = interpolateBands(uiBandLevels, numberOfBands);
-        
+
         for (short i = 0; i < numberOfBands; i++) {
             Intent intent = new Intent(this, PlaybackService.class);
             intent.setAction("ACTION_SET_EQ_BAND");
@@ -345,14 +409,12 @@ public class SettingsActivity extends AppCompatActivity {
     private short[] interpolateBands(float[] uiLevels, int hardwareBands) {
         short[] result = new short[hardwareBands];
         if (hardwareBands == 5) {
-            // Simplified mapping for standard 5-band hardware
             result[0] = (short) ((uiLevels[0] * 0.3f + uiLevels[1] * 0.4f + uiLevels[2] * 0.3f) * 100);
             result[1] = (short) ((uiLevels[3] * 0.5f + uiLevels[4] * 0.5f) * 100);
             result[2] = (short) ((uiLevels[5] * 0.5f + uiLevels[6] * 0.5f) * 100);
             result[3] = (short) ((uiLevels[7] * 0.5f + uiLevels[8] * 0.5f) * 100);
             result[4] = (short) (uiLevels[9] * 100);
         } else {
-            // Linear interpolation fallback
             float ratio = (uiLevels.length - 1) / (float) (hardwareBands - 1);
             for (int i = 0; i < hardwareBands; i++) {
                 float srcPos = i * ratio;
@@ -468,7 +530,7 @@ public class SettingsActivity extends AppCompatActivity {
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
-        
+
         nowPlayingTitle.setSelected(true);
         nowPlayingArtist.setSelected(true);
     }
@@ -476,7 +538,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void syncUIWithPlayer() {
         if (player == null) return;
         updateUIForNowPlaying(player.getCurrentMediaItem());
-        
+
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
         if (duration > 0) {
@@ -498,23 +560,19 @@ public class SettingsActivity extends AppCompatActivity {
             String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
             String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
 
-            nowPlayingTitle.setText(title);
-            nowPlayingArtist.setText(artist);
-            
-            // Kick marquee
-            nowPlayingTitle.postDelayed(() -> {
-                nowPlayingTitle.setSelected(false);
-                nowPlayingTitle.setSelected(true);
-            }, 500);
-            nowPlayingArtist.postDelayed(() -> {
-                nowPlayingArtist.setSelected(false);
-                nowPlayingArtist.setSelected(true);
-            }, 500);
-            
+            if (!nowPlayingTitle.getText().toString().equals(title)) {
+                nowPlayingTitle.setText(title);
+            }
+            if (!nowPlayingArtist.getText().toString().equals(artist)) {
+                nowPlayingArtist.setText(artist);
+            }
+
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
-            nowPlayingTitle.setText("Select a song");
-            nowPlayingArtist.setText("");
+            if (!nowPlayingTitle.getText().toString().equals("Select a song")) {
+                nowPlayingTitle.setText("Select a song");
+                nowPlayingArtist.setText("");
+            }
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
     }

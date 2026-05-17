@@ -7,13 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".PlayerActivity">
 
-    <!-- Moving Blur Background -->
     <com.jandergy.myjandergymusic.MovingBlurView
         android:id="@+id/background_blur"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Centered Logo (Increased size to 250dp) -->
     <ImageView
         android:id="@+id/logo"
         android:layout_width="250dp"
@@ -26,7 +24,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Full-screen Content Container (Purely Transparent) -->
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
@@ -38,7 +35,6 @@
         app:layout_constraintBottom_toTopOf="@+id/player_controls"
         app:layout_constraintTop_toBottomOf="@+id/logo">
 
-        <!-- Large Album Art (Zoomed) -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/full_album_art"
             android:layout_width="340dp"
@@ -49,8 +45,7 @@
             app:shapeAppearanceOverlay="@style/RoundedImageView"
             android:contentDescription="Album Art" />
 
-        <!-- Song Details -->
-        <TextView
+        <com.jandergy.myjandergymusic.MarqueeTextView
             android:id="@+id/full_song_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,18 +57,19 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
-        <TextView
+        <com.jandergy.myjandergymusic.MarqueeTextView
             android:id="@+id/full_artist_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:ellipsize="marquee"
             android:gravity="center"
+            android:singleLine="true"
             android:textColor="#B0FFFFFF"
             android:textSize="18sp" />
 
     </LinearLayout>
 
-    <!-- Stationary Player Controls Box -->
     <androidx.cardview.widget.CardView
         android:id="@+id/player_controls"
         android:layout_width="match_parent"
@@ -96,12 +92,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
+                <com.jandergy.myjandergymusic.MarqueeTextView
                     android:id="@+id/now_playing"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
                     android:layout_toStartOf="@+id/btn_fav_now"
+                    android:layout_marginEnd="8dp"
                     android:ellipsize="marquee"
                     android:gravity="center"
                     android:singleLine="true"
@@ -112,8 +110,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_fav_now"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -128,8 +126,8 @@
                 android:layout_marginTop="8dp"
                 android:paddingStart="0dp"
                 android:paddingEnd="0dp"
-                android:progressTint="@color/logo_blue"
-                android:thumbTint="@color/logo_blue" />
+                android:progressTint="#4CAF50"
+                android:thumbTint="#4CAF50" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -164,8 +162,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_shuffle"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_directions"
                     android:alpha="0.4"
@@ -173,8 +171,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_prev"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginStart="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_prev"
@@ -182,8 +180,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_play_pause"
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:layout_marginHorizontal="16dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_play"
@@ -191,8 +189,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_next"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_modern_next"
@@ -200,8 +198,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_repeat"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_revert"
                     android:alpha="0.4"

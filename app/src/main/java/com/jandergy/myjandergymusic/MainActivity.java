@@ -279,13 +279,11 @@ public class MainActivity extends AppCompatActivity {
         libraryPanel = findViewById(R.id.library_panel);
         playerControls = findViewById(R.id.player_controls);
 
-        // Set initial states for animation
-        logoInHeader.setAlpha(1f); // Always show header logo now
+        logoInHeader.setAlpha(1f);
         headerPanel.setAlpha(0f);
         libraryPanel.setAlpha(0f);
         playerControls.setAlpha(0f);
 
-        // Update copyright text with dynamic info
         String appVersion = "1.0";
         try {
             appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
@@ -382,7 +380,6 @@ public class MainActivity extends AppCompatActivity {
         OnBackPressedCallback backCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // Handle Back for Artist Tab
                 MusicListFragment artistFragment = sectionsAdapter.getFragment(1);
                 if (viewPager.getCurrentItem() == 1 && artistFragment.handleBack()) {
                     return;
@@ -414,23 +411,19 @@ public class MainActivity extends AppCompatActivity {
             String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
             String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
 
-            nowPlayingTitle.setText(title);
-            nowPlayingArtist.setText(artist);
-            
-            // Kick marquee
-            nowPlayingTitle.postDelayed(() -> {
-                nowPlayingTitle.setSelected(false);
-                nowPlayingTitle.setSelected(true);
-            }, 500);
-            nowPlayingArtist.postDelayed(() -> {
-                nowPlayingArtist.setSelected(false);
-                nowPlayingArtist.setSelected(true);
-            }, 500);
-            
+            if (!nowPlayingTitle.getText().toString().equals(title)) {
+                nowPlayingTitle.setText(title);
+            }
+            if (!nowPlayingArtist.getText().toString().equals(artist)) {
+                nowPlayingArtist.setText(artist);
+            }
+
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
-            nowPlayingTitle.setText("Select a song");
-            nowPlayingArtist.setText("");
+            if (!nowPlayingTitle.getText().toString().equals("Select a song")) {
+                nowPlayingTitle.setText("Select a song");
+                nowPlayingArtist.setText("");
+            }
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
     }
@@ -618,7 +611,6 @@ public class MainActivity extends AppCompatActivity {
     private void startEntranceAnimation() {
         splashFinished = true;
 
-        // 1. Fade out copyright text and shrink logo
         splashCopyright.animate().alpha(0f).setDuration(400).start();
         splashLogo.animate()
                 .scaleX(0f)
@@ -628,13 +620,11 @@ public class MainActivity extends AppCompatActivity {
                 .setInterpolator(new AnticipateInterpolator())
                 .start();
 
-        // 2. Show and animate music notes exploding from center
         musicNotesContainer.setVisibility(View.VISIBLE);
         for (int i = 0; i < 10; i++) {
             showAnimatedNote(i);
         }
 
-        // 3. Fade out splash background after notes animation starts
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             splashScreen.animate()
                     .alpha(0f)
@@ -643,7 +633,6 @@ public class MainActivity extends AppCompatActivity {
                     .start();
         }, 1200);
 
-        // 4. Bubbly entrance for app elements
         animateBubbly(headerPanel, 1500);
         animateBubbly(libraryPanel, 1750);
         animateBubbly(playerControls, 2000);
@@ -657,20 +646,18 @@ public class MainActivity extends AppCompatActivity {
                 (int) (size * getResources().getDisplayMetrics().density),
                 (int) (size * getResources().getDisplayMetrics().density));
         note.setLayoutParams(params);
-        
+
         musicNotesContainer.addView(note);
 
-        // Position it exactly in the center to start
         float centerX = musicNotesContainer.getWidth() / 2f - (size * getResources().getDisplayMetrics().density) / 2f;
         float centerY = musicNotesContainer.getHeight() / 2f - (size * getResources().getDisplayMetrics().density) / 2f;
-        
+
         note.setX(centerX);
         note.setY(centerY);
         note.setAlpha(0f);
         note.setScaleX(0f);
         note.setScaleY(0f);
 
-        // Random end position (explosion effect)
         float angle = (float) (Math.random() * 2 * Math.PI);
         float dist = (float) (250 + Math.random() * 450);
         float endX = centerX + (float) Math.cos(angle) * dist;
