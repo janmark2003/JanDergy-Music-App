@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material 3 Glance Widget Preview - Premium 3x3 Design -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="280dp"
+    android:height="280dp"
+    android:viewportWidth="280"
+    android:viewportHeight="280">
+    
+    <!-- Widget background - Material 3 surface with expressive corners -->
+    <path
+        android:fillColor="#E6E0E9"
+        android:pathData="M32,0 L248,0 Q280,0 280,32 L280,248 Q280,280 248,280 L32,280 Q0,280 0,248 L0,32 Q0,0 32,0 Z"/>
+    
+    <!-- Album art with expressive rounded corners -->
+    <path
+        android:fillColor="#D0BCFF"
+        android:pathData="M28,28 L252,28 Q272,28 272,48 L272,152 Q272,172 252,172 L28,172 Q20,172 20,164 L20,36 Q20,28 28,28 Z"/>
+    
+    <!-- Music note icon - Primary accent -->
+    <path
+        android:fillColor="#6750A4"
+        android:fillAlpha="0.85"
+        android:pathData="M140,80 L140,132 Q140,142 130,142 Q120,142 120,132 Q120,122 130,122 Q134,122 140,126 L140,80 L160,80 L160,92 L140,92 Z"/>
+    
+    <!-- Song title - Bold and prominent -->
+    <path
+        android:fillColor="#1D1B20"
+        android:pathData="M32,192 L248,192 L248,208 L32,208 Z"/>
+    
+    <!-- Artist name - Medium emphasis -->
+    <path
+        android:fillColor="#49454F"
+        android:pathData="M32,218 L200,218 L200,230 L32,230 Z"/>
+    
+    <!-- Playback controls - Enhanced Material 3 style -->
+    <!-- Previous button - Secondary container with expressive corners -->
+    <path
+        android:fillColor="#E8DEF8"
+        android:pathData="M58,242 Q90,242 90,264 Q90,286 58,286 Q26,286 26,264 Q26,242 58,242 Z"/>
+    <path
+        android:fillColor="#1D192B"
+        android:pathData="M66,254 L56,264 L66,274 L66,254 Z M52,256 L52,272 L49,272 L49,256 Z"/>
+    
+    <!-- Play button - Primary with dynamic expressive corners -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M110,237 L170,237 Q180,237 180,247 L180,281 Q180,291 170,291 L110,291 Q100,291 100,281 L100,247 Q100,237 110,237 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M128,252 L152,264 L128,276 Z"/>
+    
+    <!-- Next button - Secondary container with expressive corners -->
+    <path
+        android:fillColor="#E8DEF8"
+        android:pathData="M222,242 Q254,242 254,264 Q254,286 222,286 Q190,286 190,264 Q190,242 222,242 Z"/>
+    <path
+        android:fillColor="#1D192B"
+        android:pathData="M214,254 L224,264 L214,274 L214,254 Z M228,256 L228,272 L231,272 L231,256 Z"/>
+</vector>

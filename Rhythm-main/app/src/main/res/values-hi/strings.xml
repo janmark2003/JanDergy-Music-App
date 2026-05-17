@@ -1,0 +1,1822 @@
+<resources>
+    <string name="app_name">Rhythm</string>
+    
+    <string name="home">होम</string>
+    <string name="library">लाइब्रेरी</string>
+    <string name="search">खोजें</string>
+    <string name="settings">सेटिंग्स</string>
+    
+    <string name="media3_notification_channel_name">Rhythm Music</string>
+    <string name="media3_notification_channel_description">मीडिया प्लेबैक कंट्रोल</string>
+    
+    <string name="widget_description">Rhythm Music विजेट - 2x1 से 5x5 ग्रिड आकार का समर्थन करने वाले रिस्पॉन्सिव लेआउट के साथ प्लेबैक को कंट्रोल करें</string>
+    <string name="widget_description_glance">Rhythm Music - 9 रिस्पॉन्सिव लेआउट, Material 3 डिज़ाइन और रीयल-टाइम अपडेट के साथ प्लेबैक को कंट्रोल करें</string>
+    <string name="widget_name_glance">Rhythm Music</string>
+    <string name="no_song_playing">कोई गाना नहीं बज रहा</string>
+    <string name="unknown_artist">अज्ञात कलाकार</string>
+    <string name="unknown_album">अज्ञात एल्बम</string>
+    <string name="album_art">एल्बम आर्ट</string>
+    <string name="play_pause">चलाएं/रोकें</string>
+    <string name="skip_next">अगला चलाएं</string>
+    <string name="skip_previous">पिछला चलाएं</string>
+    
+    <string name="settings_widget">विजेट</string>
+    <string name="settings_widget_desc">होम स्क्रीन विजेट कस्टमाइज़ करें</string>
+    <string name="widget_preview_title">विजेट प्रीव्यू</string>
+    <string name="widget_preview_desc">बदलाव आपकी होम स्क्रीन पर मौजूद सभी सक्रिय विजेट्स पर लागू होंगे। अलग-अलग लेआउट देखने के लिए विजेट को दबाकर रखें (Long-press) और उसका आकार बदलें।</string>
+    <string name="widget_refresh_all">सभी विजेट रिफ्रेश करें</string>
+    <string name="widget_display_options">डिस्प्ले विकल्प</string>
+    <string name="widget_show_album_art">एल्बम आर्ट दिखाएं</string>
+    <string name="widget_show_album_art_desc">विजेट में एल्बम आर्टवर्क प्रदर्शित करें</string>
+    <string name="widget_show_artist">कलाकार का नाम दिखाएं</string>
+    <string name="widget_show_artist_desc">कलाकार की जानकारी प्रदर्शित करें</string>
+    <string name="widget_show_album">एल्बम का नाम दिखाएं</string>
+    <string name="widget_show_album_desc">एल्बम की जानकारी प्रदर्शित करें</string>
+    <string name="widget_appearance">दिखावट</string>
+    <string name="widget_use_system_colors">सिस्टम के रंगों का उपयोग करें</string>
+    <string name="widget_use_system_colors_desc">Material You कलर थीम का पालन करें</string>
+    <string name="widget_background_blur">बैकग्राउंड ब्लर</string>
+    <string name="widget_background_blur_desc">विजेट बैकग्राउंड में धुंधला (Blur) प्रभाव लागू करें</string>
+    <string name="widget_corner_radius">कोने की गोलाई (Corner Radius)</string>
+    <string name="widget_transparency">पारदर्शिता</string>
+    <string name="widget_behavior">व्यवहार</string>
+    <string name="widget_auto_update">ऑटो अपडेट</string>
+    <string name="widget_auto_update_desc">गाना बदलने पर विजेट को स्वचालित रूप से अपडेट करें</string>
+    <string name="widget_tips_title">विजेट टिप्स</string>
+    <string name="widget_tip_sizes">Rhythm 2x1 से 5x5 तक कई विजेट आकारों का समर्थन करता है</string>
+    <string name="widget_tip_types">लिगेसी और आधुनिक Glance विजेट दोनों उपलब्ध हैं</string>
+    <string name="widget_tip_controls">ऐप खोलने के लिए विजेट पर टैप करें, बटन प्लेबैक को नियंत्रित करते हैं</string>
+    <string name="widget_tip_resize">अलग-अलग लेआउट के लिए विजेट को दबाकर रखें और आकार बदलें</string>
+    
+    <string name="cd_navigate">नेविगेट करें</string>
+    <string name="cd_configure">कॉन्फ़िगर करें</string>
+    
+    <string name="settings_notifications">सूचनाएं (Notifications)</string>
+    <string name="settings_notification_style">नोटिफिकेशन शैली</string>
+    <string name="settings_custom_notifications">कस्टम नोटिफिकेशन्स</string>
+    <string name="settings_custom_notifications_desc">सिस्टम मीडिया नोटिफिकेशन के बजाय ऐप की कस्टम नोटिफिकेशन शैली का उपयोग करें</string>
+    
+    <string name="settings_queue_playback">कतार और प्लेबैक</string>
+    <string name="settings_queue_behavior">कतार का व्यवहार</string>
+    <string name="settings_use_exoplayer_shuffle">ExoPlayer शफल का उपयोग करें</string>
+    <string name="settings_use_exoplayer_shuffle_desc">मीडिया प्लेयर को शफल संभालने दें (सुझाव: मैन्युअल शफल के लिए इसे बंद रखें)</string>
+    <string name="settings_auto_queue">ऑटो क्यू (Auto Queue)</string>
+    <string name="settings_auto_queue_desc">गाना बजाते समय संबंधित गानों को स्वचालित रूप से कतार में जोड़ें</string>
+    <string name="settings_clear_queue_on_new_song">नए गाने पर कतार साफ करें</string>
+    <string name="settings_clear_queue_on_new_song_desc">सीधे नया गाना बजाते समय वर्तमान कतार को साफ करें</string>
+    <string name="settings_playback_persistence">प्लेबैक निरंतरता</string>
+    <string name="settings_remember_repeat_mode">रिपीट मोड याद रखें</string>
+    <string name="settings_remember_repeat_mode_desc">ऐप रीस्टार्ट होने पर रिपीट मोड (बंद/सभी/एक) को सहेज कर रखें</string>
+    <string name="settings_remember_shuffle_mode">शफल मोड याद रखें</string>
+    <string name="settings_remember_shuffle_mode_desc">ऐप रीस्टार्ट होने पर शफल चालू/बंद स्थिति को सहेज कर रखें</string>
+    <string name="settings_audio_effects">ऑडियो प्रभाव</string>
+    <string name="settings_crossfade">क्रॉसफेड</string>
+    <string name="settings_crossfade_desc">गानों के बीच सहज संक्रमण (Smooth transition)</string>
+    <string name="settings_crossfade_duration">क्रॉसफेड अवधि</string>
+    <string name="settings_crossfade_duration_desc">%1$.1f सेकंड</string>
+    <string name="settings_stop_playback_on_close">ऐप बंद होने पर प्लेबैक रोकें</string>
+    <string name="settings_stop_playback_on_close_desc">जब ऐप को हाल के ऐप्स (Recent apps) से बंद किया जाए तो संगीत रोक दें</string>
+    <string name="settings_time_display">समय प्रदर्शन</string>
+    <string name="settings_use_hours">समय प्रारूप में घंटों का उपयोग करें</string>
+    <string name="settings_use_hours_enabled">लंबे ट्रैक्स के लिए 1:32:26 दिखाता है</string>
+    <string name="settings_use_hours_disabled">लंबे ट्रैक्स के लिए 92:26 दिखाता है</string>
+    
+    <string name="settings_playlists">प्लेलिस्ट</string>
+    <string name="settings_playlists_overview">अवलोकन</string>
+    <string name="settings_playlists_management">प्रबंधन</string>
+    <string name="settings_create_new_playlist">नई प्लेलिस्ट बनाएं</string>
+    <string name="settings_create_new_playlist_desc">एक नई कस्टम प्लेलिस्ट जोड़ें</string>
+    <string name="settings_import_playlists">प्लेलिस्ट इम्पोर्ट करें</string>
+    <string name="settings_import_playlists_desc">JSON, M3U, या PLS फ़ाइलों से इम्पोर्ट करें</string>
+    <string name="settings_export_all_playlists">सभी प्लेलिस्ट एक्सपोर्ट करें</string>
+    <string name="settings_export_all_playlists_desc">फ़ाइल में सभी प्लेलिस्ट का बैकअप लें</string>
+    <string name="settings_cleanup_empty_playlists">खाली प्लेलिस्ट हटाएं</string>
+    <string name="settings_cleanup_empty_playlists_desc">%1$d खाली प्लेलिस्ट%2$s हटाएं</string>
+    <string name="settings_default_playlists">डिफ़ॉल्ट प्लेलिस्ट</string>
+    <string name="settings_no_default_playlists">कोई डिफ़ॉल्ट प्लेलिस्ट नहीं</string>
+    <string name="settings_no_default_playlists_desc">डिफ़ॉल्ट प्लेलिस्ट स्वचालित रूप से बनाई जाती हैं</string>
+    <string name="settings_my_playlists">मेरी प्लेलिस्ट</string>
+    <string name="settings_no_custom_playlists">कोई कस्टम प्लेलिस्ट नहीं</string>
+    <string name="settings_no_custom_playlists_desc">शुरू करने के लिए अपनी पहली प्लेलिस्ट बनाएं</string>
+    <string name="settings_total">कुल</string>
+    <string name="settings_custom">कस्टम</string>
+    <string name="settings_default">डिफ़ॉल्ट</string>
+    <string name="settings_enable_default_playlists">डिफ़ॉल्ट प्लेलिस्ट सक्षम करें</string>
+    <string name="settings_enable_default_playlists_desc">स्वचालित रूप से \'हाल ही में जोड़े गए\' और \'सबसे ज्यादा बजाए गए\' प्लेलिस्ट बनाएं</string>
+    <string name="operation_exporting_playlists">प्लेलिस्ट एक्सपोर्ट की जा रही हैं…</string>
+    <string name="operation_exporting_playlists_location">चयनित स्थान पर प्लेलिस्ट एक्सपोर्ट की जा रही हैं…</string>
+    <string name="operation_importing_playlist">प्लेलिस्ट इम्पोर्ट की जा रही है…</string>
+    
+    <string name="dialog_cleanup_empty_playlists_title">खाली प्लेलिस्ट हटाएं?</string>
+    <string name="dialog_cleanup_empty_playlists_message">यह %1$d खाली प्लेलिस्ट%2$s को स्थायी रूप से हटा देगा। इस कार्रवाई को पूर्ववत (Undone) नहीं किया जा सकता।</string>
+    <string name="dialog_delete_playlist_title">प्लेलिस्ट हटाएं?</string>
+    <string name="dialog_delete_playlist_message">क्या आप वाकई \"%1$s\" को हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।</string>
+    <string name="dialog_delete">हटाएं</string>
+    <string name="dialog_cancel">रद्द करें</string>
+    <string name="dialog_save">सहेजें (Save)</string>
+    
+    <string name="playlist_rename_title">प्लेलिस्ट का नाम बदलें</string>
+    <string name="playlist_name_label">प्लेलिस्ट का नाम</string>
+    <string name="playlist_delete_title">प्लेलिस्ट हटाएं</string>
+    <string name="playlist_operation_failed">ऑपरेशन विफल रहा</string>
+    <string name="playlist_operation_complete">ऑपरेशन पूर्ण हुआ</string>
+    <string name="playlist_more_options">अधिक विकल्प</string>
+    <string name="playlist_done_reordering">पुनः व्यवस्थित करना हो गया</string>
+    <string name="playlist_reorder_songs">गानों को पुनः व्यवस्थित करें</string>
+    <string name="playlist_cancel_selection">चयन रद्द करें</string>
+    <string name="playlist_select_songs">गाने चुनें</string>
+    <string name="playlist_sort_songs">गाने सॉर्ट करें</string>
+    <string name="playlist_export">प्लेलिस्ट एक्सपोर्ट करें</string>
+    <string name="playlist_import">प्लेलिस्ट इम्पोर्ट करें</string>
+    <string name="playlist_rename">प्लेलिस्ट का नाम बदलें</string>
+    <string name="playlist_delete">प्लेलिस्ट हटाएं</string>
+    <string name="playlist_play_all">सभी चलाएं</string>
+    <string name="playlist_shuffle_play">शफल प्ले</string>
+    <string name="playlist_search_songs">गाने खोजें</string>
+    <string name="playlist_search_in_playlist">प्लेलिस्ट में गाने खोजें</string>
+    <string name="playlist_clear_search">खोज साफ करें</string>
+    <string name="playlist_add_songs">गाने जोड़ें</string>
+    <string name="playlist_add_songs_to_playlist">प्लेलिस्ट में गाने जोड़ें</string>
+    <string name="playlist_reorder_songs_title">गानों को पुनः व्यवस्थित करें</string>
+    <string name="playlist_remove_song">गाना हटाएं</string>
+    <string name="playlist_remove_song_confirm">क्या इस प्लेलिस्ट से \'%1$s\' को हटाना है?</string>
+    <string name="playlist_remove_songs_count">%1$d गाने हटाएं</string>
+    <string name="playlist_removed_from_playlist">प्लेलिस्ट से %1$s को हटाया गया</string>
+    <string name="playlist_move_up">ऊपर ले जाएं</string>
+    <string name="playlist_move_down">नीचे ले जाएं</string>
+    <string name="playlist_remove">हटाएं</string>
+    <string name="playlist_exporting">एक्सपोर्ट हो रहा है</string>
+    <string name="playlist_importing">इम्पोर्ट हो रहा है</string>
+    
+    <string name="restart_recommended">रीस्टार्ट की सलाह दी जाती है</string>
+    <string name="restart_default_playlists_message">डिफ़ॉल्ट प्लेलिस्ट में परिवर्तनों को लागू करने के लिए, हम ऐप को रीस्टार्ट (पुनः आरंभ) करने की सलाह देते हैं। आप ऐप का उपयोग जारी रख सकते हैं, लेकिन रीस्टार्ट होने तक कुछ प्लेलिस्ट सही ढंग से दिखाई नहीं दे सकती हैं।</string>
+    <string name="restart_now">अभी रीस्टार्ट करें</string>
+    <string name="continue_without_restart">रीस्टार्ट किए बिना जारी रखें</string>
+    
+    <string name="settings_media_scan">मीडिया स्कैन</string>
+    <string name="settings_mode_selection">मोड चयन</string>
+    <string name="settings_blacklist_mode">ब्लैकलिस्ट मोड</string>
+    <string name="settings_blacklist_mode_desc">अपनी लाइब्रेरी से विशिष्ट गाने और फ़ोल्डर छुपाएं</string>
+    <string name="settings_whitelist_mode">व्हाइटलिस्ट मोड</string>
+    <string name="settings_whitelist_mode_desc">केवल चयनित फ़ोल्डरों से गाने दिखाएं</string>
+    <string name="settings_song_management">गीत प्रबंधन</string>
+    <string name="settings_manage_songs">गानों का प्रबंधन करें</string>
+    <string name="settings_manage_songs_desc">%1$d %2$s गाने</string>
+    <string name="settings_blocked">ब्लॉक किए गए</string>
+    <string name="settings_whitelisted">व्हाइटलिस्ट किए गए</string>
+    <string name="settings_clear_all_songs">सभी गाने साफ़ करें</string>
+    <string name="settings_clear_all_songs_desc">सभी %1$s गानों को हटाएं</string>
+    <string name="settings_folder_management">फ़ोल्डर प्रबंधन</string>
+    <string name="settings_manage_folders">फ़ोल्डरों का प्रबंधन करें</string>
+    <string name="settings_manage_folders_desc">%1$d %2$s फ़ोल्डर</string>
+    <string name="settings_add_folder">फ़ोल्डर जोड़ें</string>
+    <string name="settings_add_folder_desc">%1$s करने के लिए एक फ़ोल्डर चुनें</string>
+    <string name="settings_block">ब्लॉक</string>
+    <string name="settings_whitelist">व्हाइटलिस्ट</string>
+    <string name="settings_clear_all_folders">सभी फ़ोल्डर साफ़ करें</string>
+    <string name="settings_clear_all_folders_desc">सभी %1$s फ़ोल्डरों को हटाएं</string>
+    <string name="settings_quick_tips">क्विक टिप्स</string>
+    <string name="settings_quick_tip_blacklist">ब्लैकलिस्ट मोड आपकी लाइब्रेरी से विशिष्ट गाने और फ़ोल्डर छुपाता है</string>
+    <string name="settings_quick_tip_whitelist">व्हाइटलिस्ट मोड केवल चयनित फ़ोल्डरों के गाने दिखाता है</string>
+    <string name="settings_quick_tip_folder">अपने संगीत संग्रह को व्यवस्थित करने के लिए फ़ोल्डर प्रबंधन का उपयोग करें</string>
+    <string name="settings_blocked_songs">ब्लॉक किए गए गाने</string>
+    <string name="settings_whitelisted_songs">व्हाइटलिस्ट किए गए गाने</string>
+    <string name="settings_blocked_folders">ब्लॉक किए गए फ़ोल्डर</string>
+    <string name="settings_whitelisted_folders">व्हाइटलिस्ट किए गए फ़ोल्डर</string>
+    <string name="settings_total_songs">कुल गाने</string>
+    <string name="settings_clear_all_button">सभी %1$s गानों को साफ़ करें</string>
+    <string name="settings_add_folder_button">फ़ोल्डर जोड़ें</string>
+    <string name="settings_clear_all_button_short">सभी साफ़ करें</string>
+    <string name="settings_root">रूट (Root)</string>
+    
+    <string name="settings_spotify_api_config">Spotify API कॉन्फ़िगरेशन</string>
+    <string name="settings_spotify_api_config_desc">ट्रैक सर्च और कैनवास वीडियो सक्षम करने के लिए अपनी Spotify API क्रेडेंशियल्स दर्ज करें।</string>
+    <string name="settings_spotify_default_keys_warning">आप वर्तमान में ऐप की डिफ़ॉल्ट Spotify कुंजियों (Keys) का उपयोग कर रहे हैं। पूर्ण कार्यक्षमता के लिए और रेट लिमिट से बचने के लिए, कृपया अपनी खुद की Client ID और Secret इनपुट करें।</string>
+    <string name="settings_spotify_client_id">Client ID</string>
+    <string name="settings_spotify_client_id_placeholder">आपकी Spotify Client ID</string>
+    <string name="settings_spotify_client_secret">Client Secret</string>
+    <string name="settings_spotify_client_secret_placeholder">आपका Spotify Client Secret</string>
+    <string name="settings_spotify_test_connection">कनेक्शन टेस्ट करें</string>
+    <string name="settings_spotify_testing">टेस्ट हो रहा है…</string>
+    <string name="settings_spotify_error">त्रुटि: %1$s</string>
+    <string name="settings_spotify_instructions">अपनी Spotify API क्रेडेंशियल्स प्राप्त करने के लिए:\n• developer.spotify.com पर जाएं\n• एक नया ऐप बनाएं\n• Client ID और Client Secret कॉपी करें</string>
+    
+    <string name="settings_about">के बारे में (About)</string>
+    <string name="settings_about_music_player">म्यूज़िक प्लेयर</string>
+    <string name="settings_about_version">v%1$s</string>
+    <string name="settings_about_description">Android के लिए एक आधुनिक, सुविधाओं से भरपूर म्यूज़िक प्लेयर</string>
+    <string name="settings_about_project_details">प्रोजेक्ट विवरण</string>
+    <string name="settings_about_version_label">वर्ज़न</string>
+    <string name="settings_about_build">बिल्ड</string>
+    <string name="settings_about_target_sdk">Target SDK</string>
+    <string name="settings_about_architecture">आर्किटेक्चर</string>
+    <string name="settings_about_architecture_value">ARM64 और ARM32</string>
+    <string name="settings_about_built_with">आधुनिक Android तकनीकों और Material Design 3 के साथ निर्मित</string>
+    <string name="settings_about_credits">क्रेडिट</string>
+    <string name="settings_about_developer_name">Anjishnu Nandi</string>
+    <string name="settings_about_developer_role">मुख्य डेवलपर और प्रोजेक्ट आर्किटेक्ट</string>
+    <string name="settings_about_team">Team ChromaHub</string>
+    <string name="settings_about_team_desc">उत्साही डेवलपर्स जो अभिनव अनुभव बना रहे हैं</string>
+    <string name="settings_about_team_chromahub">Team ChromaHub</string>
+    <string name="settings_about_special_thanks">विशेष धन्यवाद</string>
+    <string name="settings_about_community">समुदाय</string>
+    <string name="settings_about_community_desc">हमारे अद्भुत समुदाय के सदस्यों को विशेष धन्यवाद जिन्होंने परीक्षण, प्रतिक्रिया, सुझावों और सहयोग के माध्यम से Rhythm को बेहतर बनाने में योगदान दिया है।</string>
+    <string name="settings_about_contributor_izzy_name">Izzy</string>
+    <string name="settings_about_contributor_izzy_role">IzzyOnDroid पर अपडेट का प्रबंधन करते हैं</string>
+    <string name="settings_about_contributor_christian_name">Christian</string>
+    <string name="settings_about_contributor_christian_role">Collab और Project Booming के मुख्य डेवलपर</string>
+    <string name="settings_about_contributor_alex_name">Alex</string>
+    <string name="settings_about_contributor_alex_role">Spotify Canvas API एकीकरण</string>
+    <string name="settings_about_want_featured">क्या आप यहां शामिल होना चाहते हैं?</string>
+    <string name="settings_about_contribute">परीक्षण, प्रतिक्रिया, या कोड योगदान के माध्यम से Rhythm में योगदान दें और हमारे अद्भुत समुदाय में शामिल हों!</string>
+    <string name="settings_about_open_source_libraries">ओपन सोर्स लाइब्रेरी</string>
+    <string name="settings_about_open_source_libs">ओपन सोर्स लाइब्रेरी</string>
+    <string name="settings_about_view_dependencies">डिपेंडेंसी देखें</string>
+    <string name="settings_about_view_licenses">सभी डिपेंडेंसी और लाइसेंस देखें</string>
+    <string name="settings_about_actions">कार्रवाई</string>
+    <string name="settings_about_check_updates">अपडेट के लिए जांचें</string>
+    <string name="settings_about_visit_website">वेबसाइट पर जाएं</string>
+    <string name="settings_about_view_github">GitHub पर देखें</string>
+    <string name="settings_about_report_bug">बग रिपोर्ट करें या फ़ीचर सुझाएं</string>
+    <string name="settings_about_telegram_support">Telegram सपोर्ट ग्रुप</string>
+    
+    <string name="settings_updates">अपडेट</string>
+    <string name="settings_updates_error">त्रुटि</string>
+    <string name="settings_updates_checking">जांच हो रही है…</string>
+    <string name="settings_updates_available">अपडेट उपलब्ध है</string>
+    <string name="settings_updates_disabled">अपडेट अक्षम हैं</string>
+    <string name="settings_updates_manual_check">मैनुअल जांच</string>
+    <string name="settings_updates_up_to_date">अप टू डेट</string>
+    
+    <string name="status_disabled">अक्षम (Disabled)</string>
+    
+    <string name="home_title">Rhythm</string>
+    <string name="home_settings_cd">सेटिंग्स</string>
+    <string name="home_discover_albums">एल्बम खोजें</string>
+    <string name="home_explore_music">अद्भुत संगीत का अन्वेषण करें</string>
+    <string name="home_no_featured_albums">कोई विशेष (Featured) एल्बम नहीं</string>
+    <string name="home_no_featured_albums_desc">विशेष सामग्री देखने के लिए अपनी लाइब्रेरी में कुछ एल्बम जोड़ें</string>
+    <string name="home_artists">कलाकार</string>
+    <string name="home_explore_musicians">अपने पसंदीदा संगीतकारों को एक्सप्लोर करें</string>
+    <string name="home_no_artists">कोई कलाकार नहीं मिला</string>
+    <string name="home_no_artists_desc">अपने कलाकारों को यहां देखने के लिए अपनी लाइब्रेरी में कुछ संगीत जोड़ें</string>
+    <string name="home_new_releases">नई रिलीज़</string>
+    <string name="home_fresh_music">सिर्फ आपके लिए ताज़ा संगीत</string>
+    <string name="home_no_new_releases">कोई नई रिलीज़ नहीं</string>
+    <string name="home_no_new_releases_desc">जैसे ही वे आपकी लाइब्रेरी में जुड़ेंगे, नए एल्बम यहां दिखाई देंगे</string>
+    <string name="home_recently_added">हाल ही में जोड़े गए</string>
+    <string name="home_latest_additions">आपके नवीनतम परिवर्धन</string>
+    <string name="home_no_recently_added">हाल ही में जोड़े गए कोई एल्बम नहीं</string>
+    <string name="home_no_recently_added_desc">जो एल्बम आप अपनी लाइब्रेरी में जोड़ेंगे, वे यहां दिखाई देंगे</string>
+
+    <string name="home_quote_late_night_1">सपनों को जीने वालों के लिए देर रात की वाइब्स 🌙</string>
+    <string name="home_quote_late_night_2">आपकी \'लेट नाइट प्लेलिस्ट\' के लिए सही समय 🎧</string>    <string name="home_quote_late_night_3">आधी रात को संगीत और भी बेहतर लगता है ✨</string>
+    <string name="home_quote_late_night_4">रात के संगीत को बजने दें 🌟</string>
+    
+    <string name="home_quote_morning_1">अपने दिन की शुरुआत बेहतरीन साउंडट्रैक के साथ करें ✨</string>
+    <string name="home_quote_morning_2">संगीत को अपनी सुबह की दिनचर्या में ऊर्जा भरने दें 🎵</string>
+    <string name="home_quote_morning_3">हर सुबह एक नई सिम्फनी शुरू होने का इंतजार करती है 🌅</string>
+    <string name="home_quote_morning_4">कॉफी और संगीत - सही सुबह का मिश्रण ☕</string>
+    
+    <string name="home_quote_afternoon_1">अपनी पसंदीदा बीट्स के साथ आगे बढ़ें 🚀</string>
+    <string name="home_quote_afternoon_2">संगीत सब कुछ बेहतर बनाता है 💪</string>
+    <string name="home_quote_afternoon_3">लय (Rhythm) को अपने दिन का मार्गदर्शन करने दें 🎯</string>
+    <string name="home_quote_afternoon_4">शानदार धुनों के साथ फोकस बढ़ाएं 🔥</string>
+    
+    <string name="home_quote_evening_1">सुकून भरी धुनों के साथ आराम करने का समय 🌅</string>
+    <string name="home_quote_evening_2">शाम का साउंडट्रैक शुरू होने दें 🎶</string>
+    <string name="home_quote_evening_3">आपकी \'चिल प्लेलिस्ट\' के लिए सही समय 😌</string>
+    <string name="home_quote_evening_4">अपनी पसंदीदा धुनों के साथ थकान मिटाएं 🌇</string>
+    
+    <string name="home_quote_night_1">रात का समय संगीत का समय है 🌙</string>
+    <string name="home_quote_night_2">रात को आपके लिए गाने दें 🎵</string>
+    <string name="home_quote_night_3">एक शांतिपूर्ण रात के लिए सही वाइब्स 🌟</string>
+    <string name="home_quote_night_4">रात की शांति को अपनाएं 😴</string>
+    
+    <string name="home_continue_song">"%1$s" के साथ वहीं से जारी रखें जहां आपने छोड़ा था</string>
+    <string name="home_adventure_continues">आपका संगीतमय सफर जारी है</string>
+    <string name="home_discover_next_favorite">अपना अगला पसंदीदा गाना खोजने के लिए तैयार हैं?</string>
+    
+    <string name="home_recommended_title">आपके लिए अनुशंसित</string>
+    <string name="home_recommended_subtitle">आपके सुनने के इतिहास के आधार पर</string>
+    <string name="home_no_recommendations">कोई अनुशंसा (Recommendation) नहीं</string>
+    <string name="home_no_recommendations_desc">व्यक्तिगत अनुशंसाएं प्राप्त करने के लिए कुछ संगीत सुनें</string>
+    
+    <string name="home_listening_stats">आपके Rhythm के आंकड़े</string>
+    <string name="home_listening_stats_subtitle">इस सप्ताह का संगीतमय सफर</string>
+    <string name="home_stat_listening_time">सुनने का समय</string>
+    <string name="home_stat_songs_played">बजाए गए गाने</string>
+    <string name="home_stat_artists">कलाकार</string>
+    
+    <string name="home_mood_title">मूड और पल</string>
+    <string name="home_mood_subtitle">हर अहसास के लिए संगीत</string>
+    <string name="home_mood_energize">ऊर्जावान (Energize)</string>
+    <string name="home_mood_energize_desc">अपनी ऊर्जा बढ़ाएं</string>
+    <string name="home_mood_relax">आराम (Relax)</string>
+    <string name="home_mood_relax_desc">आराम करें और सांस लें</string>
+    <string name="home_mood_focus">फोकस</string>
+    <string name="home_mood_focus_desc">एकाग्रता मोड</string>
+    
+    <string name="home_recently_played">हाल ही में बजाए गए</string>
+    <string name="home_recently_played_subtitle">अपना संगीतमय सफर जारी रखें</string>
+    <string name="home_no_recent_activity">हाल की कोई गतिविधि नहीं</string>
+    <string name="home_no_recent_activity_desc">अपने हाल ही में बजाए गए गाने यहां देखने के लिए सुनना शुरू करें</string>
+    
+    <string name="ui_view_all">सभी देखें</string>
+    <string name="ui_play_action">%1$s चलाएं</string>
+    <string name="ui_songs_count">%1$d गाने</string>
+    
+    <string name="update_available_cd">अपडेट उपलब्ध है</string>
+    <string name="update_available_title">अपडेट उपलब्ध है</string>
+    <string name="update_version">वर्ज़न %1$s</string>
+    <string name="update_whats_new">नया क्या है:</string>
+    <string name="update_now">अभी अपडेट करें</string>
+    <string name="update_downloading">डाउनलोड हो रहा है…</string>
+    
+    <string name="library_title">लाइब्रेरी</string>
+    <string name="library_your_music">आपका संगीत</string>
+    <string name="library_your_playlists">आपकी प्लेलिस्ट</string>
+    <string name="library_your_albums">आपके एल्बम</string>
+    <string name="library_your_artists">आपके कलाकार</string>
+    <string name="library_loading_songs">गाने लोड हो रहे हैं…</string>
+    <string name="library_loading_playlists">प्लेलिस्ट लोड हो रही हैं…</string>
+    <string name="library_loading_albums">एल्बम लोड हो रहे हैं…</string>
+    <string name="library_loading_artists">कलाकार लोड हो रहे हैं…</string>
+    <string name="library_tracks_count">%2$d में से %1$d ट्रैक</string>
+    <string name="library_no_songs">अभी तक कोई गाना नहीं</string>
+    <string name="library_no_artists">कोई कलाकार नहीं मिला</string>
+    <string name="library_no_artists_desc">अपने कलाकारों को यहां देखने के लिए कुछ संगीत जोड़ें</string>
+    <string name="library_start_collection">अपना संगीत संग्रह बनाना शुरू करें</string>
+    <string name="library_sort_artists">कलाकारों को सॉर्ट करें</string>
+    <string name="library_explore">एक्सप्लोर</string>
+    <string name="library_storage_locations">स्टोरेज लोकेशन्स</string>
+    <string name="library_pinned_folders">पिन किए गए फ़ोल्डर</string>
+    <string name="library_go_back">वापस जाएं</string>
+    <string name="library_home">होम</string>
+    <string name="library_tap_browse">फ़ाइलें ब्राउज़ करने के लिए टैप करें</string>
+    <string name="library_play_all">सभी चलाएं</string>
+    <string name="library_check_permissions">यदि फ़ाइलें दिखाई नहीं देती हैं तो स्टोरेज अनुमतियां जांचें</string>
+    <string name="library_creating_playlist">प्लेलिस्ट बनाई जा रही है और %1$d गाने जोड़े जा रहे हैं…</string>
+    <string name="library_playlist_name_empty">प्लेलिस्ट का नाम खाली नहीं हो सकता</string>
+    <string name="library_no_playlists">अभी तक कोई प्लेलिस्ट नहीं</string>
+    <string name="library_no_playlists_desc">+ बटन का उपयोग करके अपनी पहली प्लेलिस्ट बनाएं</string>
+    <string name="library_no_albums">अभी तक कोई एल्बम नहीं</string>
+    <string name="library_playlist_count">%1$d प्लेलिस्ट</string>
+    <string name="library_playlists_count">%1$d प्लेलिस्ट</string>
+    <string name="library_album_count">%1$d एल्बम</string>
+    <string name="library_albums_count">%1$d एल्बम</string>
+    
+    <string name="sort_name">नाम</string>
+    <string name="sort_date_created">बनाने की तारीख</string>
+    <string name="sort_song_count">गानों की संख्या</string>
+    <string name="sort_title">शीर्षक</string>
+    <string name="sort_artist">कलाकार</string>
+    <string name="sort_date_added">जोड़ने की तारीख</string>
+    <string name="sort_date_modified">संशोधन की तारीख</string>
+    <string name="sort_ascending">आरोही (Ascending)</string>
+    <string name="sort_descending">अवरोही (Descending)</string>
+    
+    <string name="storage_permission_required">स्टोरेज अनुमति आवश्यक है</string>
+    <string name="storage_permission_desc">आपकी संगीत फ़ाइलों को ब्राउज़ करने और आपके डिवाइस के स्टोरेज को एक्सप्लोर करने के लिए, Rhythm को आपकी फ़ाइलों और मीडिया तक पहुंचने की अनुमति चाहिए।</string>
+    <string name="storage_permission_audio_only">यह केवल ऑडियो फ़ाइलों और संगीत वाले फ़ोल्डरों तक पहुंच की अनुमति देता है।</string>
+    
+    <string name="player_now_playing">अभी बज रहा है</string>
+    <string name="player_loading_lyrics">लिरिक्स लोड हो रहे हैं…</string>
+    <string name="player_shuffle">शफल</string>
+    <string name="player_lyrics">लिरिक्स</string>
+    <string name="player_repeat">रिपीट</string>
+    <string name="player_queue">कतार (Queue)</string>
+    <string name="player_playback_speed">प्लेबैक गति</string>
+    <string name="player_playback_speed_desc">ऑडियो प्लेबैक की गति समायोजित करें।</string>
+    <string name="playback_speed">प्लेबैक गति</string>
+    
+    <string name="search_filter_results">परिणाम फ़िल्टर करें</string>
+    <string name="search_results">खोज परिणाम</string>
+    <string name="search_songs">गाने</string>
+    <string name="search_albums">एल्बम</string>
+    <string name="search_artists">कलाकार</string>
+    <string name="search_playlists">प्लेलिस्ट</string>
+    <string name="search_view_all_songs">सभी गाने देखें</string>
+    <string name="search_see_all_songs">सभी %1$d गाने देखें</string>
+    <string name="search_recently_searched">हाल ही में खोजा गया</string>
+    <string name="search_recent_searches">हाल की खोजें</string>
+    <string name="search_clear">साफ़ करें</string>
+    <string name="search_no_recent_searches">हाल की कोई खोज नहीं</string>
+    <string name="search_no_recent_searches_desc">आपका खोज इतिहास यहां दिखाई देगा</string>
+    <string name="search_recently_played">हाल ही में बजाए गए</string>
+    <string name="search_no_recently_played">हाल ही में कोई गाना नहीं बजाया गया</string>
+    <string name="search_no_recently_played_desc">आपके द्वारा बजाए गए गाने यहां दिखाई देंगे</string>
+    <string name="search_recommended">आपके लिए अनुशंसित</string>
+    <string name="search_recommended_desc">आपके सुनने के इतिहास के आधार पर</string>
+    <string name="search_all_songs">सभी गाने (%1$d)</string>
+    <string name="search_browse_by_genre">शैली (Genre) के अनुसार ब्राउज़ करें</string>
+    <string name="search_detecting_genres">शैलियों का पता लगाया जा रहा है…</string>
+    <string name="search_genre_suggestions">शैलियों का पता लगने के बाद सुझाव यहां दिखाई देंगे</string>
+    <string name="search_no_genres">आपकी लाइब्रेरी में कोई शैली नहीं मिली</string>
+    <string name="search_no_recent">हाल की कोई खोज नहीं</string>
+    
+    <string name="ui_play">चलाएं</string>
+    <string name="ui_or">या</string>
+    <string name="ui_skip_for_now">अभी के लिए छोड़ें</string>
+    <string name="ui_dismiss">खारिज करें</string>
+    <string name="ui_retry">पुनः प्रयास करें</string>
+    <string name="ui_get_started">शुरू करें</string>
+    <string name="ui_enable_updates">अपडेट सक्षम करें</string>
+    <string name="ui_check_now">अभी जांचें</string>
+    <string name="ui_download_update">अपडेट डाउनलोड करें</string>
+    <string name="ui_install_update">अपडेट इंस्टॉल करें</string>
+    <string name="ui_cancel_download">डाउनलोड रद्द करें</string>
+    
+    <string name="common_rhythm">Rhythm</string>
+    <string name="common_songs">गाने</string>
+    <string name="common_home">होम</string>
+    <string name="common_library">लाइब्रेरी</string>
+    
+    <string name="splash_tagline">आपका संगीत, आपकी लय (Rhythm)</string>
+    <string name="splash_loading">आपकी संगीत लाइब्रेरी लोड हो रही है…</string>
+    <string name="splash_ready">ग्रूव (Groove) करने के लिए तैयार!</string>
+    
+    <string name="badge_studio_master">स्टूडियो मास्टर</string>
+    <string name="badge_lossless">लॉसलेस</string>
+    
+    <string name="nav_no_matching_songs">कोई मेल खाते गाने नहीं मिले</string>
+    <string name="nav_try_different">एक अलग खोज क्वेरी आज़माएं</string>
+    
+    <string name="updates_title">अपडेट</string>
+    <string name="updates_error">त्रुटि</string>
+    <string name="updates_checking">अपडेट के लिए जांच की जा रही है…</string>
+    <string name="updates_available">अपडेट उपलब्ध है</string>
+    <string name="updates_disabled">अपडेट अक्षम हैं</string>
+    <string name="updates_manual_check">केवल मैनुअल जांच</string>
+    <string name="updates_up_to_date">अप टू डेट</string>
+    <string name="updates_whats_new">नया क्या है</string>
+    <string name="updates_known_issues">ज्ञात समस्याएं</string>
+    <string name="updates_downloading">अपडेट डाउनलोड हो रहा है…</string>
+    <string name="updates_download_complete">डाउनलोड पूर्ण</string>
+    <string name="updates_check_failed">अपडेट जांच विफल रही</string>
+    <string name="updates_settings">अपडेट सेटिंग्स</string>
+    <string name="updates_released">रिलीज़ हुआ: %1$s</string>
+    <string name="updates_version">वर्ज़न %1$s</string>
+    <string name="updates_enable">अपडेट सक्षम करें</string>
+    <string name="updates_check_now">अभी जांचें</string>
+    <string name="updates_download_update">अपडेट डाउनलोड करें</string>
+    <string name="updates_install_update">अपडेट इंस्टॉल करें</string>
+    <string name="updates_cancel_download">डाउनलोड रद्द करें</string>
+    <string name="cancel_download">डाउनलोड रद्द करें</string>
+    <string name="download_update">अपडेट डाउनलोड करें</string>
+    <string name="updates_auto_check_disabled">स्वचालित अपडेट जांच अक्षम है। आप अभी भी मैनुअल रूप से जांच कर सकते हैं।</string>
+    <string name="updates_disabled_desc">सेटिंग्स में ऐप अपडेट अक्षम कर दिए गए हैं</string>
+    <string name="updates_smart_polling">स्मार्ट पोलिंग सक्रिय</string>
+    <string name="updates_smart_polling_desc">GitHub API कॉल्स को कम करते हुए अपडेट का पता लगाने के लिए कुशल HTTP जांच का उपयोग करना। नए संस्करण जारी होने पर आपको तुरंत सूचनाएं मिलेंगी।</string>
+    <string name="updates_channel_desc">चुनें कि किस अपडेट चैनल को फॉलो करना है:</string>
+    
+    <string name="onboarding_welcome_title">Rhythm</string>
+    <string name="onboarding_welcome_subtitle">आपका ऑल-इन-वन ऑफ़लाइन म्यूज़िक प्लेयर</string>
+    <string name="onboarding_welcome_desc">शक्तिशाली सुविधाओं और पूर्ण गोपनीयता के साथ अपने सुनने के अनुभव के हर पहलू को निजीकृत करें। अपना संगीत ऑफ़लाइन, विज्ञापन-मुक्त और पूर्ण नियंत्रण के साथ बजाएं।</string>
+    <string name="onboarding_get_started">शुरू करें</string>
+    <string name="onboarding_offline">ऑफ़लाइन</string>
+    <string name="onboarding_customizable">कस्टमाइज़ करने योग्य</string>
+    <string name="onboarding_private">निजी (Private)</string>
+    <string name="onboarding_tagline">म्यूज़िक प्लेयर • Android के लिए डिज़ाइन किया गया</string>
+    <string name="onboarding_android13_notice">Android 13+ सूचना</string>
+    <string name="onboarding_android13_desc">नए Android संस्करणों पर, आपको कई अनुमति अनुरोध दिखाई देंगे। बेहतरीन अनुभव के लिए कृपया ऑडियो फ़ाइलों और सूचनाओं तक पहुंच प्रदान करें।</string>
+    <string name="onboarding_granted">✓ स्वीकृत (Granted)</string>
+    <string name="onboarding_backup_title">अपना डेटा सुरक्षित रखें</string>
+    <string name="onboarding_backup_desc">स्वचालित बैकअप के साथ अपनी प्लेलिस्ट, सेटिंग्स और प्राथमिकताओं को सुरक्षित रखें। डिवाइस बदलते समय या पुनः इंस्टॉल करने के बाद सब कुछ रिस्टोर करें - अपना संगीत संग्रह कभी न खोएं।</string>
+    <string name="onboarding_auto_backup">ऑटो-बैकअप</string>
+    <string name="onboarding_auto_backup_desc">सप्ताह में एक बार सेटिंग्स का स्वचालित रूप से बैकअप लें</string>
+    <string name="onboarding_backup_center">बैकअप और रिस्टोर सेंटर</string>
+    <string name="onboarding_backup_center_desc">बैकअप बनाएं या मौजूदा बैकअप फ़ाइलों से रिस्टोर करें</string>
+    <string name="onboarding_manual_backup_info">आप सेटिंग्स > बैकअप और रिस्टोर में किसी भी समय मैन्युअल रूप से बैकअप बना सकते हैं</string>
+    <string name="onboarding_what_backed_up">किस चीज़ का बैकअप लिया जाता है?</string>
+    <string name="onboarding_backed_up_1">सभी सेटिंग्स, प्लेलिस्ट, थीम्स और लाइब्रेरी कस्टमाइज़ेशन</string>
+    <string name="onboarding_backed_up_2">फ़ाइलों या क्लिपबोर्ड से एक टैप में रिस्टोर करें</string>
+    <string name="onboarding_backed_up_3">गोपनीयता के लिए बैकअप आपके डिवाइस पर स्थानीय रूप से संग्रहीत होते हैं</string>
+    <string name="onboarding_audio_title">ऑडियो और प्लेबैक अनुभव</string>
+    <string name="onboarding_audio_desc">हैप्टिक फीडबैक, डिफ़ॉल्ट स्क्रीन, वॉल्यूम कंट्रोल, कतार व्यवहार, शफल सेटिंग्स, लिरिक्स डिस्प्ले और इक्वलाइज़र सेटिंग्स के साथ अपने ऑडियो अनुभव को कस्टमाइज़ करें।</string>
+    <string name="onboarding_lyrics_sources">API: ऑनलाइन लिरिक्स • एम्बेडेड: मेटाडेटा लिरिक्स • स्थानीय: .lrc फ़ाइलें</string>
+    <string name="onboarding_additional_features">अतिरिक्त ऑडियो सुविधाएं</string>
+    <string name="onboarding_equalizer_desc">इक्वलाइज़र: सेटिंग्स > इक्वलाइज़र में ऑडियो आवृत्तियों को ठीक करें</string>
+    <string name="onboarding_sleep_timer_desc">स्लीप टाइमर: निर्धारित समय के बाद ऑटो-स्टॉप प्लेबैक (\'अभी बज रहा है\' स्क्रीन से एक्सेस करें)</string>
+    <string name="onboarding_library_title">अपनी संगीत लाइब्रेरी व्यवस्थित करें</string>
+    <string name="onboarding_library_desc">कस्टमाइज़ करें कि आपके एल्बम, कलाकार और गाने कैसे प्रदर्शित होते हैं। अपना पसंदीदा लेआउट, सॉर्टिंग क्रम और टैब व्यवस्था चुनें।</string>
+    <string name="onboarding_library_how_works">लाइब्रेरी संगठन कैसे काम करता है</string>
+    <string name="onboarding_library_1">अपने पसंदीदा तक त्वरित पहुंच के लिए लाइब्रेरी में टैब क्रम को कस्टमाइज़ करें</string>
+    <string name="onboarding_library_2">सीधे लाइब्रेरी स्क्रीन से प्लेलिस्ट बनाएं और प्रबंधित करें</string>
+    <string name="onboarding_library_3">उन्नत प्रदर्शन और सॉर्टिंग विकल्प सेटिंग्स > थीम कस्टमाइज़ेशन में उपलब्ध हैं</string>
+    <string name="onboarding_library_4">डिफ़ॉल्ट प्लेलिस्ट (हाल ही में जोड़े गए, सबसे ज्यादा बजाए गए) को सेटिंग्स > प्लेलिस्ट में टॉगल किया जा सकता है</string>
+    <string name="onboarding_theme_title">Rhythm को अपना बनाएं</string>
+    <string name="onboarding_theme_desc">अपनी शैली से मेल खाने के लिए Rhythm की उपस्थिति को निजीकृत करें। अपनी सिस्टम थीम, फ़ॉन्ट, या Material You डायनामिक कलर्स (Android 12+) चुनें।</string>
+    <string name="onboarding_live_preview">लाइव प्रीव्यू</string>
+    <string name="onboarding_primary">Primary</string>
+    <string name="onboarding_container">Container</string>
+    <string name="onboarding_accent">Accent</string>
+    <string name="onboarding_advanced_custom">उन्नत कस्टमाइज़ेशन</string>
+    <string name="onboarding_advanced_custom_desc">कस्टम रंग योजनाएं, एल्बम आर्ट रंग और फ़ॉन्ट्स</string>
+    <string name="onboarding_more_tuner">सेटिंग्स में और कस्टमाइज़ेशन</string>
+    <string name="onboarding_tuner_1">कस्टम रंग योजनाएं और एल्बम आर्ट रंग निष्कर्षण</string>
+    <string name="onboarding_tuner_2">फ़ॉन्ट कस्टमाइज़ेशन और टाइपोग्राफी सेटिंग्स</string>
+    <string name="onboarding_tuner_3">उन्नत थीम विकल्प सेटिंग्स > थीम कस्टमाइज़ेशन में उपलब्ध हैं</string>
+    <string name="onboarding_step_progress">%2$d में से %1$d</string>
+    <string name="onboarding_advanced_customization">उन्नत कस्टमाइज़ेशन</string>
+    <string name="onboarding_advanced_customization_desc">कस्टम रंग योजनाएं, एल्बम आर्ट रंग और फ़ॉन्ट्स</string>
+    
+    <string name="onboarding_media_scan_title">अपनी संगीत लाइब्रेरी को फ़िल्टर करें</string>
+    <string name="onboarding_media_scan_desc">नियंत्रित करें कि आपकी लाइब्रेरी में कौन सी ऑडियो फ़ाइलें दिखाई दें। अवांछित फ़ाइलों (रिंगटोन, नोटिफिकेशन) को छिपाने के लिए ब्लैकलिस्ट मोड का उपयोग करें, या केवल विशिष्ट संगीत फ़ोल्डरों को दिखाने के लिए व्हाइटलिस्ट मोड का उपयोग करें।</string>
+    <string name="onboarding_media_scan_configure">मीडिया स्कैनिंग कॉन्फ़िगर करें</string>
+    <string name="onboarding_media_scan_current_mode">ब्लैकलिस्ट या व्हाइटलिस्ट मोड चुनें • वर्तमान: %1$s</string>
+    <string name="onboarding_media_scan_settings">मीडिया स्कैनिंग सेटिंग्स</string>
+    <string name="onboarding_media_scan_blacklist">ब्लैकलिस्ट मोड: विशिष्ट गाने और फ़ोल्डर छिपाएं (रिंगटोन, नोटिफिकेशन)</string>
+    <string name="onboarding_media_scan_whitelist">व्हाइटलिस्ट मोड: केवल चयनित फ़ोल्डरों के गाने दिखाएं</string>
+    <string name="onboarding_media_scan_configure_in_tuner">सेटिंग्स > मीडिया स्कैन में स्कैनिंग कॉन्फ़िगर करें</string>
+    <string name="onboarding_storage_title">स्टोरेज प्रबंधन</string>
+    <string name="onboarding_storage_desc">सेटिंग्स > कैश प्रबंधन में कैश आकार और स्टोरेज प्रबंधित करें</string>
+    
+    <string name="onboarding_complete_title">आप पूरी तरह तैयार हैं!</string>
+    <string name="onboarding_complete_desc">Rhythm बजने के लिए तैयार है! आपकी संगीत लाइब्रेरी बैकग्राउंड में स्कैन की जा रही है। यहां बताया गया है कि क्या कॉन्फ़िगर किया गया है:</string>
+    <string name="onboarding_whats_next">आगे क्या?</string>
+    <string name="onboarding_next_browse">अपने गाने, एल्बम और कलाकारों को ब्राउज़ करें</string>
+    <string name="onboarding_next_create">अपनी पहली प्लेलिस्ट बनाएं</string>
+    <string name="onboarding_next_finetune">इक्वलाइज़र के साथ ऑडियो को ठीक करें</string>
+    <string name="onboarding_next_explore">किसी भी समय और सेटिंग्स एक्सप्लोर करें</string>
+    <string name="onboarding_settings_change">सभी सेटिंग्स को सेटिंग्स में कभी भी बदला जा सकता है</string>
+    
+    <string name="onboarding_back">पीछे</string>
+    <string name="onboarding_next">आगे</string>
+    <string name="onboarding_checking">जांच हो रही है…</string>
+    <string name="onboarding_lets_go">चलो चलें!</string>
+    <string name="onboarding_finish_setup">सेटअप समाप्त करें</string>
+    <string name="onboarding_continue">जारी रखें</string>
+    <string name="onboarding_open_settings">सेटिंग्स खोलें</string>
+    <string name="onboarding_grant_access">एक्सेस प्रदान करें</string>
+    <string name="onboarding_language">भाषा</string>
+    
+    <string name="onboarding_permissions_granted_title">अनुमतियाँ प्रदान की गईं!</string>
+    <string name="onboarding_action_required_settings">कार्रवाई आवश्यक: सेटिंग्स खोलें</string>
+    <string name="onboarding_permissions_needed">अनुमतियों की आवश्यकता है</string>
+    <string name="onboarding_grant_permissions">अनुमतियाँ प्रदान करें</string>
+    <string name="onboarding_permissions_granted_desc">सभी आवश्यक अनुमतियाँ प्रदान कर दी गई हैं। आप आगे बढ़ने के लिए तैयार हैं!</string>
+    <string name="onboarding_redirect_settings_desc">आवश्यक अनुमतियाँ प्रदान करने के लिए, कृपया अपने डिवाइस पर ऐप सेटिंग्स पर जाएं।</string>
+    <string name="onboarding_rationale_desc">Rhythm को सही ढंग से कार्य करने के लिए कुछ अनुमतियों की आवश्यकता होती है। जारी रखने के लिए कृपया उन्हें प्रदान करें।</string>
+    <string name="onboarding_permissions_required_desc">Rhythm की सुविधाओं का पूरी तरह से उपयोग करने के लिए, हमें कुछ डिवाइस क्षमताओं तक पहुंचने के लिए आपकी अनुमति की आवश्यकता है।</string>
+    <string name="onboarding_permission_music_title">संगीत लाइब्रेरी एक्सेस</string>
+    <string name="onboarding_permission_music_desc">अपनी स्थानीय संगीत फ़ाइलों को पढ़ें और उन्हें ऐप में प्रदर्शित करें</string>
+    <string name="onboarding_permission_bluetooth_title">ब्लूटूथ कनेक्टिविटी</string>
+    <string name="onboarding_permission_bluetooth_desc">ब्लूटूथ स्पीकर, हेडफ़ोन और ऑडियो डिवाइस से कनेक्ट करें</string>
+    <string name="onboarding_permission_notifications_title">सूचनाएं (Notifications)</string>
+    <string name="onboarding_permission_notifications_desc">सूचनाओं में प्लेबैक कंट्रोल और संगीत जानकारी दिखाएं</string>
+    
+    <string name="onboarding_haptic_title">हैप्टिक फीडबैक</string>
+    <string name="onboarding_haptic_desc">अधिक स्पर्शनीय अनुभव के लिए इंटरैक्शन पर सूक्ष्म कंपन सक्षम करें।</string>
+    <string name="onboarding_default_screen_title">डिफ़ॉल्ट लैंडिंग स्क्रीन</string>
+    <string name="onboarding_default_screen_desc">चुनें कि जब आप Rhythm लॉन्च करते हैं तो कौन सी स्क्रीन खुलती है</string>
+    <string name="onboarding_system_volume_title">सिस्टम वॉल्यूम कंट्रोल</string>
+    <string name="onboarding_system_volume_desc">अपने डिवाइस के भौतिक वॉल्यूम बटन को Rhythm के प्लेबैक वॉल्यूम को नियंत्रित करने दें।</string>
+    <string name="onboarding_auto_queue_title">कतार में ऑटो जोड़ें</string>
+    <string name="onboarding_auto_queue_desc">गाना बजाते समय एल्बम/कलाकार से स्वचालित रूप से एक प्रासंगिक कतार बनाएं।</string>
+    <string name="onboarding_clear_queue_title">नए गाने पर कतार साफ करें</string>
+    <string name="onboarding_clear_queue_desc">कतार में जोड़ने के बजाय नया गाना बजाते समय पूरी कतार को बदलें।</string>
+    <string name="onboarding_repeat_mode_title">रिपीट मोड याद रखें</string>
+    <string name="onboarding_repeat_mode_desc">ऐप रीस्टार्ट होने पर अपनी रिपीट मोड सेटिंग बनाए रखें।</string>
+    <string name="onboarding_shuffle_mode_title">शफल मोड याद रखें</string>
+    <string name="onboarding_shuffle_mode_desc">ऐप रीस्टार्ट होने पर अपनी शफल चालू/बंद स्थिति बनाए रखें।</string>
+    <string name="onboarding_exoplayer_shuffle_title">ExoPlayer शफल का उपयोग करें</string>
+    <string name="onboarding_exoplayer_shuffle_desc">मीडिया प्लेयर को शफल संभालने दें (सुझाव: मैन्युअल शफल के लिए इसे बंद रखें)।</string>
+    <string name="onboarding_show_lyrics_title">लिरिक्स दिखाएं</string>
+    <string name="onboarding_show_lyrics_desc">अपने पसंदीदा गानों के लिए उपलब्ध होने पर सिंक्रनाइज़ किए गए लिरिक्स प्रदर्शित करें।</string>
+    <string name="onboarding_lyrics_source_title">लिरिक्स स्रोत प्राथमिकता</string>
+    <string name="onboarding_lyrics_source_desc">चुनें कि पहले किस लिरिक्स स्रोत को आज़माना है (दूसरों के लिए स्वचालित फ़ॉलबैक के साथ)</string>
+    
+    <string name="onboarding_tab_order_title">लाइब्रेरी टैब क्रम</string>
+    <string name="onboarding_tab_order_desc">गाने, प्लेलिस्ट, एल्बम, कलाकार और एक्सप्लोरर टैब को पुनः व्यवस्थित करें</string>
+    
+    <string name="onboarding_follow_system_title">सिस्टम थीम का पालन करें</string>
+    <string name="onboarding_follow_system_desc">अपने डिवाइस की सिस्टम सेटिंग्स के आधार पर लाइट और डार्क थीम के बीच स्वचालित रूप से स्विच करें।</string>
+    <string name="onboarding_dark_mode_title">डार्क मोड</string>
+    <string name="onboarding_dark_mode_desc">एप्लिकेशन के लिए डार्क मोड को मैन्युअल रूप से सक्षम या अक्षम करें।</string>
+    <string name="onboarding_dynamic_colors_title">डायनामिक कलर्स (Material You)</string>
+    <string name="onboarding_dynamic_colors_desc">एक सुसंगत लुक के लिए अपने डिवाइस के वॉलपेपर से निकाले गए रंगों को लागू करें।</string>
+    
+    <string name="onboarding_update_check_failed">अपडेट जांच विफल रही</string>
+    <string name="onboarding_ready_to_install">इंस्टॉल करने के लिए तैयार</string>
+    <string name="onboarding_downloading_update">अपडेट डाउनलोड हो रहा है</string>
+    <string name="onboarding_checking_updates">अपडेट के लिए जांच की जा रही है…</string>
+    <string name="onboarding_update_available">अपडेट उपलब्ध है</string>
+    <string name="onboarding_stay_up_to_date">अप टू डेट रहें</string>
+    <string name="onboarding_update_default_desc">GitHub से स्वचालित रूप से नवीनतम सुविधाएं, सुधार और बग फिक्स प्राप्त करें। स्थिर रिलीज़ (अनुशंसित) या नई सुविधाओं तक प्रारंभिक पहुंच के लिए बीटा बिल्ड के बीच चुनें। Google Play की आवश्यकता नहीं है।</string>
+    <string name="onboarding_enable_updates_title">अपडेट सक्षम करें</string>
+    <string name="onboarding_enable_updates_desc">ऐप को अपडेट जांचने और डाउनलोड करने की अनुमति दें</string>
+    <string name="onboarding_periodic_check_title">आवधिक जांच (Periodic Check)</string>
+    <string name="onboarding_periodic_check_desc">Rhythm के GitHub रेपो से स्वचालित रूप से अपडेट के लिए जांचें</string>
+    <string name="onboarding_update_notifications_title">अपडेट सूचनाएं</string>
+    <string name="onboarding_update_notifications_desc">नए संस्करण उपलब्ध होने पर सूचित करें</string>
+    <string name="onboarding_smart_polling_title">स्मार्ट पोलिंग</string>
+    <string name="onboarding_smart_polling_desc">GitHub API कॉल्स को बचाने के लिए कुशल जांच का उपयोग करें</string>
+    <string name="onboarding_check_interval_title">जांच अंतराल</string>
+    <string name="onboarding_check_interval_desc">अपडेट के लिए कितनी बार जांचना है</string>
+    <string name="onboarding_update_channel_title">अपडेट चैनल</string>
+    <string name="onboarding_update_channel_desc">स्थिर या बीटा संस्करण।</string>
+    <string name="fetching_latest_version">GitHub से नवीनतम संस्करण प्राप्त किया जा रहा है…</string>
+    
+    <string name="option_every_hour">हर घंटे</string>
+    <string name="option_every_3_hours">हर 3 घंटे में</string>
+    <string name="option_every_6_hours">हर 6 घंटे में</string>
+    <string name="option_every_12_hours">हर 12 घंटे में</string>
+    <string name="option_daily">रोज़ाना</string>
+    <string name="option_stable">स्थिर (Stable)</string>
+    <string name="option_beta">बीटा (Beta)</string>
+    <string name="option_home">होम</string>
+    <string name="option_library">लाइब्रेरी</string>
+    
+    <string name="onboarding_how_it_works">यह कैसे काम करता है</string>
+    
+    <string name="onboarding_library_configured">लाइब्रेरी कॉन्फ़िगर की गई</string>
+    <string name="onboarding_library_configured_desc">आपकी संगीत लाइब्रेरी संगठन प्राथमिकताएं सेट हैं</string>
+    <string name="onboarding_theme_applied">थीम लागू की गई</string>
+    <string name="onboarding_theme_applied_desc">आपकी कस्टम थीम और उपस्थिति सेटिंग्स तैयार हैं</string>
+    <string name="onboarding_backup_options">बैकअप विकल्प</string>
+    <string name="onboarding_backup_options_desc">ऑटो-बैकअप और रिस्टोरेशन सेटिंग्स कॉन्फ़िगर की गईं</string>
+    
+    <string name="onboarding_in_progress">प्रगति पर है</string>
+    <string name="onboarding_dismiss">खारिज करें</string>
+    <string name="onboarding_retry">पुनः प्रयास करें</string>
+    
+    <string name="miniplayer_swipe_up_hint">↑ फुल प्लेयर</string>
+    <string name="miniplayer_swipe_down_hint">↓ खारिज करें</string>
+    <string name="miniplayer_swipe_left_hint">अगला →</string>
+    <string name="miniplayer_swipe_right_hint">← पिछला</string>
+    <string name="miniplayer_no_song">कोई गाना नहीं बज रहा</string>
+    <string name="badge_live">लाइव</string>
+
+    <string name="festive_greeting_christmas">🎄 क्रिसमस की बधाई! 🎅</string>
+    <string name="festive_greeting_new_year">🎆 नव वर्ष की शुभकामनाएं! 🎉</string>
+    <string name="festive_greeting_halloween">🎃 हैलोवीन की शुभकामनाएं! 👻</string>
+    <string name="festive_greeting_valentines">💝 वैलेंटाइन डे की शुभकामनाएं! 💕</string>
+    
+    <string name="settings_tip_theme">रंगों, फ़ॉन्ट्स और उत्सव के प्रभावों के साथ अपनी थीम को कस्टमाइज़ करें</string>
+    <string name="settings_tip_haptic">स्पर्शनीय प्रतिक्रियाओं के लिए हैप्टिक फीडबैक सक्षम करें</string>
+    <string name="settings_tip_media_scan">अपनी लाइब्रेरी से अवांछित फ़ाइलों को छिपाने के लिए मीडिया स्कैन का उपयोग करें</string>
+    <string name="settings_default_screen">डिफ़ॉल्ट लैंडिंग स्क्रीन</string>
+    <string name="settings_default_screen_desc">अपनी शुरुआती स्क्रीन चुनें</string>
+    <string name="settings_home_desc">नया संगीत और अनुशंसाएं खोजें</string>
+    <string name="settings_library_desc">अपने संगीत संग्रह तक त्वरित पहुंच</string>
+    
+    <string name="cache_current_status">वर्तमान कैश स्थिति</string>
+    <string name="cache_calculating">कैश आकार की गणना की जा रही है…</string>
+    <string name="cache_total_size">कुल कैश आकार:</string>
+    <string name="cache_limit">कैश सीमा:</string>
+    <string name="cache_max_size">अधिकतम कैश आकार</string>
+    <string name="cache_max_size_desc">कैश किए गए डेटा के लिए अधिकतम आकार सेट करें</string>
+    <string name="cache_about">कैश के बारे में</string>
+    <string name="cache_size_limit">कैश आकार सीमा</string>
+    <string name="cache_clear_on_exit">बंद करने पर कैश साफ़ करें</string>
+    <string name="cache_clear_on_exit_desc">ऐप बंद होने पर कैश डेटा को स्वचालित रूप से साफ़ करें</string>
+    
+    <string name="lyrics_source_priority">लिरिक्स स्रोत प्राथमिकता</string>
+    <string name="lyrics_choose_source">चुनें कि लिरिक्स कहां खोजने हैं</string>
+    <string name="lyrics_embedded_note">एम्बेडेड लिरिक्स आपकी ऑडियो फ़ाइलों में ID3v2 USLT टैग्स से निकाले जाते हैं। सर्वोत्तम परिणामों के लिए, उचित रूप से टैग की गई MP3/FLAC फ़ाइलों का उपयोग करें।</string>
+    
+    <string name="theme_good_to_know">जानना अच्छा है</string>
+    <string name="theme_tip_album_art">एल्बम आर्ट के रंग आपके संगीत के अनुसार गतिशील रूप से बदलते हैं</string>
+    <string name="theme_tip_material_you">Material You सिस्टम वॉलपेपर रंगों का उपयोग करता है (Android 12+)</string>
+    <string name="theme_tip_custom_fonts">टाइपोग्राफी को निजीकृत करने के लिए कस्टम फ़ॉन्ट्स इम्पोर्ट करें</string>
+    <string name="theme_color_source">रंग स्रोत</string>
+    <string name="theme_color_source_desc">चुनें कि रंग कैसे निकाले जाते हैं</string>
+    <string name="theme_font_source">फ़ॉन्ट स्रोत</string>
+    <string name="theme_font_source_desc">चुनें कि फ़ॉन्ट कहां से लोड करना है</string>
+    <string name="theme_color_schemes">रंग योजनाएं</string>
+    <string name="theme_color_schemes_desc">प्रीसेट रंग योजनाओं में से चुनें</string>
+    <string name="theme_custom_picker">कस्टम कलर पिकर</string>
+    <string name="theme_custom_picker_desc">अपनी खुद की रंग योजना बनाएं</string>
+    <string name="theme_font_selection">फ़ॉन्ट चयन</string>
+    <string name="theme_font_selection_desc">उपलब्ध सिस्टम फ़ॉन्ट्स में से चुनें</string>
+    
+    <string name="playlist_no_songs_yet">अभी तक कोई गाना नहीं</string>
+    
+    <string name="backup_title">बैकअप और रिस्टोर</string>
+    <string name="backup_desc">अपनी व्यक्तिगत सेटिंग्स, प्लेलिस्ट और प्राथमिकताओं को सुरक्षित रखें। मैन्युअल रूप से बैकअप बनाएं या मानसिक शांति के लिए स्वचालित साप्ताहिक बैकअप सक्षम करें।</string>
+    <string name="backup_auto_weekly">साप्ताहिक रूप से सेटिंग्स का स्वचालित बैकअप लें</string>
+    <string name="backup_choose_save_location">चुनें कि अपनी बैकअप फ़ाइल कहां सहेजना है</string>
+    <string name="backup_paste_data">बैकअप डेटा पेस्ट करें</string>
+    <string name="backup_select_file">बैकअप फ़ाइल चुनें</string>
+    <string name="backup_whats_included">बैकअप में क्या शामिल है?</string>
+    <string name="backup_included_1">सभी सेटिंग्स, प्लेलिस्ट, थीम्स और लाइब्रेरी कस्टमाइज़ेशन</string>
+    <string name="backup_included_2">फ़ाइलों या क्लिपबोर्ड से एक टैप में रिस्टोर करें</string>
+    <string name="backup_included_3">गोपनीयता के लिए बैकअप आपके डिवाइस पर स्थानीय रूप से संग्रहीत होते हैं</string>
+    <string name="backup_manage">बैकअप प्रबंधित करें</string>
+    <string name="backup_restore">बैकअप रिस्टोर करें</string>
+    
+    <string name="blacklist_title">ब्लैकलिस्ट प्रबंधन</string>
+    <string name="blacklist_desc">ब्लॉक किए गए गाने और फ़ोल्डर खोज परिणामों, अनुशंसाओं या ऑटो-प्ले कतारों में दिखाई नहीं देंगे</string>
+    <string name="blacklist_songs">ब्लैकलिस्ट किए गए गाने</string>
+    <string name="blacklist_no_songs">कोई ब्लैकलिस्ट किया गया गाना नहीं</string>
+    <string name="blacklist_all_available">आपके सभी गाने प्लेबैक के लिए उपलब्ध हैं</string>
+    <string name="blacklist_add_folder">ब्लैकलिस्ट में फ़ोल्डर जोड़ें</string>
+    <string name="blacklist_folders">ब्लैकलिस्ट किए गए फ़ोल्डर</string>
+    <string name="blacklist_no_folders">कोई ब्लैकलिस्ट किया गया फ़ोल्डर नहीं</string>
+    <string name="blacklist_tap_to_add">ब्लैकलिस्ट में फ़ोल्डर जोड़ने के लिए ऊपर दिए गए बटन पर टैप करें</string>
+    <string name="blacklist_blocked_songs">ब्लॉक किए गए गाने</string>
+    <string name="blacklist_available_songs">उपलब्ध गाने</string>
+    
+    <string name="queue_empty">आपकी कतार खाली है</string>
+    <string name="queue_add_songs">सुनना शुरू करने के लिए अपनी लाइब्रेरी से गाने जोड़ें</string>
+    <string name="queue_no_more">कतार में और गाने नहीं हैं</string>
+    <string name="queue_add_more">संगीत जारी रखने के लिए और गाने जोड़ें</string>
+    
+    <string name="playlist_create">प्लेलिस्ट बनाएं</string>
+    <string name="playlist_name_empty">प्लेलिस्ट का नाम खाली नहीं हो सकता</string>
+    <string name="playlist_queue_not_empty">कतार खाली नहीं है</string>
+    <string name="playlist_queue_songs">वर्तमान कतार में आपके पास %1$d गाना%2$s है।</string>
+    <string name="playlist_how_play">आप \"%1$s\" को कैसे बजाना चाहेंगे?</string>
+    
+    <string name="licenses_title">ओपन सोर्स लाइसेंस</string>
+    <string name="licenses_desc">अद्भुत ओपन सोर्स प्रोजेक्ट्स के साथ निर्मित</string>
+    <string name="licenses_apache">Apache License 2.0</string>
+    <string name="licenses_attribution">सभी लाइब्रेरी उचित एट्रिब्यूशन के साथ उपयोग, पुनरुत्पादन और वितरण की अनुमति देती हैं</string>
+    
+    <string name="player_chip_order_title">प्लेयर चिप क्रम</string>
+    <string name="player_chip_order_desc">प्लेयर चिप्स को कस्टमाइज़ करें</string>
+    <string name="player_chip_reset">डिफ़ॉल्ट पर रीसेट करें</string>
+    
+    <string name="library_tab_order_title">लाइब्रेरी टैब क्रम</string>
+    <string name="library_tab_order_desc">पुनः व्यवस्थित करें और दृश्यता टॉगल करें</string>
+    
+    <string name="playback_lyrics_priority">लिरिक्स स्रोत प्राथमिकता</string>
+    <string name="playback_lyrics_priority_desc">चुनें कि लिरिक्स के लिए पहले किस स्रोत की जांच करनी है</string>
+    <string name="playback_settings">प्लेबैक सेटिंग्स</string>
+    <string name="playback_audio_settings">ऑडियो सेटिंग्स</string>
+    <string name="playback_active_device">सक्रिय डिवाइस</string>
+    <string name="playback_no_device">कोई डिवाइस कनेक्ट नहीं है</string>
+    <string name="playback_tap_output">आउटपुट चुनने के लिए टैप करें</string>
+    
+    <string name="lyrics_sync_adjustment">सिंक समायोजन</string>
+    <string name="lyrics_sync_note">सिंक समायोजन केवल समय-सिंक किए गए लिरिक्स (LRC प्रारूप) के साथ काम करता है। यदि उपलब्ध हो तो सिंक किए गए लिरिक्स लाने के लिए रीसेट का उपयोग करें।</string>
+    <string name="lyrics_placeholder">यहाँ लिरिक्स दर्ज करें…\n\nआप LRC प्रारूप का उपयोग कर सकते हैं:\n[00:12.00] पहली पंक्ति\n[00:17.00] दूसरी पंक्ति</string>
+    <string name="lyrics_editor_title">लिरिक्स एडिटर</string>
+    
+    <string name="song_info_title">गाने की जानकारी</string>
+    <string name="song_info_no_metadata">कोई मेटाडेटा उपलब्ध नहीं है</string>
+    <string name="song_info_permission">इस ऑडियो फ़ाइल के मेटाडेटा को संशोधित करने के लिए Rhythm को अनुमति की आवश्यकता है। आपको एक्सेस के लिए एक सिस्टम डायलॉग दिखाई दे सकता है - कृपया अपने परिवर्तनों को सहेजने के लिए इसकी अनुमति दें।</string>
+    
+    <string name="add_to_playlists">प्लेलिस्ट में जोड़ें</string>
+    <string name="add_to_playlist_action">प्लेलिस्ट में जोड़ें</string>
+    <string name="playlist_create_new">नई प्लेलिस्ट बनाएं</string>
+    <string name="playlist_create_first">गाने जोड़ने के लिए अपनी पहली प्लेलिस्ट बनाएं</string>
+    
+    <string name="cache_management">कैश प्रबंधन</string>
+    <string name="cache_manage_desc">छवियों, अस्थायी फ़ाइलों और अन्य ऐप डेटा सहित कैश किए गए डेटा को प्रबंधित करें।</string>
+    
+    <string name="beta_welcome">बीटा प्रोग्राम में आपका स्वागत है!</string>
+    <string name="beta_desc">आप वर्तमान में Rhythm के बीटा रिलीज़ का उपयोग कर रहे हैं। यह संस्करण अभी भी विकास में है और इसमें बग, अधूरी सुविधाएं या अप्रत्याशित व्यवहार हो सकता है।</string>
+    
+    <string name="equalizer_disabled">इक्वलाइज़र अक्षम है</string>
+    <string name="equalizer_enable_desc">अपने ऑडियो अनुभव को कस्टमाइज़ करने के लिए इक्वलाइज़र सक्षम करें।</string>
+    <string name="equalizer_open_system">सिस्टम इक्वलाइज़र खोलें</string>
+    
+    <string name="theme_color_schemes_unavailable">रंग योजनाएं केवल कस्टम रंग स्रोत का उपयोग करते समय उपलब्ध हैं।</string>
+    <string name="theme_color_schemes_switch">प्रीडिवाइंड योजनाओं तक पहुंचने के लिए रंग स्रोत सेटिंग में \'कस्टम\' पर स्विच करें।</string>    <string name="theme_custom_colors_unavailable">कस्टम रंग केवल कस्टम रंग स्रोत का उपयोग करते समय उपलब्ध हैं।</string>
+    <string name="theme_custom_colors_switch">अपने खुद के रंग बनाने के लिए रंग स्रोत सेटिंग में \'कस्टम\' पर स्विच करें।</string>    <string name="theme_system_fonts_unavailable">सिस्टम फ़ॉन्ट्स केवल सिस्टम फ़ॉन्ट स्रोत का उपयोग करते समय उपलब्ध हैं।</string>
+    <string name="theme_system_fonts_switch">उपलब्ध फ़ॉन्ट्स में से चुनने के लिए फ़ॉन्ट स्रोत सेटिंग में \'सिस्टम\' पर स्विच करें।</string>    
+    <string name="backup_whats_included_placeholder">बैकअप में क्या शामिल है?</string>
+    <string name="backup_all_settings_placeholder">सभी सेटिंग्स, प्लेलिस्ट, थीम्स और लाइब्रेरी कस्टमाइज़ेशन</string>
+    <string name="backup_restore_tap_placeholder">फ़ाइलों या क्लिपबोर्ड से एक टैप में रिस्टोर करें</string>
+    <string name="backup_local_storage_placeholder">गोपनीयता के लिए बैकअप आपके डिवाइस पर स्थानीय रूप से संग्रहीत होते हैं</string>
+    <string name="library_reorder_tabs">अपने लाइब्रेरी अनुभव को कस्टमाइज़ करने के लिए टैब को पुनः व्यवस्थित करें</string>
+    <string name="external_services_desc">नियंत्रित करें कि आपके संगीत अनुभव को बढ़ाने के लिए कौन सी बाहरी API सेवाएं सक्रिय हैं। डेटा उपयोग और कार्यक्षमता को प्रबंधित करने के लिए सेवाओं को चालू/बंद करें।</string>
+    <string name="lyrics_source_priority_title">लिरिक्स स्रोत प्राथमिकता</string>
+    <string name="lyrics_source_priority_desc_placeholder">चुनें कि Rhythm को पहले लिरिक्स के लिए कहां देखना चाहिए</string>
+    <string name="playlist_action_title">प्लेलिस्ट कार्रवाई</string>
+    <string name="playlist_action_desc">चुनें कि प्लेलिस्ट में किसी गाने को टैप करने पर क्या होता है</string>
+    <string name="playlist_action_choose">प्लेलिस्ट में गाने टैप करते समय डिफ़ॉल्ट व्यवहार चुनें</string>
+    <string name="playlist_action_ask_title">हर बार पूछें</string>
+    <string name="playlist_action_ask_desc">चुनने के लिए विकल्पों के साथ डायलॉग दिखाएं</string>
+    <string name="playlist_action_load_title">पूरी प्लेलिस्ट लोड करें</string>
+    <string name="playlist_action_load_desc">कतार बदलें और चयनित गाने से बजाएं</string>
+    <string name="playlist_action_single_title">केवल यह गाना बजाएं</string>
+    <string name="playlist_action_single_desc">कतार को न बदलें</string>
+    <string name="queue_action_title">कतार कार्रवाई</string>
+    <string name="queue_action_desc">चुनें कि जब आप कतार खाली न होने पर गाना बजाते हैं तो क्या होता है</string>
+    <string name="queue_action_choose">चुनें कि कतार खाली न होने पर गाना बजाते समय क्या होता है</string>
+    <string name="queue_action_ask_title">हर बार पूछें</string>
+    <string name="queue_action_ask_desc">\'साफ़ करें और बजाएं\' और \'कतार में जोड़ें\' विकल्पों के साथ डायलॉग दिखाएं</string>    <string name="queue_action_replace_title">कतार बदलें (Replace queue)</string>
+    <string name="queue_action_replace_desc">कतार साफ़ करें और चयनित गाना बजाएं</string>
+    <string name="queue_action_next_title">अगला बजाएं</string>
+    <string name="queue_action_next_desc">वर्तमान में बज रहे गाने के बाद जोड़ें</string>
+    <string name="queue_action_add_title">कतार में जोड़ें</string>
+    <string name="queue_action_add_desc">कतार के अंत में गाना जोड़ें</string>
+    <string name="queue_action_always_add_title">हमेशा कतार में जोड़ें</string>
+    <string name="queue_action_always_add_desc">बिना पूछे गानों को स्वचालित रूप से कतार में जोड़ें</string>
+    
+    <string name="now_playing">अभी बज रहा है</string>
+    <string name="skip_for_now">अभी के लिए छोड़ें</string>
+    <string name="install_update_now">अभी अपडेट इंस्टॉल करें</string>
+    <string name="audio_settings">ऑडियो सेटिंग्स</string>
+    <string name="active_device">सक्रिय डिवाइस</string>
+    <string name="tap_select_output">आउटपुट चुनने के लिए टैप करें</string>
+    <string name="browse_library">लाइब्रेरी ब्राउज़ करें</string>
+    <string name="add_more_songs">और गाने जोड़ें</string>
+    <string name="blocked_folders">ब्लॉक किए गए फ़ोल्डर</string>
+    <string name="last_backup">अंतिम बैकअप</string>
+    <string name="auto_backup">ऑटो बैकअप</string>
+    <string name="manage_backup">बैकअप प्रबंधित करें</string>
+    <string name="restore_backup">बैकअप रिस्टोर करें</string>
+    <string name="edit_metadata">मेटाडेटा संपादित करें</string>
+    
+    <string name="updates_disabled_message">सेटिंग्स में ऐप अपडेट अक्षम कर दिए गए हैं</string>
+    <string name="updates_auto_disabled">स्वचालित अपडेट जांच अक्षम है। आप अभी भी मैनुअल रूप से जांच कर सकते हैं।</string>
+    <string name="updates_up_to_date_message">आप अप टू डेट हैं!</string>
+    <string name="updates_check_frequency">Rhythm को अपडेट के लिए कितनी बार जांच करनी चाहिए?</string>
+    <string name="updates_experimental_coming">भविष्य के अपडेट में और प्रयोगात्मक सुविधाएं जल्द आ रही हैं</string>
+    
+    <string name="cache_total_size_label">कुल कैश आकार:</string>
+    <string name="cache_limit_label">कैश सीमा:</string>
+    
+    <string name="theme_featured_schemes">विशेष योजनाएं (Featured Schemes)</string>
+    <string name="theme_more_schemes">अधिक योजनाएं</string>
+    <string name="theme_quick_presets">क्विक प्रीसेट</string>
+    <string name="theme_advanced_rgb">उन्नत RGB कंट्रोल</string>
+    <string name="theme_font_preview">The quick brown fox jumps over the lazy dog</string>
+    
+    <string name="external_services">बाहरी सेवाएं</string>
+    <string name="api_services">API सेवाएं</string>
+    
+    <string name="equalizer">इक्वलाइज़र</string>
+    <string name="frequency_bands">फ़्रीक्वेंसी बैंड</string>
+    <string name="frequency_response">फ़्रीक्वेंसी रिस्पांस</string>
+    <string name="audio_effects">ऑडियो प्रभाव</string>
+    <string name="virtualizer">वर्चुअलाइज़र</string>
+    <string name="system_equalizer">सिस्टम इक्वलाइज़र</string>
+    <string name="system_equalizer_desc">अपने डिवाइस के इनबिल्ट इक्वलाइज़र को एक्सेस करें</string>
+    
+    <string name="sleep_timer">स्लीप टाइमर</string>
+    <string name="sleep_timer_coming_soon">स्लीप टाइमर कंट्रोल यहां लागू किए जाएंगे</string>
+    <string name="sleep_timer_quick">क्विक टाइमर</string>
+    <string name="sleep_timer_custom">कस्टम टाइमर</string>
+    <string name="sleep_timer_custom_desc">एक विशिष्ट समय अवधि निर्धारित करें</string>
+    <string name="sleep_timer_action">टाइमर कार्रवाई</string>
+    <string name="sleep_timer_action_desc">टाइमर समाप्त होने पर क्या होता है</string>
+    <string name="sleep_timer_select_duration">टाइमर अवधि चुनें</string>
+    <string name="sleep_timer_set_hours_minutes">स्लीप टाइमर के लिए घंटे और मिनट सेट करें</string>
+    <string name="coming_soon">जल्द आ रहा है</string>
+    
+    <string name="crash_reports">क्रैश रिपोर्ट</string>
+    <string name="crashed_on">%1$s को क्रैश हुआ</string>
+    
+    <string name="about_lyrics_sources">लिरिक्स स्रोतों के बारे में</string>
+    <string name="sync_adjustment">सिंक समायोजन</string>
+    <string name="synced_lyrics_unavailable">इस प्रारूप के लिए सिंक्रनाइज़ किए गए लिरिक्स उपलब्ध नहीं हैं।</string>
+    <string name="word_by_word_unavailable">शब्द-दर-शब्द लिरिक्स उपलब्ध नहीं हैं।</string>
+    
+    <string name="exporting_playlists">प्लेलिस्ट एक्सपोर्ट की जा रही हैं…</string>
+    <string name="exporting_to_location">चयनित स्थान पर प्लेलिस्ट एक्सपोर्ट की जा रही हैं…</string>
+    <string name="importing_playlist">प्लेलिस्ट इम्पोर्ट की जा रही है…</string>
+    
+    <string name="restart_app">ऐप रीस्टार्ट करें?</string>
+    <string name="export_playlist">प्लेलिस्ट एक्सपोर्ट करें</string>
+    <string name="export_all_playlists">सभी प्लेलिस्ट एक्सपोर्ट करें</string>
+    <string name="export_count_playlists">%1$d प्लेलिस्ट को यहां एक्सपोर्ट करें:</string>
+    <string name="include_default_playlists">डिफ़ॉल्ट प्लेलिस्ट शामिल करें (पसंदीदा, हाल ही में जोड़े गए, सबसे ज्यादा बजाए गए)</string>
+    <string name="import_playlist">प्लेलिस्ट इम्पोर्ट करें</string>
+    <string name="select_playlist_file">इम्पोर्ट करने के लिए एक प्लेलिस्ट फ़ाइल चुनें:</string>
+    <string name="supported_formats">समर्थित प्रारूप:</string>
+    <string name="may_take_moments">इसमें कुछ पल लग सकते हैं…</string>
+    
+    <string name="canvas_unavailable">कैनवास उपलब्ध नहीं है</string>
+    <string name="canvas_couldnt_load">कैनवास लोड नहीं हो सका</string>
+    
+    <string name="beta_program">बीटा प्रोग्राम</string>
+    <string name="lets_go">चलो चलें! 🎵</string>
+    
+    <string name="special_thanks">विशेष धन्यवाद</string>
+    
+    <plurals name="playlist_count">
+        <item quantity="one">प्लेलिस्ट</item>
+        <item quantity="other">प्लेलिस्ट</item>
+    </plurals>
+    
+    <string name="action_ok">ठीक है (OK)</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_save">सहेजें (Save)</string>
+    <string name="action_create">बनाएं</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_remove">हटाएं (Remove)</string>
+    <string name="action_export">एक्सपोर्ट</string>
+    <string name="action_export_all">सभी एक्सपोर्ट करें</string>
+    <string name="action_import">इम्पोर्ट</string>
+    <string name="action_browse_files">फ़ाइलें ब्राउज़ करें</string>
+    <string name="action_close">बंद करें</string>
+    <string name="action_reset">रीसेट</string>
+    <string name="action_apply">लागू करें</string>
+    <string name="action_continue">जारी रखें</string>
+    <string name="action_proceed">आगे बढ़ें</string>
+    <string name="action_later">बाद में</string>
+    <string name="action_retry">पुनः प्रयास करें</string>
+    <string name="action_add">जोड़ें</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_change">बदलें</string>
+    <string name="action_choose">चुनें</string>
+    <string name="action_default">डिफ़ॉल्ट</string>
+    <string name="action_play">चलाएं</string>
+    <string name="action_shuffle">शफल</string>
+    
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_section_appearance">दिखावट</string>
+    <string name="settings_theme_customization">थीम</string>
+    <string name="settings_theme_customization_desc">रंग, फ़ॉन्ट्स और दिखावट कस्टमाइज़ करें</string>
+    <string name="settings_library_tab_order">लाइब्रेरी टैब क्रम</string>
+    <string name="settings_library_tab_order_desc">लाइब्रेरी में टैब को पुनः व्यवस्थित करें</string>
+    <string name="settings_section_user_interface">यूज़र इंटरफ़ेस</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_language_desc">ऐप की भाषा बदलें</string>
+    <string name="settings_haptic_feedback">हैप्टिक फीडबैक</string>
+    <string name="settings_haptic_feedback_desc">बटन टैप करने पर कंपन करें</string>
+    <string name="settings_section_audio_playback">ऑडियो और प्लेबैक</string>
+    <string name="settings_system_volume">सिस्टम वॉल्यूम</string>
+    <string name="settings_system_volume_desc">प्लेबैक के लिए डिवाइस वॉल्यूम का उपयोग करें</string>
+    <string name="settings_show_lyrics">लिरिक्स दिखाएं</string>
+    <string name="settings_show_lyrics_desc">उपलब्ध होने पर लिरिक्स प्रदर्शित करें</string>
+    <string name="settings_queue_playback_title">कतार और प्लेबैक</string>
+    <string name="settings_queue_playback_desc">कतार और प्लेबैक व्यवहार कॉन्फ़िगर करें</string>
+    <string name="settings_equalizer_title">इक्वलाइज़र</string>
+    <string name="settings_equalizer_desc">ऑडियो आवृत्तियों और प्रभावों को समायोजित करें</string>
+    <string name="settings_sleep_timer_title">स्लीप टाइमर</string>
+    <string name="settings_sleep_timer_desc">निर्धारित समय के बाद प्लेबैक ऑटो-स्टॉप करें</string>
+    <string name="settings_section_library_content">लाइब्रेरी और सामग्री</string>
+    <string name="settings_group_by_album_artist">एल्बम कलाकार द्वारा समूहित करें</string>
+    <string name="settings_group_by_album_artist_desc">मुख्य कलाकार के तहत सहयोग एल्बम दिखाएं</string>
+    <string name="settings_media_scan_title">मीडिया स्कैन</string>
+    <string name="settings_media_scan_desc">ब्लैकलिस्ट और मीडिया स्कैनिंग प्रबंधित करें</string>
+    <string name="settings_playlists_title">प्लेलिस्ट</string>
+    <string name="settings_playlists_desc">अपनी प्लेलिस्ट प्रबंधित करें</string>
+    <string name="settings_section_storage_data">स्टोरेज और डेटा</string>
+    <string name="settings_cache_management_title">कैश प्रबंधन</string>
+    <string name="settings_cache_management_desc">कैश आकार और समाशोधन (Clearing) को नियंत्रित करें</string>
+    <string name="settings_backup_restore_title">बैकअप और रिस्टोर</string>
+    <string name="settings_backup_restore_desc">सेटिंग्स और प्लेलिस्ट को सुरक्षित रखें</string>
+    <string name="settings_section_services">सेवाएं</string>
+    <string name="settings_api_management">API प्रबंधन</string>
+    <string name="settings_api_management_desc">बाहरी API सेवाओं को कॉन्फ़िगर करें</string>
+    <string name="settings_section_updates_info">अपडेट और जानकारी</string>
+    <string name="settings_updates_title">अपडेट</string>
+    <string name="settings_updates_desc">ऐप अपडेट के लिए जांचें</string>
+    <string name="settings_about_title">के बारे में (About)</string>
+    <string name="settings_about_desc">ऐप संस्करण और जानकारी</string>
+    <string name="settings_section_advanced">उन्नत</string>
+    <string name="settings_crash_log_history">क्रैश लॉग इतिहास</string>
+    <string name="settings_crash_log_history_desc">क्रैश रिपोर्ट देखें और प्रबंधित करें</string>
+    <string name="settings_experimental_features">प्रयोगात्मक सुविधाएं</string>
+    <string name="settings_experimental_features_desc">अत्याधुनिक सुविधाओं को आज़माएं</string>
+    
+    <string name="playlist_rename_action">प्लेलिस्ट का नाम बदलें</string>
+    <string name="playlist_delete_action">प्लेलिस्ट हटाएं</string>
+    <string name="playlist_search">गाने खोजें</string>
+    <string name="playlist_search_in">प्लेलिस्ट में गाने खोजें</string>
+    <string name="playlist_no_songs_available">कोई गाना उपलब्ध नहीं है</string>
+    <string name="playlist_all_in_playlist">सभी गाने पहले से ही इस प्लेलिस्ट में हैं।</string>
+    <string name="playlist_name_field">प्लेलिस्ट का नाम</string>
+    <string name="playlist_delete_confirm">क्या आप वाकई \'%1$s\' को हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।</string>
+    
+    <string name="player_load_lyrics">लिरिक्स लोड करें</string>
+    <string name="player_retry_canvas">कैनवास पुनः प्रयास करें</string>
+    
+    <string name="search_songs_count">गाने (%1$d)</string>
+    <string name="search_albums_count">एल्बम (%1$d)</string>
+    <string name="search_artists_count">कलाकार (%1$d)</string>
+    <string name="search_playlists_count">प्लेलिस्ट (%1$d)</string>
+    
+    <string name="metadata_title">शीर्षक</string>
+    <string name="metadata_artist">कलाकार</string>
+    <string name="metadata_album">एल्बम</string>
+    <string name="metadata_genre">शैली (Genre)</string>
+    <string name="metadata_year">वर्ष</string>
+    <string name="metadata_track">ट्रैक</string>
+    <string name="metadata_saving">सहेजा जा रहा है...</string>
+    <string name="metadata_save_changes">परिवर्तन सहेजें</string>
+    <string name="metadata_irreversible_changes">अपरिवर्तनीय परिवर्तन</string>
+    <string name="metadata_media_access_required">मीडिया एक्सेस आवश्यक</string>
+    
+    <string name="updates_check_now_action">अभी जांचें</string>
+    <string name="updates_check_again">पुनः जांचें</string>
+    <string name="updates_download">अपडेट डाउनलोड करें</string>
+    <string name="updates_install">अपडेट इंस्टॉल करें</string>
+    <string name="updates_cancel">डाउनलोड रद्द करें</string>
+    <string name="updates_enable_auto_check">ऑटो-चेक सक्षम करें</string>
+    <string name="updates_channel_title">अपडेट चैनल</string>
+    <string name="updates_check_interval_title">अपडेट जांच अंतराल</string>
+    
+    <string name="cache_clearing">कैश साफ़ किया जा रहा है…</string>
+    <string name="cache_cleared">कैश साफ़ हो गया!</string>
+    <string name="cache_clear_all">सभी कैश साफ़ करें</string>
+    <string name="cache_clearing_lyrics">लिरिक्स साफ़ किए जा रहे हैं…</string>
+    <string name="cache_lyrics_cleared">लिरिक्स कैश साफ़ हो गया!</string>
+    <string name="cache_clear_lyrics_only">केवल लिरिक्स कैश साफ़ करें</string>
+    
+    <string name="backup_created_success">बैकअप सफलतापूर्वक बनाया गया</string>
+    <string name="backup_restore_success">रिस्टोर सफलतापूर्वक पूरा हुआ</string>
+    <string name="backup_restart_now">अभी रीस्टार्ट करें</string>
+    <string name="backup_continue_without_restart">रीस्टार्ट किए बिना जारी रखें</string>
+    <string name="backup_error_title">त्रुटि</string>
+    
+    <string name="import_export_json_format">JSON प्रारूप</string>
+    <string name="import_export_pls_format">PLS प्लेलिस्ट</string>
+    <string name="import_complete_title">इम्पोर्ट पूर्ण</string>
+    <string name="import_complete_message">सफलतापूर्वक %1$d प्लेलिस्ट इम्पोर्ट की गईं।\n%2$s\n\nपरिवर्तनों को लागू करने के लिए ऐप को रीस्टार्ट करें।</string>
+    <string name="import_restart_app">ऐप रीस्टार्ट करें</string>
+    
+    <string name="sleep_timer_set_custom">कस्टम समय सेट करें</string>
+    <string name="sleep_timer_set">टाइमर सेट करें</string>
+    
+    <string name="crash_logs_clear_all">सभी लॉग साफ़ करें</string>
+    <string name="crash_logs_test">टेस्ट क्रैश</string>
+    <string name="crash_logs_copy">लॉग कॉपी करें</string>
+    <string name="crash_logs_details_title">क्रैश लॉग विवरण</string>
+    
+    <string name="cd_back">पीछे</string>
+    <string name="cd_navigate_back">वापस जाएं</string>
+    <string name="cd_play">चलाएं</string>
+    <string name="cd_play_all">सभी चलाएं</string>
+    <string name="cd_shuffle">शफल</string>
+    <string name="cd_play_album">एल्बम चलाएं</string>
+    <string name="cd_shuffle_play">शफल प्ले</string>
+    <string name="cd_previous_track">पिछला ट्रैक</string>
+    <string name="cd_next_track">अगला ट्रैक</string>
+    <string name="cd_seek_back">10 सेकंड पीछे जाएं</string>
+    <string name="cd_seek_forward">10 सेकंड आगे जाएं</string>
+    <string name="cd_more_options">अधिक विकल्प</string>
+    <string name="cd_filters">फ़िल्टर</string>
+    <string name="cd_clear_search">खोज साफ़ करें</string>
+    <string name="cd_refresh">रिफ्रेश</string>
+    <string name="cd_reorder_tabs">टैब पुनः व्यवस्थित करें</string>
+    <string name="cd_toggle_view_type">दृश्य प्रकार टॉगल करें</string>
+    <string name="cd_open_playlist">प्लेलिस्ट खोलें</string>
+    <string name="cd_ascending">आरोही</string>
+    <string name="cd_descending">अवरोही</string>
+    <string name="cd_artist_image">कलाकार %1$s</string>
+    <string name="cd_play_artist">%1$s चलाएं</string>
+    <string name="cd_storage">स्टोरेज</string>
+    <string name="cd_pinned">पिन किए गए</string>
+    <string name="cd_folder">फ़ोल्डर</string>
+    <string name="cd_open_folder">फ़ोल्डर खोलें</string>
+    <string name="cd_folder_options">फ़ोल्डर विकल्प</string>
+    <string name="cd_export_playlists">प्लेलिस्ट एक्सपोर्ट करें</string>
+    <string name="cd_import_playlist">प्लेलिस्ट इम्पोर्ट करें</string>
+    <string name="cd_create_playlist">प्लेलिस्ट बनाएं</string>
+    <string name="cd_create_new_playlist">नई प्लेलिस्ट बनाएं</string>
+    <string name="cd_home">होम</string>
+    <string name="cd_current_location">वर्तमान स्थान</string>
+    <string name="cd_item_icon">%1$s आइकन</string>
+    <string name="cd_open_storage">स्टोरेज खोलें</string>
+    <string name="cd_minimize">छोटा करें (Minimize)</string>
+    <string name="cd_song_info">गाने की जानकारी</string>
+    <string name="cd_album_artwork">%1$s के लिए एल्बम आर्टवर्क</string>
+    <string name="cd_no_song_playing">कोई गाना नहीं बज रहा</string>
+    <string name="cd_toggle_shuffle">शफल टॉगल करें</string>
+    <string name="cd_toggle_lyrics">लिरिक्स टॉगल करें</string>
+    <string name="cd_toggle_repeat_mode">रिपीट मोड टॉगल करें</string>
+    <string name="cd_show_actions">कार्रवाई दिखाएं</string>
+    <string name="cd_add_to_playlist_action">प्लेलिस्ट में जोड़ें</string>
+    <string name="cd_toggle_favorite">पसंदीदा टॉगल करें</string>
+    <string name="cd_playback_speed_action">प्लेबैक गति</string>
+    <string name="cd_show_album">एल्बम दिखाएं</string>
+    <string name="cd_show_artist">कलाकार दिखाएं</string>
+    <string name="cd_reorder_chips">चिप्स पुनः व्यवस्थित करें</string>
+    <string name="cd_search">खोजें</string>
+    <string name="cd_view_all">सभी देखें</string>
+    <string name="cd_albums">एल्बम</string>
+    <string name="cd_artists">कलाकार</string>
+    <string name="cd_songs">गाने</string>
+    <string name="cd_rhythm_splash">Rhythm</string>
+    <string name="cd_search_in_playlist">प्लेलिस्ट में गाने खोजें</string>
+    <string name="cd_shuffle_play_action">शफल प्ले</string>
+    <string name="cd_add_songs_to_playlist">प्लेलिस्ट में गाने जोड़ें</string>
+    <string name="cd_remove_from_playlist">प्लेलिस्ट से हटाएं</string>
+    <string name="cd_change_language">भाषा बदलें</string>
+    <string name="cd_permissions">अनुमतियाँ</string>
+    <string name="cd_backup_restore">बैकअप और रिस्टोर</string>
+    <string name="cd_open_backup_restore">बैकअप और रिस्टोर खोलें</string>
+    <string name="cd_audio_playback_settings">ऑडियो और प्लेबैक सेटिंग्स</string>
+    <string name="cd_library_setup">लाइब्रेरी सेटअप</string>
+    <string name="cd_open_settings">खोलें</string>
+    <string name="cd_theming">थीमिंग</string>
+    <string name="cd_open_theme_customization">थीम कस्टमाइज़ेशन खोलें</string>
+    <string name="cd_show_options">विकल्प दिखाएं</string>
+    <string name="cd_app_updates">ऐप अपडेट</string>
+    <string name="cd_completed">पूरा हुआ</string>
+    <string name="cd_media_scan_filtering">मीडिया स्कैन फ़िल्टरिंग</string>
+    <string name="cd_open_media_scan_settings">मीडिया स्कैन सेटिंग्स खोलें</string>
+    <string name="cd_close">बंद करें</string>
+    <string name="cd_album_artwork_generic">एल्बम आर्टवर्क</string>
+    <string name="cd_language">भाषा</string>
+    <string name="cd_view_license">लाइसेंस देखें</string>
+    <string name="cd_refresh_devices">डिवाइस रिफ्रेश करें</string>
+    <string name="cd_switch_device">डिवाइस स्विच करें</string>
+    <string name="cd_volume">वॉल्यूम</string>
+    <string name="cd_decrease_volume">वॉल्यूम कम करें</string>
+    <string name="cd_increase_volume">वॉल्यूम बढ़ाएं</string>
+    <string name="cd_playback_speed">प्लेबैक गति</string>
+    <string name="cd_playback_settings">प्लेबैक सेटिंग्स</string>
+    <string name="cd_move_up">ऊपर ले जाएं</string>
+    <string name="cd_move_down">नीचे ले जाएं</string>
+    <string name="cd_add_songs">गाने जोड़ें</string>
+    <string name="cd_clear_queue">कतार साफ़ करें</string>
+    <string name="cd_now_playing">अभी बज रहा है</string>
+    <string name="cd_drag_to_reorder">पुनः व्यवस्थित करने के लिए खींचें</string>
+    <string name="cd_remove_from_queue">कतार से हटाएं</string>
+    <string name="cd_edit_metadata">मेटाडेटा संपादित करें</string>
+    <string name="cd_reset_to_original">मूल पर रीसेट करें</string>
+    <string name="cd_remove_from_blacklist">ब्लैकलिस्ट से हटाएं</string>
+    <string name="cd_remove_folder_from_blacklist">ब्लैकलिस्ट से फ़ोल्डर हटाएं</string>
+    <string name="cd_beta_program_warning">बीटा प्रोग्राम चेतावनी</string>
+    <string name="cd_sort_songs">गाने सॉर्ट करें</string>
+    <string name="cd_add_selected_songs">चयनित गाने जोड़ें</string>
+    <string name="cd_toggle_multi_select">मल्टी-सेलेक्ट टॉगल करें</string>
+    <string name="cd_add_song">गाना जोड़ें</string>
+    
+    <string name="bottomsheet_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="bottomsheet_no_playlists">अभी तक कोई प्लेलिस्ट नहीं</string>
+    <string name="bottomsheet_actions">कार्रवाई</string>
+    <string name="bottomsheet_metadata">मेटाडेटा</string>
+    <string name="bottomsheet_queue">कतार (Queue)</string>
+    <string name="bottomsheet_up_next">अगला (Up Next)</string>
+    <string name="bottomsheet_albums">एल्बम</string>
+    <string name="bottomsheet_songs">गाने</string>
+    
+    <string name="bottomsheet_reset">रीसेट</string>
+    <string name="bottomsheet_save">सहेजें (Save)</string>
+    <string name="bottomsheet_cancel">रद्द करें</string>
+    <string name="bottomsheet_close">बंद करें</string>
+    <string name="bottomsheet_delete">हटाएं</string>
+    <string name="bottomsheet_clear_all">सभी साफ़ करें</string>
+    <string name="bottomsheet_add">जोड़ें</string>
+    <string name="bottomsheet_import">इम्पोर्ट</string>
+    <string name="bottomsheet_export">एक्सपोर्ट</string>
+    
+    <string name="bottomsheet_lyrics_earlier">पहले (Earlier)</string>
+    <string name="bottomsheet_lyrics_later">बाद में (Later)</string>
+    <string name="bottomsheet_lyrics_load">लिरिक्स लोड करें</string>
+    <string name="bottomsheet_lyrics_save">लिरिक्स सहेजें</string>
+    
+    <string name="bottomsheet_timer_remaining">शेष</string>
+    <string name="bottomsheet_timer_custom_desc">एक विशिष्ट समय अवधि निर्धारित करें</string>
+    <string name="bottomsheet_timer_custom_title">कस्टम समय सेट करें</string>
+    <string name="bottomsheet_timer_set">टाइमर सेट करें</string>
+    <string name="bottomsheet_timer_edit">संपादित करें</string>
+    <string name="bottomsheet_timer_hours_minutes">स्लीप टाइमर के लिए घंटे और मिनट सेट करें</string>
+    
+    <string name="bottomsheet_playback">प्लेबैक</string>
+    <string name="bottomsheet_no_device">कोई डिवाइस कनेक्ट नहीं है</string>
+    <string name="bottomsheet_max">अधिकतम</string>
+    
+    <string name="bottomsheet_play_all">सभी चलाएं</string>
+    <string name="bottomsheet_tracks">ट्रैक</string>
+    <string name="bottomsheet_sort_by">क्रमबद्ध करें (Sort by)</string>
+    <string name="bottomsheet_no_songs_album">इस एल्बम में कोई गाने नहीं हैं</string>
+    
+    <string name="bottomsheet_home_section_order">होम सेक्शन क्रम</string>
+    <string name="bottomsheet_reorder_toggle_visibility">पुनः व्यवस्थित करें और दृश्यता टॉगल करें</string>
+    
+    <string name="bottomsheet_cast_stream">कास्ट और स्ट्रीम</string>
+    <string name="bottomsheet_playing_now">अभी बज रहा है</string>
+    <string name="bottomsheet_switch_output">आउटपुट डिवाइस स्विच करें</string>
+    <string name="bottomsheet_connect_devices">ब्लूटूथ, क्रोमकास्ट या अन्य डिवाइस से कनेक्ट करें</string>
+    <string name="bottomsheet_open_switcher">आउटपुट स्विचर खोलें</string>
+    <string name="bottomsheet_about_casting">कास्टिंग के बारे में</string>
+    <string name="bottomsheet_casting_info">ब्लूटूथ डिवाइस, क्रोमकास्ट, या अन्य संगत डिवाइस पर अपना संगीत कास्ट करने के लिए आउटपुट स्विचर का उपयोग करें। Android की मूल मीडिया रूटिंग सहज प्लेबैक हस्तांतरण को संभालती है।</string>
+    <string name="bottomsheet_cast_to_tv">TV या स्पीकर पर कास्ट करें</string>
+    <string name="bottomsheet_cast_description">क्रोमकास्ट, स्मार्ट टीवी या स्पीकर पर संगीत स्ट्रीम करें</string>
+    <string name="bottomsheet_find_devices">कास्ट डिवाइस खोजें</string>
+    <string name="bottomsheet_tap_disconnect">इस डिवाइस से डिस्कनेक्ट करने के लिए टैप करें</string>
+    <string name="bottomsheet_disconnect">डिस्कनेक्ट करें</string>
+    <string name="bottomsheet_stream_to_devices">अपने डिवाइस पर स्ट्रीम करें</string>
+    <string name="bottomsheet_this_phone">यह फ़ोन</string>
+    <string name="bottomsheet_opening_switcher">आउटपुट स्विचर खोला जा रहा है…</string>
+    <string name="bottomsheet_disconnected_cast">कास्ट डिवाइस से डिस्कनेक्ट किया गया</string>
+    <string name="bottomsheet_cast_unavailable">कास्ट उपलब्ध नहीं है: %1$s</string>
+    <string name="bottomsheet_connected_to_device">%1$s से कनेक्ट है</string>
+    <string name="bottomsheet_active_device">सक्रिय</string>
+    <string name="device_type_television">टेलीविजन</string>
+    <string name="device_type_smart_speaker">स्मार्ट स्पीकर</string>
+    <string name="device_type_soundbar">साउंडबार</string>
+    <string name="device_type_phone">फ़ोन</string>
+    <string name="device_type_cast_device">कास्ट डिवाइस</string>
+    
+    <string name="bottomsheet_backup_success_title">बैकअप सफलतापूर्वक बनाया गया</string>
+    <string name="bottomsheet_backup_success_msg">आपका पूरा Rhythm बैकअप बनाया गया है जिसमें शामिल हैं:\n\n• सभी प्लेलिस्ट और उनके गाने\n• पसंदीदा और प्ले इतिहास\n• ऐप सेटिंग्स और प्राथमिकताएं\n• इक्वलाइज़र कॉन्फ़िगरेशन\n• थीम कस्टमाइज़ेशन</string>
+    <string name="bottomsheet_restore_success_title">रिस्टोर सफलतापूर्वक पूरा हुआ</string>
+    <string name="bottomsheet_restore_success_msg">आपका Rhythm डेटा सफलतापूर्वक रिस्टोर किया गया है जिसमें शामिल हैं:\n\n• सभी प्लेलिस्ट और उनके गाने\n• पसंदीदा और प्ले इतिहास\n• ऐप सेटिंग्स और प्राथमिकताएं\n• इक्वलाइज़र कॉन्फ़िगरेशन\n• थीम कस्टमाइज़ेशन</string>
+    <string name="bottomsheet_restart_now">अभी रीस्टार्ट करें</string>
+    <string name="bottomsheet_ok">ठीक है</string>
+    <string name="bottomsheet_error">त्रुटि</string>
+    
+    <string name="bottomsheet_clearing_cache">कैश साफ़ किया जा रहा है…</string>
+    <string name="bottomsheet_cache_cleared">कैश साफ़ हो गया!</string>
+    <string name="bottomsheet_clear_all_cache">सभी कैश साफ़ करें</string>
+    
+    <string name="bottomsheet_blacklist_close">बंद करें</string>
+    
+    <string name="bottomsheet_library_tab_order">लाइब्रेरी टैब क्रम</string>
+    
+    <string name="bottomsheet_manage_autoeq">AutoEQ प्रबंधित करें</string>
+    <string name="bottomsheet_autoeq_desc">बेहतरीन सुनने के अनुभव के लिए अनुकूलित AutoEQ प्रोफाइल के साथ अपने ऑडियो डिवाइस कॉन्फ़िगर करें।</string>
+    <string name="bottomsheet_no_devices">कोई डिवाइस कॉन्फ़िगर नहीं है</string>
+    <string name="bottomsheet_add_device_hint">व्यक्तिगत EQ सेटिंग्स प्राप्त करने के लिए अपने हेडफ़ोन या स्पीकर जोड़ें</string>
+    <string name="bottomsheet_import_eq">EQ प्रोफ़ाइल इम्पोर्ट करें</string>
+    <string name="bottomsheet_paste_eq">autoeq.app या अन्य स्रोतों से EQ सेटिंग्स पेस्ट करें।</string>
+    <string name="bottomsheet_supported_formats">समर्थित प्रारूप:\n• FixedBandEQ text (AutoEQ)\n• JSON प्रारूप\n• CSV (10 बैंड मान)</string>
+    <string name="bottomsheet_export_eq">अपनी EQ सेटिंग्स दूसरों के साथ साझा करें या बैकअप के लिए सहेजें।</string>
+    <string name="bottomsheet_active_profile">सक्रिय प्रोफ़ाइल: %1$s</string>
+    <string name="bottomsheet_no_eq_export">एक्सपोर्ट करने के लिए कोई सक्रिय EQ सेटिंग नहीं है। कृपया पहले इक्वलाइज़र सक्षम करें और इसे कॉन्फ़िगर करें।</string>
+    <string name="bottomsheet_device_type">डिवाइस प्रकार</string>
+    <string name="bottomsheet_choose_profile">%1$s के लिए AutoEQ प्रोफ़ाइल चुनें</string>
+    <string name="bottomsheet_delete_device">डिवाइस हटाएं</string>
+    <string name="bottomsheet_delete_device_confirm">क्या आप वाकई \'%1$s\' को हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।</string>
+    
+    <string name="bottomsheet_change">बदलें</string>
+    <string name="bottomsheet_remove">हटाएं</string>
+    <string name="bottomsheet_title">शीर्षक</string>
+    <string name="bottomsheet_artist">कलाकार</string>
+    <string name="bottomsheet_album">एल्बम</string>
+    <string name="bottomsheet_genre">शैली</string>
+    <string name="bottomsheet_year">वर्ष</string>
+    <string name="bottomsheet_track">ट्रैक</string>
+    <string name="bottomsheet_saving">सहेजा जा रहा है…</string>
+    <string name="bottomsheet_save_changes">परिवर्तन सहेजें</string>
+    <string name="bottomsheet_irreversible">अपरिवर्तनीय परिवर्तन</string>
+    <string name="bottomsheet_proceed">आगे बढ़ें</string>
+    
+    <string name="bottomsheet_player_chip_order">प्लेयर चिप क्रम</string>
+    
+    <string name="audio_quality_dolby_atmos">Dolby Atmos</string>
+    <string name="audio_quality_dolby_truehd">Dolby TrueHD</string>
+    <string name="audio_quality_dolby_digital">Dolby Digital</string>
+    <string name="audio_quality_apple_lossless">Apple Lossless</string>
+    <string name="audio_quality_flac_lossless">FLAC Lossless</string>
+    <string name="audio_quality_ogg_vorbis">OGG Vorbis</string>
+    <string name="audio_quality_dts_audio">DTS Audio</string>
+    <string name="audio_quality_hi_res_lossless">Hi-Res Lossless</string>
+    <string name="audio_quality_cd_quality">CD क्वालिटी</string>
+    <string name="audio_quality_studio_master">स्टूडियो मास्टर</string>
+    <string name="audio_quality_lossless_surround">लॉसलेस सराउंड</string>
+    <string name="audio_quality_lossy_surround">लॉसी (Lossy) सराउंड</string>
+    <string name="audio_quality_dolby_surround">Dolby Surround</string>
+    
+    <string name="device_phone_speaker">फ़ोन स्पीकर</string>
+    <string name="device_wired_headphones">वायर्ड हेडफ़ोन</string>
+    <string name="device_wired_headset">वायर्ड हेडसेट</string>
+    <string name="device_bluetooth_audio">ब्लूटूथ ऑडियो</string>
+    <string name="device_unknown">अज्ञात डिवाइस</string>
+    
+    <string name="fallback_unknown_artist">अज्ञात कलाकार</string>
+    <string name="fallback_unknown_album">अज्ञात एल्बम</string>
+    <string name="fallback_unknown_file">अज्ञात फ़ाइल</string>
+    
+    <string name="service_app_updates">ऐप अपडेट</string>
+    <string name="service_rhythm_music">Rhythm Music</string>
+    <string name="service_starting">सेवा शुरू की जा रही है…</string>
+    <string name="service_loading_settings">सेटिंग्स लोड हो रही हैं…</string>
+    <string name="service_setup_components">कंपोनेंट्स सेटअप किए जा रहे हैं…</string>
+    <string name="service_initializing_player">प्लेयर इनिशियलाइज़ हो रहा है…</string>
+    <string name="service_creating_controls">प्लेबैक कंट्रोल बनाए जा रहे हैं…</string>
+    <string name="service_setup_media_session">मीडिया सत्र सेटअप किया जा रहा है…</string>
+    <string name="service_initializing_controller">मीडिया कंट्रोलर इनिशियलाइज़ हो रहा है…</string>
+    <string name="service_ready">सेवा तैयार है</string>
+    <string name="service_init_failed">इनिशियलाइज़ेशन विफल</string>
+    
+    <string name="crash_bug_report">बग रिपोर्ट</string>
+    <string name="crash_restart_app">ऐप रीस्टार्ट करें</string>
+    
+    <string name="genre_hip_hop">Hip Hop</string>
+    
+    <string name="cache_internal">आंतरिक कैश</string>
+    <string name="cache_external">बाहरी कैश</string>
+    <string name="cache_canvas">कैनवास कैश</string>
+    
+    <string name="default_playlist_recently_added">हाल ही में जोड़े गए</string>
+    <string name="default_playlist_most_played">सबसे ज्यादा बजाए गए</string>
+    
+    <string name="ui_clear_all">सभी साफ़ करें</string>
+    <string name="ui_error_generic">त्रुटि</string>
+    
+    <string name="settings_home_customization">होम</string>
+    <string name="settings_home_customization_desc">होम स्क्रीन अनुभाग और लेआउट कस्टमाइज़ करें</string>
+    <string name="settings_player_customization">प्लेयर</string>
+    <string name="settings_player_customization_desc">प्लेयर कंट्रोल और चिप्स कस्टमाइज़ करें</string>
+    <string name="settings_miniplayer_customization">मिनी प्लेयर</string>
+    <string name="settings_miniplayer_customization_desc">कॉम्पैक्ट प्लेयर उपस्थिति कस्टमाइज़ करें</string>
+    <string name="settings_gestures">जेस्चर (Gestures)</string>
+    <string name="settings_gestures_desc">स्वाइप और टच जेस्चर कॉन्फ़िगर करें</string>
+    <string name="settings_artist_parsing">कलाकार</string>
+    <string name="settings_artist_parsing_desc">मल्टी-आर्टिस्ट डिटेक्शन और डिस्प्ले कॉन्फ़िगर करें</string>
+    <string name="settings_rhythm_stats">Rhythm के आंकड़े</string>
+    <string name="settings_rhythm_stats_desc">अपना सुनने का इतिहास और अंतर्दृष्टि (Insights) देखें</string>
+    
+    <string name="stats_title">Rhythm के आंकड़े</string>
+    <string name="stats_today">आज</string>
+    <string name="stats_this_week">इस सप्ताह</string>
+    <string name="stats_this_month">इस महीने</string>
+    <string name="stats_all_time">सभी समय</string>
+    <string name="stats_total_listening_time">कुल सुनने का समय</string>
+    <string name="stats_total_plays">कुल प्ले</string>
+    <string name="stats_unique_tracks">अद्वितीय ट्रैक</string>
+    <string name="stats_top_vibes">टॉप वाइब्स</string>
+    <string name="stats_star_artists">स्टार कलाकार</string>
+    <string name="stats_genre_mix">शैली मिश्रण</string>
+    <string name="stats_beat_timeline">बीट टाइमलाइन</string>
+    <string name="stats_musical_journey">आपका संगीतमय सफर</string>
+    <string name="stats_no_data">अभी तक कोई सुनने का डेटा नहीं</string>
+    <string name="stats_start_listening">अपने आँकड़े देखने के लिए संगीत बजाना शुरू करें</string>
+    <string name="stats_rise_rhythm">राइज और रिदम</string>
+    <string name="stats_midday_beats">मिडडे बीट्स</string>
+    <string name="stats_evening_vibes">इवनिंग वाइब्स</string>
+    <string name="stats_night_grooves">नाइट ग्रूव्स</string>
+    <string name="stats_just_started">बस शुरुआत हो रही है! 🎵</string>
+    <string name="stats_nice_rhythm">अच्छी लय चल रही है! 🎸</string>
+    <string name="stats_jamming">आप जैम कर रहे हैं! 🎧</string>
+    <string name="stats_enthusiast">संगीत प्रेमी! 🎹</string>
+    <string name="stats_legendary">महान श्रोता! 🌟</string>
+    <string name="stats_maestro">म्यूज़िक मेस्ट्रो! 🎼</string>
+    <string name="stats_sage">अंतिम संगीत साधु! 👑</string>
+    
+    <string name="cache_artwork_images">आर्टवर्क छवियाँ</string>
+    <string name="cache_artwork_images_desc">एल्बम कवर, कलाकार की तस्वीरें और थंबनेल</string>
+    <string name="cache_lyrics">लिरिक्स कैश</string>
+    <string name="cache_lyrics_desc">डाउनलोड और सिंक किए गए लिरिक्स डेटा</string>
+    <string name="cache_canvas_videos">कैनवास वीडियो</string>
+    <string name="cache_canvas_videos_desc">एनिमेटेड संगीत बैकग्राउंड</string>
+    <string name="cache_misc_temp">विविध और अस्थायी</string>
+    <string name="cache_misc_temp_desc">अस्थायी और विविध फ़ाइलें</string>
+    <string name="cache_clear_artwork">आर्टवर्क कैश साफ़ करें</string>
+    <string name="cache_clear_lyrics">लिरिक्स कैश साफ़ करें</string>
+    <string name="cache_clear_canvas">कैनवास कैश साफ़ करें</string>
+    <string name="cache_remove_all_data">सभी कैश डेटा हटाएं</string>
+    <string name="cache_good_to_know">जानना अच्छा है</string>
+    <string name="cache_tip_auto">कैश सामग्री को तेज़ी से लोड करने और डेटा उपयोग को कम करने में मदद करता है</string>
+    <string name="cache_tip_limit">स्टोरेज को स्वचालित रूप से प्रबंधित करने के लिए कैश सीमा सेट करें</string>
+    <string name="cache_tip_clear">कैश साफ़ करने से आपका संगीत या प्लेलिस्ट नहीं हटेगी</string>
+    
+    <string name="queue_use_exoplayer_shuffle">ExoPlayer शफल का उपयोग करें</string>
+    <string name="queue_use_exoplayer_shuffle_desc">मीडिया प्लेयर को शफल संभालने दें</string>
+    <string name="queue_auto_add">कतार में ऑटो जोड़ें</string>
+    <string name="queue_auto_add_desc">बजाते समय संबंधित गाने स्वचालित रूप से जोड़ें</string>
+    <string name="queue_clear_on_new">नए पर साफ़ करें</string>
+    <string name="queue_clear_on_new_desc">सीधे नया गाना बजाते समय कतार साफ़ करें</string>
+    <string name="queue_remember_repeat">रिपीट मोड याद रखें</string>
+    <string name="queue_remember_repeat_desc">ऐप रीस्टार्ट होने पर रिपीट मोड सहेजें</string>
+    <string name="queue_remember_shuffle">शफल मोड याद रखें</string>
+    <string name="queue_remember_shuffle_desc">ऐप रीस्टार्ट होने पर शफल स्थिति सहेजें</string>
+    <string name="queue_playback_speed">प्लेबैक गति</string>
+    <string name="queue_playback_speed_desc">प्लेबैक गति समायोजित करें</string>
+    
+    <string name="gestures_player_swipe_dismiss">खारिज करने के लिए नीचे स्वाइप करें</string>
+    <string name="gestures_player_swipe_dismiss_desc">इसे बंद करने के लिए प्लेयर पर नीचे स्वाइप करें</string>
+    <string name="gestures_player_swipe_tracks">ट्रैक बदलने के लिए स्वाइप करें</string>
+    <string name="gestures_player_swipe_tracks_desc">ट्रैक छोड़ने के लिए आर्टवर्क पर बाएं/दाएं स्वाइप करें</string>
+    <string name="gestures_artwork_double_tap">आर्टवर्क पर डबल टैप</string>
+    <string name="gestures_artwork_double_tap_desc">चलाने/रोकने के लिए आर्टवर्क पर डबल टैप करें</string>
+    
+    <string name="playlist_ask_each_time">हर बार पूछें</string>
+    <string name="playlist_ask_each_time_desc">विकल्पों के साथ डायलॉग दिखाएं</string>
+    <string name="playlist_load_entire">पूरी प्लेलिस्ट लोड करें</string>
+    <string name="playlist_load_entire_desc">कतार बदलें और चयनित गाने से बजाएं</string>
+    <string name="playlist_play_single">केवल यह गाना बजाएं</string>
+    <string name="playlist_play_single_desc">कतार को न बदलें</string>
+    <string name="queue_always_add">हमेशा कतार में जोड़ें</string>
+    <string name="queue_always_add_desc">बिना पूछे गानों को स्वचालित रूप से कतार में जोड़ें</string>
+    
+    <string name="artist_parsing_about">मल्टी-आर्टिस्ट पार्सिंग के बारे में</string>
+    <string name="artist_parsing_tip_1">एक से अधिक कलाकारों वाले गानों को विभाजकों (Separators) का उपयोग करके विभाजित किया जाता है</string>
+    <string name="artist_parsing_tip_2">प्रत्येक कलाकार आपकी लाइब्रेरी में अलग से दिखाई देता है</string>
+    <string name="artist_parsing_tip_3">बेहतर संगठन के लिए कस्टम विभाजकों का उपयोग करें</string>
+    
+    <string name="home_greeting_night">शुभ रात्रि</string>
+    <string name="home_greeting_morning">सुप्रभात</string>
+    <string name="home_greeting_afternoon">शुभ दोपहर</string>
+    <string name="home_greeting_evening">शुभ संध्या</string>
+    <string name="home_greeting_christmas">मेरी क्रिसमस</string>
+    <string name="home_greeting_new_year">नव वर्ष की बधाई</string>
+    <string name="home_greeting_halloween">हैप्पी हैलोवीन</string>
+    <string name="home_greeting_valentines">हैप्पी वेलेंटाइन्स</string>
+    
+    <string name="home_top_artists">शीर्ष कलाकार</string>
+    <string name="home_top_artists_subtitle">आपके पसंदीदा संगीतकार</string>
+    
+    <string name="cd_reorder_home_sections">होम सेक्शन को पुनः व्यवस्थित करें</string>
+    <string name="cd_artist">कलाकार %1$s</string>
+    <string name="cd_view_detailed_stats">विस्तृत आँकड़े देखें</string>
+    <string name="cd_selected">चयनित</string>
+    <string name="cd_remove">हटाएं</string>
+    <string name="cd_delete_playlist">प्लेलिस्ट हटाएं</string>
+    <string name="cd_rhythm_logo">Rhythm लोगो</string>
+    <string name="cd_report_bug">बग रिपोर्ट करें</string>
+    <string name="cd_telegram_support">टेलीग्राम सपोर्ट</string>
+    <string name="cd_view_github_profile">GitHub प्रोफ़ाइल देखें</string>
+    <string name="cd_error">त्रुटि</string>
+    <string name="cd_updates_disabled">अपडेट अक्षम हैं</string>
+    <string name="cd_update_available">अपडेट उपलब्ध है</string>
+    <string name="cd_manual_check_only">केवल मैनुअल जांच</string>
+    <string name="cd_up_to_date">अप टू डेट</string>
+    
+    <string name="queue_action_dialog">कतार कार्रवाई डायलॉग</string>
+    <string name="queue_ask_when_not_empty">पूछें कि कतार खाली न होने पर क्या करना है</string>
+    <string name="playlist_action_dialog">प्लेलिस्ट कार्रवाई डायलॉग</string>
+    <string name="playlist_load_entire_queue">कतार में पूरी प्लेलिस्ट लोड करें</string>
+    <string name="playlist_play_only_selected">केवल चयनित गाना बजाएं</string>
+    
+    <string name="artists_title">कलाकार</string>
+    <string name="artist_multi_parsing">मल्टी-आर्टिस्ट पार्सिंग</string>
+    <string name="artist_enable_separation">कलाकार पृथक्करण सक्षम करें</string>
+    <string name="artist_enable_separation_desc">मल्टी-आर्टिस्ट टैग विभाजित करें (जैसे, \"कलाकार1/कलाकार2\")</string>
+    <string name="artist_configure_delimiters">सीमांकक (Delimiters) कॉन्फ़िगर करें</string>
+    <string name="artist_current_delimiters">वर्तमान: %1$s</string>
+    <string name="artist_library_organization">लाइब्रेरी संगठन</string>
+    <string name="artist_group_by_album_artist">एल्बम कलाकार द्वारा समूहित करें</string>
+    <string name="artist_group_by_album_artist_desc">मुख्य कलाकार के तहत सहयोग एल्बम दिखाएं</string>
+    <string name="artist_about_multi_parsing">मल्टी-आर्टिस्ट पार्सिंग के बारे में</string>
+    <string name="artist_parsing_description">सक्षम होने पर, Rhythm स्वचालित रूप से कई कलाकारों वाले कलाकार टैग को विभाजित करेगा। यह yt-dlp या अन्य टूल के साथ डाउनलोड किए गए गानों के लिए उपयोगी है जो कलाकारों को अलग करने के लिए \'/\' जैसे सीमांकक का उपयोग करते हैं।\n\nसीमांकक से बचने के लिए बैकस्लैश (\\\\) का उपयोग किया जा सकता है।</string>
+    <string name="artist_examples">उदाहरण</string>
+    <string name="artist_select_separators">कलाकार विभाजक चुनें</string>
+    <string name="artist_delimiter_slash">स्लैश (Slash)</string>
+    <string name="artist_delimiter_semicolon">अर्धविराम (Semicolon)</string>
+    <string name="artist_delimiter_comma">अल्पविराम (Comma)</string>
+    <string name="artist_delimiter_plus">प्लस (Plus)</string>
+    <string name="artist_delimiter_ampersand">एम्परसैंड (&amp;)</string>
+    <string name="save_changes">परिवर्तन सहेजें</string>
+    
+    <string name="about_title">के बारे में (About)</string>
+    <string name="about_version">वर्ज़न</string>
+    <string name="about_build">बिल्ड</string>
+    <string name="about_target_sdk">Target SDK</string>
+    <string name="about_architecture">आर्किटेक्चर</string>
+    <string name="about_arm_arch">ARM64 और ARM32</string>
+    <string name="about_lead_developer">मुख्य डेवलपर और प्रोजेक्ट आर्किटेक्ट</string>
+    <string name="about_manages_izzyondroid">IzzyOnDroid पर अपडेट का प्रबंधन करते हैं</string>
+    <string name="about_collab_lead">Collab और Project Booming के मुख्य डेवलपर</string>
+    <string name="about_canvas_api">Spotify Canvas API एकीकरण</string>
+    
+    <string name="equalizer_title">इक्वलाइज़र</string>
+    <string name="equalizer_my_devices">मेरे डिवाइस</string>
+    
+    <string name="action_save_changes">परिवर्तन सहेजें</string>
+    <string name="content_desc_selected">चयनित</string>
+    <string name="content_desc_remove">हटाएं</string>
+    <string name="content_desc_delete_playlist">प्लेलिस्ट हटाएं</string>
+    <string name="content_desc_refresh_devices">डिवाइस रिफ्रेश करें</string>
+    <string name="content_desc_switch_device">डिवाइस स्विच करें</string>
+    <string name="content_desc_volume">वॉल्यूम</string>
+    <string name="content_desc_decrease_volume">वॉल्यूम कम करें</string>
+    <string name="content_desc_increase_volume">वॉल्यूम बढ़ाएं</string>
+    <string name="content_desc_mute">म्यूट करें</string>
+    <string name="content_desc_unmute">अनम्यूट करें</string>
+    <string name="content_desc_playback_speed">प्लेबैक गति</string>
+    <string name="content_desc_playback_settings">प्लेबैक सेटिंग्स</string>
+    <string name="content_desc_shuffle_play">शफल प्ले</string>
+    <string name="content_desc_sort_songs">गाने सॉर्ट करें</string>
+    <string name="content_desc_ascending">आरोही</string>
+    <string name="content_desc_descending">अवरोही</string>
+    <string name="content_desc_more_options">अधिक विकल्प</string>
+    <string name="content_desc_add_to_playlist">प्लेलिस्ट में जोड़ें</string>
+    <string name="content_desc_favorite">पसंदीदा</string>
+    <string name="content_desc_now_playing">अभी बज रहा है</string>
+    <string name="content_desc_drag_reorder">पुनः व्यवस्थित करने के लिए खींचें</string>
+    <string name="content_desc_remove_from_queue">कतार से हटाएं</string>
+    <string name="content_desc_add_songs">गाने जोड़ें</string>
+    <string name="content_desc_clear_queue">कतार साफ़ करें</string>
+    <string name="content_desc_play_album">एल्बम चलाएं</string>
+    <string name="content_desc_move_up">ऊपर ले जाएं</string>
+    <string name="content_desc_move_down">नीचे ले जाएं</string>
+    <string name="content_desc_show_hide">दिखाएं/छिपाएं</string>
+    <string name="content_desc_hide_section">अनुभाग छिपाएं</string>
+    <string name="content_desc_show_section">अनुभाग दिखाएं</string>
+    <string name="content_desc_hide_tab">टैब छिपाएं</string>
+    <string name="content_desc_show_tab">टैब दिखाएं</string>
+    <string name="content_desc_hide_chip">चिप छिपाएं</string>
+    <string name="content_desc_show_chip">चिप दिखाएं</string>
+    <string name="content_desc_edit_metadata">मेटाडेटा संपादित करें</string>
+    <string name="content_desc_album_artwork">एल्बम आर्टवर्क</string>
+    
+    <string name="playlist_play_one">केवल चयनित गाना बजाएं</string>
+    <string name="up_next_section">अगला (UP NEXT)</string>
+    
+    <string name="sort_track_number">ट्रैक नंबर</string>
+    <string name="sort_title_asc">शीर्षक (A-Z)</string>
+    <string name="sort_title_desc">शीर्षक (Z-A)</string>
+    <string name="sort_duration_short_first">अवधि (छोटा पहले)</string>
+    <string name="sort_duration_long_first">अवधि (लंबा पहले)</string>
+    
+    <string name="action_play_next">अगला बजाएं</string>
+    <string name="action_add_to_queue">कतार में जोड़ें</string>
+    <string name="action_remove_from_favorites">पसंदीदा से हटाएं</string>
+    <string name="action_add_to_favorites">पसंदीदा में जोड़ें</string>
+    <string name="action_song_info">गाने की जानकारी</string>
+    <string name="action_add_to_blacklist">ब्लैकलिस्ट में जोड़ें</string>
+    <string name="action_hide_song">गाना छिपाएं</string>
+    <string name="action_play_all">सभी चलाएं</string>
+    
+    <string name="blacklist_track">ट्रैक ब्लैकलिस्ट करें</string>
+    <string name="unblacklist_track">ट्रैक अन-ब्लैकलिस्ट करें</string>
+    <string name="blacklist_folder">फ़ोल्डर ब्लैकलिस्ट करें</string>
+    <string name="unblacklist_folder">फ़ोल्डर अन-ब्लैकलिस्ट करें</string>
+    <string name="whitelist_track">ट्रैक व्हाइटलिस्ट करें</string>
+    <string name="unwhitelist_track">ट्रैक अन-व्हाइटलिस्ट करें</string>
+    <string name="whitelist_folder">फ़ोल्डर व्हाइटलिस्ट करें</string>
+    <string name="unwhitelist_folder">फ़ोल्डर अन-व्हाइटलिस्ट करें</string>
+    <string name="song_added_to_blacklist">गाना ब्लैकलिस्ट में जोड़ा गया</string>
+    <string name="song_removed_from_blacklist">गाना ब्लैकलिस्ट से हटाया गया</string>
+    <string name="folder_added_to_blacklist">फ़ोल्डर ब्लैकलिस्ट में जोड़ा गया</string>
+    <string name="folder_removed_from_blacklist">फ़ोल्डर ब्लैकलिस्ट से हटाया गया</string>
+    
+    <string name="device_bluetooth">ब्लूटूथ डिवाइस</string>
+    <string name="device_wired_headphones_alt">वायर्ड हेडफ़ोन</string>
+    <string name="device_speaker">फ़ोन स्पीकर</string>
+    <string name="device_audio_generic">ऑडियो डिवाइस</string>
+    <string name="volume_system">सिस्टम वॉल्यूम</string>
+    <string name="volume_app">ऐप वॉल्यूम</string>
+    <string name="volume_switch_hint">ऐप और सिस्टम वॉल्यूम के बीच स्विच करने के लिए टैप करें</string>
+    <string name="playback_use_system_volume">सिस्टम वॉल्यूम का उपयोग करें</string>
+    <string name="playback_use_system_volume_desc">ऐप वॉल्यूम के बजाय सिस्टम वॉल्यूम को नियंत्रित करें</string>
+    <string name="playback_gapless_title">गैपलेस प्लेबैक</string>
+    <string name="eq_profile_applied">%1$s प्रोफ़ाइल लागू की गई</string>
+    
+    <string name="multi_artist_parsing_title">मल्टी-आर्टिस्ट पार्सिंग</string>
+    <string name="multi_artist_parsing_about">मल्टी-आर्टिस्ट पार्सिंग के बारे में</string>
+    <string name="multi_artist_parsing_desc">सक्षम होने पर, Rhythm स्वचालित रूप से कई कलाकारों वाले कलाकार टैग को विभाजित करेगा। यह yt-dlp या अन्य टूल के साथ डाउनलोड किए गए गानों के लिए उपयोगी है जो कलाकारों को अलग करने के लिए \'/\' जैसे सीमांकक का उपयोग करते हैं।\\n\\nसीमांकक से बचने के लिए बैकस्लैश (\\\\) का उपयोग किया जा सकता है।</string>
+    <string name="multi_artist_parsing_examples">उदाहरण</string>
+    <string name="multi_artist_parsing_configure">सीमांकक कॉन्फ़िगर करें</string>
+    <string name="multi_artist_parsing_select_separators">कलाकार विभाजक चुनें</string>
+    <string name="delimiter_slash">स्लैश</string>
+    <string name="delimiter_semicolon">अर्धविराम</string>
+    <string name="delimiter_comma">अल्पविराम</string>
+    <string name="delimiter_plus">प्लस</string>
+    <string name="delimiter_ampersand">एम्परसैंड</string>
+    
+    <string name="about_app_description">Android के लिए एक आधुनिक, सुविधाओं से भरपूर म्यूज़िक प्लेयर</string>
+    <string name="about_arch_value">ARM64 और ARM32</string>
+    <string name="about_lead_dev">मुख्य डेवलपर और प्रोजेक्ट आर्किटेक्ट</string>
+    <string name="about_izzy_role">IzzyOnDroid पर अपडेट का प्रबंधन करते हैं</string>
+    
+    <string name="sleep_timer_active_status">सक्रिय • %1$s शेष</string>
+    <string name="sleep_timer_no_music">कोई संगीत नहीं बज रहा</string>
+    <string name="sleep_timer_set_control">स्वचालित प्लेबैक कंट्रोल सेट करें</string>
+    <string name="sleep_timer_fade_out">फेड आउट (Fade Out)</string>
+    <string name="sleep_timer_pause">रोकें (Pause)</string>
+    <string name="sleep_timer_stop">बंद करें (Stop)</string>
+    
+    <string name="home_section_greeting">अभिवादन</string>
+    <string name="home_section_recently_played">हाल ही में बजाए गए</string>
+    <string name="home_section_discover">डिस्कवर हिंडोला (Carousel)</string>
+    <string name="home_section_top_artists">शीर्ष कलाकार</string>
+    <string name="home_section_new_releases">नई रिलीज़</string>
+    <string name="home_section_recently_added">हाल ही में जोड़े गए</string>
+    <string name="home_section_recommended">अनुशंसित</string>
+    <string name="home_section_listening_stats">सुनने के आँकड़े</string>
+    <string name="home_section_mood">मूड अनुभाग</string>
+    <string name="home_section_one_visible">कम से कम एक अनुभाग दिखाई देना चाहिए</string>
+    
+    <string name="library_tab_songs">गाने</string>
+    <string name="library_tab_playlists">प्लेलिस्ट</string>
+    <string name="library_tab_albums">एल्बम</string>
+    <string name="library_tab_artists">कलाकार</string>
+    <string name="library_tab_explorer">एक्सप्लोरर</string>
+    <string name="library_tab_one_visible">कम से कम एक टैब दिखाई देना चाहिए</string>
+    <string name="library_tab_order_reset">टैब क्रम और दृश्यता डिफ़ॉल्ट पर रीसेट</string>
+    <string name="library_tab_order_saved">टैब क्रम और दृश्यता सहेजी गई</string>
+    
+    <string name="player_chip_favorite">पसंदीदा</string>
+    <string name="player_chip_speed">प्लेबैक गति</string>
+    <string name="player_chip_equalizer">इक्वलाइज़र</string>
+    <string name="player_chip_sleep_timer">स्लीप टाइमर</string>
+    <string name="player_chip_lyrics">लिरिक्स</string>
+    <string name="player_chip_album">एल्बम</string>
+    <string name="player_chip_artist">कलाकार</string>
+    <string name="player_chip_cast">कास्ट</string>
+    <string name="player_chip_one_visible">कम से कम एक चिप दिखाई देनी चाहिए</string>
+    <string name="player_chip_order_reset">डिफ़ॉल्ट क्रम और दृश्यता पर रीसेट करें</string>
+    
+    <string name="autoeq_manage">AutoEQ प्रबंधित करें</string>
+    <string name="autoeq_configure_desc">बेहतरीन सुनने के अनुभव के लिए अनुकूलित AutoEQ प्रोफाइल के साथ अपने ऑडियो डिवाइस कॉन्फ़िगर करें।</string>
+    <string name="autoeq_device_recognized">डिवाइस पहचाना गया</string>
+    <string name="autoeq_new_device">नए डिवाइस का पता चला</string>
+    <string name="autoeq_no_devices">कोई डिवाइस कॉन्फ़िगर नहीं है</string>
+    <string name="autoeq_add_prompt">व्यक्तिगत EQ सेटिंग्स प्राप्त करने के लिए अपने हेडफ़ोन या स्पीकर जोड़ें</string>
+    <string name="autoeq_delete_device_title">डिवाइस हटाएं</string>
+    <string name="autoeq_delete_device_msg">क्या आप वाकई \'%1$s\' को हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।</string>
+    <string name="autoeq_import_profile">EQ प्रोफ़ाइल इम्पोर्ट करें</string>
+    <string name="autoeq_import_paste_hint">autoeq.app या अन्य स्रोतों से EQ सेटिंग्स पेस्ट करें।</string>
+    <string name="autoeq_supported_formats">समर्थित प्रारूप:\\n• FixedBandEQ text (AutoEQ)\\n• JSON प्रारूप\\n• CSV (10 बैंड मान)</string>
+    <string name="autoeq_eq_settings_label">EQ सेटिंग्स</string>
+    <string name="autoeq_paste_placeholder">EQ डेटा यहाँ पेस्ट करें…</string>
+    <string name="autoeq_button_file">फ़ाइल</string>
+    <string name="autoeq_button_paste">पेस्ट</string>
+    <string name="autoeq_button_add">जोड़ें</string>
+    <string name="autoeq_button_import">इम्पोर्ट</string>
+    <string name="autoeq_button_export">एक्सपोर्ट</string>
+    <string name="autoeq_failed_read_file">फ़ाइल पढ़ने में विफल</string>
+    
+    <string name="backup_invalid_format">अमान्य बैकअप प्रारूप या भ्रष्ट डेटा</string>
+    <string name="backup_unable_to_read">बैकअप फ़ाइल पढ़ने में असमर्थ</string>
+    <string name="backup_restore_failed">फ़ाइल से रिस्टोर करने में विफल: %1$s</string>
+    <string name="backup_create_failed">बैकअप बनाने में विफल: %1$s</string>
+    <string name="backup_clipboard_label">Rhythm बैकअप</string>
+    <string name="backup_status_never">कभी नहीं</string>
+    <string name="backup_status_enabled">सक्षम</string>
+    <string name="backup_status_manual">मैनुअल</string>
+    <string name="backup_creating">बैकअप बनाया जा रहा है…</string>
+    <string name="backup_create_button">बैकअप बनाएं</string>
+    <string name="backup_restoring">रिस्टोर किया जा रहा है…</string>
+    <string name="backup_from_clipboard">क्लिपबोर्ड से</string>
+    <string name="backup_from_file">फ़ाइल से</string>
+    <string name="backup_opening">खुल रहा है…</string>
+    <string name="backup_no_clipboard_data">क्लिपबोर्ड में कोई बैकअप डेटा नहीं मिला। कृपया पहले एक बैकअप कॉपी करें।</string>
+    <string name="backup_restore_clipboard_failed">बैकअप रिस्टोर करने में विफल: %1$s</string>
+    
+    <string name="license_autoeq_name">AutoEQ</string>
+    <string name="license_autoeq_desc">Jaakko Pasanen द्वारा फ़्रीक्वेंसी प्रतिक्रियाओं से स्वचालित हेडफ़ोन इक्वलाइजेशन</string>
+    <string name="license_mit">MIT License</string>
+    <string name="license_jetpack_name">Jetpack Compose</string>
+    <string name="license_jetpack_desc">नेटिव UI बनाने के लिए Android का आधुनिक टूलकिट</string>
+    <string name="license_apache">Apache License 2.0</string>
+    <string name="license_material3_name">Material 3 Components</string>
+    <string name="license_material3_desc">Android के लिए Material Design 3 घटक</string>
+    <string name="license_media3_name">Media3 ExoPlayer</string>
+    <string name="license_media3_desc">Android के लिए आधुनिक मीडिया प्लेबैक लाइब्रेरी</string>
+    <string name="license_coroutines_name">Kotlin Coroutines</string>
+    <string name="license_coroutines_desc">Kotlin के लिए एसिंक्रोनस प्रोग्रामिंग फ्रेमवर्क</string>
+    <string name="license_coil_name">Coil</string>
+    <string name="license_coil_desc">Kotlin Coroutines द्वारा समर्थित Android के लिए इमेज लोडिंग लाइब्रेरी</string>
+    <string name="license_retrofit_name">Retrofit</string>
+    <string name="license_retrofit_desc">Android और Java के लिए टाइप-सेफ HTTP क्लाइंट</string>
+    
+    <string name="lyrics_loaded_success">लिरिक्स सफलतापूर्वक लोड किए गए</string>
+    <string name="lyrics_load_error">लिरिक्स लोड करने में त्रुटि: %1$s</string>
+    <string name="lyrics_saved_success">लिरिक्स सफलतापूर्वक सहेजे गए</string>
+    <string name="lyrics_save_error">लिरिक्स सहेजने में त्रुटि: %1$s</string>
+    
+    <string name="media_scan_error_parsing_folder">फ़ोल्डर पथ पार्स करने में त्रुटि</string>
+    
+    <string name="song_info_unknown">अज्ञात</string>
+    <string name="song_info_quality_hires_lossless">Hi-Res Lossless</string>
+    <string name="song_info_quality_cd">CD क्वालिटी</string>
+    <string name="song_info_quality_type">गुणवत्ता प्रकार</string>
+    <string name="song_info_quality_label">गुणवत्ता लेबल</string>
+    <string name="song_info_quality_category">गुणवत्ता श्रेणी</string>
+    <string name="song_info_category_lossless">लॉसलेस</string>
+    <string name="song_info_category_lossy">लॉसी (Lossy)</string>
+    <string name="song_info_category_surround">सराउंड</string>
+    
+    <string name="exoplayer_settings">ExoPlayer सेटिंग्स</string>
+    <string name="button_add">जोड़ें</string>
+    <string name="button_delete">हटाएं</string>
+    <string name="button_import">इम्पोर्ट</string>
+    <string name="button_export">एक्सपोर्ट</string>
+    <string name="text_file">फ़ाइल</string>
+    <string name="text_paste">पेस्ट</string>
+    <string name="logo_content_desc">Rhythm लोगो</string>
+    
+    <string name="settings_about_lyrics">लिरिक्स स्रोतों के बारे में</string>
+    <string name="settings_adjust_decorations">दिखाए गए उत्सव की सजावट की मात्रा समायोजित करें</string>
+    <string name="settings_artwork_corner_radius">एल्बम आर्टवर्क कोनों की गोलाई समायोजित करें</string>
+    <string name="settings_canvas_backgrounds_desc">कैनवास पृष्ठभूमि समर्थित गीतों में एनिमेटेड दृश्य जोड़ते हैं</string>
+    <string name="settings_choose_header">चुनें कि हैडर में क्या दिखाना है</string>
+    <string name="settings_customize_compact_player">आपकी स्क्रीन के नीचे दिखाई देने वाले कॉम्पैक्ट प्लेयर को कस्टमाइज़ करें।</string>
+    <string name="settings_enable_auto_scroll">ऑटो-स्क्रॉल सक्षम करें</string>
+    <string name="settings_enable_bass_boost">बास बूस्ट सक्षम करें</string>
+    <string name="settings_enable_canvas">कैनवास सक्षम करें</string>
+    <string name="settings_enable_disco_mode">डिस्को मोड सक्षम करें</string>
+    <string name="settings_enable_festive_theme">उत्सव थीम सक्षम करें</string>
+    <string name="settings_enable_virtualizer">वर्चुअलाइज़र सक्षम करें</string>
+    <string name="settings_festive_theme">उत्सव थीम</string>
+    <string name="settings_mini_player">मिनी प्लेयर</string>
+    <string name="settings_toggle_decorations">स्थिति के अनुसार व्यक्तिगत सजावट तत्वों को टॉगल करें</string>
+    <string name="settings_virtualizer">वर्चुअलाइज़र</string>
+    <string name="settings_custom_separators">कस्टम विभाजक</string>
+    <string name="settings_enable_parsing">पार्सिंग सक्षम करें</string>
+    <string name="settings_show_examples">उदाहरण दिखाएं</string>
+    <string name="settings_example_original">मूल</string>
+    <string name="settings_example_result">परिणाम</string>
+    
+    <string name="cache_mb_format">%1$.1f MB</string>
+    <string name="cache_size_64mb">64 MB</string>
+    <string name="cache_size_2gb">2 GB</string>
+    <string name="cache_clear_all_desc">सभी कैश डेटा हटाएं</string>
+    
+    <string name="version_format">V %1$s</string>
+    <string name="version_with_code">v%1$s</string>
+    <string name="released_date">रिलीज़: %1$s</string>
+    <string name="crashed_on_date">क्रैश हुआ: %1$s</string>
+    <string name="file_size_format">(%1$s)</string>
+    <string name="download_progress">%1$d%%</string>
+    
+    <string name="github_username_format">\@%1$s</string>
+    <string name="bullet_point">•</string>
+    <string name="original_quoted">\"%1$s\"</string>
+    
+    <string name="credits_material_design">डिज़ाइन सिद्धांतों के लिए Google Material Design टीम</string>
+    
+    <string name="count_format">%1$d</string>
+    <string name="index_number">%1$d</string>
+    
+    <string name="settings_double_tap_artwork">त्वरित प्ले/पॉज़ के लिए आर्टवर्क पर डबल टैप करें</string>
+    <string name="settings_enable_lyrics_hint">बजाते समय सिंक्रनाइज़ किए गए लिरिक्स देखने के लिए लिरिक्स सक्षम करें</string>
+    <string name="settings_full_player">फुल प्लेयर</string>
+    <string name="settings_header_customization">हैडर कस्टमाइज़ेशन</string>
+    <string name="settings_header_display">हैडर डिस्प्ले</string>
+    <string name="settings_hue">Hue</string>
+    <string name="settings_layout_options">लेआउट विकल्प</string>
+    <string name="settings_lightness">Lightness</string>
+    <string name="settings_miniplayer">मिनी प्लेयर</string>
+    <string name="settings_no_crash_logs">कोई क्रैश लॉग नहीं मिला। बहुत बढ़िया!</string>
+    <string name="settings_personalize_player">कस्टम चिप लेआउट, विज़ुअल प्रभाव और डिस्प्ले प्राथमिकताओं के साथ अपने प्लेयर अनुभव को निजीकृत करें।</string>
+    <string name="settings_player_controls">प्लेयर कंट्रोल</string>
+    <string name="settings_player_screen">प्लेयर स्क्रीन</string>
+    <string name="settings_player_tips">प्लेयर टिप्स</string>
+    <string name="settings_presets">प्रीसेट</string>
+    <string name="settings_progress_display">प्रगति प्रदर्शन</string>
+    <string name="settings_progress_hidden">प्रगति छिपी हुई है</string>
+    <string name="settings_quick_actions">त्वरित कार्रवाई</string>
+    <string name="settings_reorder_toggle_sections">पुनः व्यवस्थित करें और अनुभाग टॉगल करें</string>
+    <string name="settings_saturation">Saturation</string>
+    <string name="settings_section_order_visibility">अनुभाग क्रम और दृश्यता</string>
+    <string name="settings_sleep_timer_placeholder">स्लीप टाइमर कंट्रोल यहां लागू किए जाएंगे</string>
+    <string name="settings_start_collapsed">सभी स्क्रीन को संक्षिप्त (collapsed) हैडर के साथ शुरू करें</string>
+    <string name="settings_statistics_update">सुनने की आदतों के आधार पर सांख्यिकी अपडेट</string>
+    <string name="settings_swipe_down_dismiss">खारिज करने के लिए मिनी प्लेयर या फुल प्लेयर पर नीचे स्वाइप करें</string>
+    <string name="settings_swipe_up_open">फुल प्लेयर खोलने के लिए मिनी प्लेयर पर ऊपर स्वाइप करें</string>
+    <string name="settings_tap_chip_order">एक्शन चिप्स को कस्टमाइज़ करने के लिए \'चिप क्रम और दृश्यता\' पर टैप करें</string>
+    <string name="settings_text_alignment">टेक्स्ट संरेखण (Alignment)</string>
+    <string name="settings_quick_brown_fox">The quick brown fox jumps over the lazy dog</string>
+    <string name="settings_toggle_widgets">अपनी होम स्क्रीन को कस्टमाइज़ करने के लिए विजेट टॉगल करें</string>
+    <string name="settings_visibility">दृश्यता</string>
+    <string name="settings_when_show_header">हैडर में %1$s कब दिखाना है</string>
+    <string name="settings_widget_item_counts">विजेट आइटम संख्या</string>
+    
+    <string name="playlist_user_count">%1$d</string>
+    <string name="playlist_default_count">%1$d</string>
+    <string name="playlist_total_count">%1$d</string>
+    
+    <string name="media_filtered_count">%1$d</string>
+    <string name="media_all_songs_count">%1$d</string>
+    <string name="media_folders_count">%1$d</string>
+    
+    <string name="time_half_second">0.5s</string>
+    <string name="time_twelve_seconds">12s</string>
+    
+    <string name="settings_modern_music_player">Android के लिए एक आधुनिक, सुविधाओं से भरपूर म्यूज़िक प्लेयर</string>
+    <string name="settings_about_lyrics_sources">लिरिक्स स्रोतों के बारे में</string>
+    <string name="settings_about_multi_artist">मल्टी-आर्टिस्ट पार्सिंग के बारे में</string>
+    <string name="settings_adjust_snowflake_size">स्नोफ्लेक का आकार समायोजित करें (छोटा आकार = अधिक स्नोफ्लेक्स)</string>
+    <string name="settings_adjust_festive_decorations">दिखाए गए उत्सव की सजावट की मात्रा समायोजित करें</string>
+    <string name="settings_adjust_artwork_corners">एल्बम आर्टवर्क कोनों की गोलाई समायोजित करें</string>
+    <string name="settings_always_start_collapsed">हमेशा संक्षिप्त (Collapsed) शुरू करें</string>
+    <string name="settings_artwork">आर्टवर्क</string>
+    <string name="settings_artwork_size">आर्टवर्क आकार</string>
+    <string name="settings_bass_boost">बास बूस्ट</string>
+    <string name="settings_cache_actions">कैश कार्रवाई</string>
+    <string name="settings_cache_settings">कैश सेटिंग्स</string>
+    <string name="settings_canvas_backgrounds_info">कैनवास पृष्ठभूमि समर्थित गीतों में एनिमेटेड दृश्य जोड़ते हैं</string>
+    <string name="settings_carousel_style">हिंडोला (Carousel) शैली</string>
+    <string name="settings_choose_festive_theme">उत्सव थीम चुनें</string>
+    <string name="settings_choose_album_display">चुनें कि एल्बम कैसे प्रदर्शित होते हैं</string>
+    <string name="settings_choose_header_content">चुनें कि हैडर में क्या दिखाना है</string>
+    <string name="settings_clear_all_cache">सभी कैश साफ़ करें</string>
+    <string name="settings_coming_soon">जल्द आ रहा है</string>
+    <string name="settings_coming_soon_lowercase">जल्द आ रहा है</string>
+    <string name="settings_configure_delimiters">सीमांकक कॉन्फ़िगर करें</string>
+    <string name="settings_corner_radius">कोने की गोलाई (Corner Radius)</string>
+    <string name="settings_customize_home_layout">होम स्क्रीन लेआउट कस्टमाइज़ करें</string>
+    <string name="settings_customize_miniplayer">आपकी स्क्रीन के नीचे दिखाई देने वाले कॉम्पैक्ट प्लेयर को कस्टमाइज़ करें।</string>
+    <string name="settings_decoration_elements">सजावट तत्व</string>
+    <string name="settings_decoration_intensity">सजावट की तीव्रता</string>
+    <string name="settings_disable_unused_gestures">तेज प्रतिक्रिया के लिए अप्रयुक्त जेस्चर अक्षम करें</string>
+    <string name="settings_disable_unused_sections">तेजी से लोड करने के लिए अप्रयुक्त अनुभागों को अक्षम करें</string>
+    <string name="settings_discover_carousel">डिस्कवर हिंडोला (Carousel)</string>
+    <string name="settings_discover_carousel_info">डिस्कवर हिंडोला विशेष एल्बम प्रदर्शित करता है</string>
+    <string name="settings_display_options">डिस्प्ले विकल्प</string>
+    <string name="settings_examples">उदाहरण</string>
+    <string name="settings_intensity">तीव्रता</string>
+    <string name="settings_more_festivals">भविष्य के अपडेट में और त्योहार जोड़े जाएंगे</string>
+    <string name="settings_remove_all_cache">सभी कैश डेटा हटाएं</string>
+    <string name="settings_save_changes">परिवर्तन सहेजें</string>
+    <string name="settings_select_festival">त्योहार चुनें</string>
+    <string name="settings_select_artist_separators">कलाकार विभाजक चुनें</string>
+    <string name="settings_snowflake_display_area">स्नोफ्लेक डिस्प्ले क्षेत्र</string>
+    <string name="settings_snowflake_size">स्नोफ्लेक आकार</string>
+    <string name="settings_toggle_decoration_elements">स्थिति के अनुसार व्यक्तिगत सजावट तत्वों को टॉगल करें</string>
+    <string name="settings_multi_artist_parsing_info">सक्षम होने पर, Rhythm स्वचालित रूप से कई कलाकारों वाले कलाकार टैग को विभाजित करेगा। यह yt-dlp या अन्य टूल के साथ डाउनलोड किए गए गानों के लिए उपयोगी है जो कलाकारों को अलग करने के लिए \'/\' जैसे सीमांकक का उपयोग करते हैं।\n\nसीमांकक से बचने के लिए बैकस्लैश (\\) का उपयोग किया जा सकता है।</string>
+    <string name="settings_embedded_lyrics_info">• एम्बेडेड लिरिक्स आपकी ऑडियो फ़ाइलों में संग्रहीत हैं\n</string>
+    <string name="settings_material_design_credit">• डिज़ाइन सिद्धांतों के लिए Google Material Design टीम\n</string>
+    <string name="settings_bullet_point">•</string>
+    <string name="settings_backslash">\\</string>
+    <string name="settings_db_unit">dB</string>
+    
+    <string name="settings_crashed_on">%1$s को क्रैश हुआ</string>
+    <string name="settings_released_format">रिलीज़: %1$s</string>
+    <string name="settings_version_prefix">V %1$s</string>
+    <string name="settings_version_format">वर्ज़न %1$s</string>
+    <string name="settings_app_version">v%1$s</string>
+    <string name="settings_github_username">\@%1$s</string>
+    <string name="settings_readable_size">%1$s</string>
+    <string name="settings_cache_size_2gb">2 GB</string>
+    <string name="settings_cache_size_64mb">64 MB</string>
+    <string name="settings_list_item_prefix">  • %1$s:</string>
+    
+</resources>

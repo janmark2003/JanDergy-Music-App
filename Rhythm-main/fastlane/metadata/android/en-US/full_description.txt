@@ -1,0 +1,38 @@
+<b>Your Music, Your Rhythm</b>
+
+Open-source Material You music player with audiophile-grade audio, zero tracking, and zero ads.
+
+<b>🔊 Sound That Moves You</b>
+• High-Resolution Audio Playback — preserve native sample rates and bit depths
+• 10-Band Equalizer + 6,000+ AutoEQ device presets
+• Gapless playback, EAC3-JOC/Dolby Atmos codec support
+• FLAC, ALAC, MP3, AAC, Opus, WAV, OGG & more
+
+<b>🎨 Design That Delights</b>
+• Material 3 Expressive — adaptive shapes, fluid motion
+• Material You dynamic colors from your wallpaper (Android 12+)
+• Album-art-driven player colors & immersive lyrics view
+• Home screen widgets with responsive Material 3 layouts
+
+<b>📚 Library Power</b>
+• Multi-select batch actions — queue, share, delete at once
+• Shuffle whole albums in correct track order
+• Full-scan media scanner — reliable, no songs missed
+• Songs, Albums, Artists, Genres, Playlists, Folders
+
+<b>🎤 Lyrics & Metadata</b>
+• Synced lyrics via LRCLib with word-by-word highlighting
+• Local lyrics editor for custom offsets and edits
+• Full metadata editor with artwork support
+
+<b>⚙️ Power Features</b>
+• Sleep timer, queue management, M3U import/export
+• Settings search, playback stats, Android Auto
+• Deezer & YouTube Music artwork integration
+• In-app auto-updates from GitHub
+
+<b>🔒 Privacy First</b>
+No ads. No analytics. No accounts. 100% offline-capable. GPL v3.
+
+<b>📥 Get it on GitHub, F-Droid &amp; IzzyOnDroid</b>
+— Google Play coming soon —

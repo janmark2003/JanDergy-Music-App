@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm - Material You Music Player</title>
+
+    <!-- Resource Hints for Performance -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://github.com">
+
+    <!-- Preload critical above-the-fold image -->
+    <link rel="preload" href="assets/hero.png" as="image" type="image/png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="shortcut icon" href="assets/icon.png"> <!-- Using a local icon for Rhythm -->
+    <link rel="canonical" href="https://cromaguy.github.io/Rhythm/">
+    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Rhythm is a professional Material You music player featuring Media3 ExoPlayer, 10-band equalizer, synchronized lyrics, advanced library management, and seamless device switching. Experience studio-quality audio on Android.">
+    <meta name="keywords" content="Material You, Music Player, Android, Rhythm, Media3 ExoPlayer, Equalizer, Lyrics, High Resolution Audio, FLAC, ALAC">
+    <meta name="author" content="Anjishnu Nandi">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Rhythm - Material You Music Player">
+    <meta property="og:description" content="Experience music with stunning Material You design, intelligent features, and seamless performance.">
+    <meta property="og:image" content="assets/icon.png">
+    <meta property="og:url" content="https://cromaguy.github.io/Rhythm/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rhythm - Material You Music Player">
+    <meta name="twitter:description" content="Experience music with stunning Material You design, intelligent features, and seamless performance.">
+    <meta name="twitter:image" content="assets/icon.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Rhythm",
+      "description": "A revolutionary Material You music player for Android",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Android",
+      "author": {
+        "@type": "Person",
+        "name": "Anjishnu Nandi"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ChromaHub"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "ratingCount": "100"
+      }
+    }
+    </script>
+</head>
+<body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header role="banner">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <img src="assets/icon.png" alt="Rhythm Logo" class="header-logo" loading="eager">
+                    <h1>Rhythm</h1>
+                    <span class="beta-tag">PRE</span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#showcase">Showcase</a></li>
+                        <li><a href="updates.html">Updates</a></li>
+                        <li><a href="help.html">Help</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-buttons">
+                    <a href="#downloadOptionsSection" class="btn btn-outline scroll-to-download">Download <i class="fas fa-download"></i></a>
+                    <a href="https://github.com/cromaguy/Rhythm" class="btn btn-primary">GitHub <i class="fab fa-github"></i></a>
+                </div>
+                <button class="hamburger-menu-button" aria-label="Open navigation menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav-overlay"></div>
+    <div class="mobile-nav-menu">
+        <div class="mobile-nav-header">
+            <a href="#" class="logo">
+                <img src="assets/icon.png" alt="Rhythm Logo" class="header-logo" loading="eager">
+                <h1>Rhythm</h1>
+                <span class="beta-tag">PRE</span>
+            </a>
+            <button class="close-menu-button" aria-label="Close navigation menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-nav-links">
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#showcase">Showcase</a></li>
+                <li><a href="updates.html">Updates</a></li>
+                <li><a href="help.html">Help</a></li>
+                <li><a href="privacy.html">Privacy</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-auth-buttons">
+            <a href="#downloadOptionsSection" class="btn btn-outline scroll-to-download">Download <i class="fas fa-download"></i></a>
+            <a href="https://github.com/cromaguy/Rhythm" class="btn btn-primary">GitHub <i class="fab fa-github"></i></a>
+        </div>
+    </div>
+
+    <main id="main-content" role="main">
+    <section class="hero">
+        <div class="animated-circles">
+            <div class="circle x1"></div>
+            <div class="circle x2"></div>
+            <div class="circle x3"></div>
+            <div class="circle x4"></div>
+            <div class="circle x5"></div>
+            <div class="circle x6"></div>
+            <div class="circle x7"></div>
+            <div class="circle x8"></div>
+            <div class="circle x9"></div>
+            <div class="circle x10"></div>
+            <div class="circle x11"></div>
+            <div class="circle x12"></div>
+            <div class="circle x13"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Professional Music Player with Material You Excellence</h1>
+                    <p>Rhythm combines studio-quality audio, intelligent features, and breathtaking Material You Expressive design. Experience gapless playback, High-Resolution audio, synchronized lyrics, advanced equalization, multi-select library actions, and more in a beautifully crafted interface. <strong>v4.2 now available — and coming soon to Google Play Store!</strong></p>
+                    <a href="#downloadOptionsSection" class="btn btn-primary scroll-to-download">Download Now <i class="fas fa-download"></i></a>
+                </div>
+                <div class="hero-image">
+                    <img src="assets/hero.png" alt="Rhythm Home Screen" loading="eager">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>What Makes Rhythm Special</h2>
+                <p>Experience professional-grade music playback with intelligent features, stunning Material You design, and seamless cross-device performance</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Material You Excellence</h3>
+                    <p>Dynamic colors extracted from wallpaper (Android 12+), seamless light/dark theme transitions, physics-based animations, responsive design for phones/tablets/foldables, and custom theme customization with color schemes and fonts.</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <h3>Professional Audio Engine</h3>
+                    <p>Media3 ExoPlayer 1.9.2 + FFmpeg decoder with studio-quality gapless playback, High-Resolution mode, EAC3-JOC/Dolby Atmos support, and high-resolution formats (FLAC, ALAC, MP3, AAC, OGG, WAV).</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Intelligent Features</h3>
+                    <p>Real-time LRCLib lyrics with tap-to-seek, fuzzy search across library, advanced shuffle algorithms, multi-select batch operations, auto-resume playback, album shuffle, genre-based organization, and comprehensive metadata editing.</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <h3>Connected Experience</h3>
+                    <p>High-quality Deezer &amp; YouTube Music artwork fetching, GitHub auto-updates with in-app installation, comprehensive backup/restore, advanced API management, and active community support via Telegram and Discord.</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>Advanced Controls</h3>
+                    <p>Professional 10-band equalizer with presets, advanced sleep timer with fade-out, sophisticated device output management, intelligent cache system, whitelist/blacklist media scanning, and deep customization options throughout.</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Reliable & Stable</h3>
+                    <p>Memory leak detection, ANR monitoring, crash logging, beta testing program, and continuous improvements for the best user experience.</p>
+                    <a href="https://github.com/cromaguy/Rhythm#what-makes-rhythm-special">Learn more <i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="showcase-section" id="showcase">
+        <div class="container">
+            <div class="section-header">
+                <h2>App Screenshots</h2>
+                <p>Explore the beautiful Material You design of Rhythm through these screenshots.</p>
+            </div>
+            <div class="carousel-container showcase-carousel">
+                <div class="carousel-track showcase-carousel-track" id="showcase-carousel-track">
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Home.png" alt="Rhythm Home Screen" loading="eager">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Home2.png" alt="Rhythm Home Screen 2" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Home3.png" alt="Rhythm Home Screen 3" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Player.png" alt="Rhythm Player Screen" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Player_Lyrics_View.png" alt="Rhythm Player Lyrics" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Songs.png" alt="Rhythm Library Songs" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Albums.png" alt="Rhythm Library Albums" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Artists.png" alt="Rhythm Library Artists" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Playlists.png" alt="Rhythm Library Playlists" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_AlbumBS.png" alt="Rhythm Album Bottom Sheet" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Explorer.png" alt="Rhythm Library Explorer" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Library_Tab_Order.png" alt="Rhythm Library Tab Order" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Search.png" alt="Rhythm Search Screen" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Search_Res.png" alt="Rhythm Search Results" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Settings.png" alt="Rhythm Settings" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Settings_Search.png" alt="Rhythm Settings Search" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Queue.png" alt="Rhythm Queue" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Export_Playlist.png" alt="Export Playlist" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Import_Playlist.png" alt="Import Playlist" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Playlist.png" alt="Rhythm Playlist" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Playist_Management.png" alt="Playlist Management" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Artist.png" alt="Rhythm Artist Screen" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Equalizer.png" alt="Rhythm Equalizer" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Playback.png" alt="Device Output / Playback" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Sleep_Timer.png" alt="Rhythm Sleep Timer" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Sleep_Timer3.png" alt="Rhythm Sleep Timer 3" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Cache_Management.png" alt="Cache Management" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Backup_Restore.png" alt="Backup Restore" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Integrations.png" alt="API / Integrations" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Media_Scan.png" alt="Media Scanner" loading="lazy">
+                    </div>
+                    <!-- Single Media_Scan image used for scanner variants -->
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Edit_Metadata.png" alt="Metadata Editor" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Themes.png" alt="Rhythm Themes" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Themes3.png" alt="Rhythm Themes 2" loading="lazy">
+                    </div>
+                    <!-- Deduplicated Themes image (Themes3) -->
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Song_Info.png" alt="Song Information" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/About.png" alt="About Rhythm" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Splash.png" alt="Rhythm Splash Screen" loading="lazy">
+                    </div>
+                    <div class="showcase-carousel-item">
+                        <img src="assets/ScreenShots/Updater.png" alt="Rhythm Updater" loading="lazy">
+                    </div>
+                </div>
+                <button class="carousel-btn prev-btn showcase-prev-btn"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-btn next-btn showcase-next-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="news-carousel-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Latest Updates</h2>
+                <p>Stay updated with the newest features, updates, and announcements from Rhythm.</p>
+            </div>
+            <div class="carousel-container news-carousel">
+                <div class="carousel-track news-carousel-track" id="dynamic-news-updates">
+                    <!-- News items will be dynamically loaded here -->
+                </div>
+                <button class="carousel-btn prev-btn news-prev-btn"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-btn next-btn news-next-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="translation-section" id="translationSection">
+        <div class="container">
+            <div class="section-header">
+                <h2>Help Translate Rhythm</h2>
+                <p>Make Rhythm accessible to users worldwide by contributing translations</p>
+            </div>
+            <div class="translation-content">
+                <!-- <div class="translation-intro">
+                    <div class="translation-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3>Join Our Translation Community</h3>
+                    <p>Rhythm is currently available in 16 languages, but we need your help to make translations complete and accurate. Whether you're a native speaker or a language enthusiast, your contribution matters!</p>
+                </div> -->
+                
+                <div class="translation-stats">
+                    <div class="translation-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-globe-americas"></i>
+                        </div>
+                        <h4>16</h4>
+                        <p>Supported Languages</p>
+                    </div>
+                    <div class="translation-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h4>746</h4>
+                        <p>Strings to Translate</p>
+                    </div>
+                    <div class="translation-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Open</h4>
+                        <p>To Contributors</p>
+                    </div>
+                </div>
+
+                <!-- <div class="translation-languages">
+                    <h3>Current Translation Status</h3>
+                    <div class="language-grid">
+                        <div class="language-card complete">
+                            <span class="flag">🇬🇧</span>
+                            <span class="language-name">English</span>
+                            <span class="status-badge complete">100%</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇪🇸</span>
+                            <span class="language-name">Spanish</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇫🇷</span>
+                            <span class="language-name">French</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇩🇪</span>
+                            <span class="language-name">German</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇮🇹</span>
+                            <span class="language-name">Italian</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇵🇹</span>
+                            <span class="language-name">Portuguese</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇷🇺</span>
+                            <span class="language-name">Russian</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇯🇵</span>
+                            <span class="language-name">Japanese</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇰🇷</span>
+                            <span class="language-name">Korean</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇨🇳</span>
+                            <span class="language-name">Chinese</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇳🇱</span>
+                            <span class="language-name">Dutch</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇵🇱</span>
+                            <span class="language-name">Polish</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇹🇷</span>
+                            <span class="language-name">Turkish</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇻🇳</span>
+                            <span class="language-name">Vietnamese</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇮🇳</span>
+                            <span class="language-name">Hindi</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                        <div class="language-card needs-update">
+                            <span class="flag">🇸🇦</span>
+                            <span class="language-name">Arabic</span>
+                            <span class="status-badge needs-update">Needs Update</span>
+                        </div>
+                    </div>
+                </div> -->
+
+                <div class="translation-cta">
+                    <h3>How to Contribute</h3>
+                    <div class="translation-steps">
+                        <div class="translation-step">
+                            <div class="step-number">1</div>
+                            <h4>Read the Guide</h4>
+                            <p>Check our comprehensive translation guide in the README</p>
+                        </div>
+                        <div class="translation-step">
+                            <div class="step-number">2</div>
+                            <h4>Fork & Translate</h4>
+                            <p>Fork the repo and edit the strings.xml file for your language</p>
+                        </div>
+                        <div class="translation-step">
+                            <div class="step-number">3</div>
+                            <h4>Submit PR</h4>
+                            <p>Create a pull request with your translations</p>
+                        </div>
+                    </div>
+                    <div class="translation-buttons">
+                        <a href="https://github.com/cromaguy/Rhythm#-translations" class="btn btn-primary">
+                            <i class="fas fa-book"></i> View Translation Guide
+                        </a>
+                        <a href="https://github.com/cromaguy/Rhythm/fork" class="btn btn-outline">
+                            <i class="fab fa-github"></i> Fork & Start Translating
+                        </a>
+                        <a href="https://t.me/RhythmSupport" class="btn btn-outline">
+                            <i class="fab fa-telegram"></i> Join Translation Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="download-options-section" id="downloadOptionsSection">
+        <div class="container">
+            <div class="download-options-content">
+                <h2>Get Rhythm Now!</h2>
+                <p>Choose your preferred download source:</p>
+                <div class="download-buttons-container">
+                    <a href="#" class="btn btn-primary download-option-btn coming-soon" disabled>
+                        <i class="fab fa-google-play"></i> Google Play (Coming Soon!)
+                    </a>
+                    <a href="https://f-droid.org/packages/chromahub.rhythm.app" class="btn btn-primary download-option-btn">
+                        <i class="fab fa-android"></i> F-Droid
+                    </a>
+                    <a href="https://apt.izzysoft.de/fdroid/index/apk/chromahub.rhythm.app" class="btn btn-primary download-option-btn">
+                        <i class="fab fa-android"></i> IzzyOnDroid F-Droid
+                    </a>
+                    <a href="https://github.com/cromaguy/Rhythm/releases/latest" class="btn btn-primary download-option-btn">
+                        <i class="fab fa-github"></i> GitHub Releases
+                    </a>
+                    <a href="https://www.openapk.net/rhythm/chromahub.rhythm.app/" class="btn btn-outline download-option-btn">
+                        <i class="fas fa-download"></i> OpenAPK
+                    </a>
+                    <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/cromaguy/Rhythm/" class="btn btn-outline download-option-btn">
+                        <i class="fas fa-mobile-alt"></i> Obtainium
+                    </a>
+                    <a href="https://alternativeto.net/software/rhythm-by-cromaguy-/about/" class="btn btn-outline download-option-btn">
+                        <i class="fas fa-star"></i> AlternativeTo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <footer id="contact" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/icon.png" alt="Rhythm Logo" class="footer-logo-img">
+                        <h2>Rhythm</h2>
+                    </div>
+                    <p>A revolutionary Material You music player for Android, designed to transform your music experience.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/cromaguy/Rhythm"><i class="fab fa-github"></i></a>
+                        <a href="https://t.me/rhythmsupport"><i class="fab fa-telegram-plane"></i></a>
+                        <a href="https://discord.gg/XjPyUYPQYc"><i class="fab fa-discord"></i></a>
+                        <!-- Add other social links if available for Rhythm -->
+                    </div>
+                    <div class="donation-links">
+                        <h4>Support Us</h4>
+                        <a href="https://github.com/sponsors/cromaguy"><i class="fab fa-github"></i> GitHub Sponsors</a>
+                        <a href="https://patreon.com/AnjishnuNandi"><i class="fab fa-patreon"></i> Patreon</a>
+                        <a href="https://ko-fi.com/anjishnunandi"><i class="fas fa-coffee"></i> Ko-fi</a>
+                        <a href="https://paypal.me/AnjishnuNandi"><i class="fab fa-paypal"></i> PayPal</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Features</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cromaguy/Rhythm#material-you-design">Material You Design</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm#professional-audio-engine">Professional Audio</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm#intelligent-library-management">Intelligent Library</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm#synchronized-lyrics">Synced Lyrics</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm#smart-playback">Smart Playback</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Documentation</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki">📖 Wiki Home</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Getting-Started">🚀 Getting Started</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Features">✨ Features Guide</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/Troubleshooting">🔧 Troubleshooting</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/wiki/FAQ">❓ FAQ</a></li>
+                    </ul>
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cromaguy/Rhythm/releases">📦 Releases</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/LICENSE">📄 License (GPL v3)</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/SECURITY.md">🔒 Security Policy</a></li>
+                        <li><a href="privacy.html">🛡️ Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contribute</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CONTRIBUTING.md">📝 Contributing Guide</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/pulls">💻 Submit Pull Request</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/issues">🐛 Report Issues</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/discussions">💡 Discussions</a></li>
+                        <li><a href="https://github.com/cromaguy/Rhythm/blob/main/docs/CODE_OF_CONDUCT.md">🤝 Code of Conduct</a></li>
+                    </ul>
+                    <h3>Contact</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-envelope"></i> anjicroma@gmail.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Team ChromaHub | Rhythm by Anjishnu Nandi | Licensed under GPL v3.0</p>
+            </div>
+        </div>
+    </footer>
+    <div id="update-popup" class="update-popup-overlay">
+        <div class="update-popup-content">
+            <button class="close-popup-btn"><i class="fas fa-times"></i> Close</button>
+            <div class="update-popup-header">
+                <img id="popup-image" src="" alt="Update Image">
+            </div>
+            <div class="update-popup-body">
+                <div class="update-popup-header-text">
+                    <h2 id="popup-headline"></h2>
+                    <p class="popup-meta"><span id="popup-date"></span> | By <span id="popup-writer"></span></p>
+                </div>
+                <div id="popup-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screenshot-popup" class="update-popup-overlay">
+        <div class="screenshot-popup-content">
+            <button class="close-screenshot-popup-btn"><i class="fas fa-times"></i> Close</button>
+            <div class="screenshot-popup-header">
+                <div class="screenshot-zoom-controls">
+                    <button class="zoom-btn zoom-in-btn" id="zoom-in-btn" title="Zoom In">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="zoom-btn zoom-out-btn" id="zoom-out-btn" title="Zoom Out">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="zoom-btn zoom-reset-btn" id="zoom-reset-btn" title="Reset Zoom">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <span class="zoom-level" id="zoom-level">100%</span>
+                </div>
+                <div class="screenshot-image-container">
+                    <img id="screenshot-popup-image" src="" alt="Screenshot">
+                </div>
+            </div>
+            <div class="screenshot-popup-body">
+                <div class="screenshot-popup-controls">
+                    <button class="screenshot-nav-btn" id="screenshot-prev-btn" title="Previous Screenshot">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="screenshot-popup-title">
+                        <h3 id="screenshot-title">Rhythm Screenshot</h3>
+                        <p id="screenshot-counter">1 of 41</p>
+                    </div>
+                    <button class="screenshot-nav-btn" id="screenshot-next-btn" title="Next Screenshot">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

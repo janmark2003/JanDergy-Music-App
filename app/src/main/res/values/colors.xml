@@ -6,6 +6,7 @@
     <color name="glass_stroke">#24FFFFFF</color>
     <color name="glass_text_secondary">#B8FFFFFF</color>
     <color name="accent_green">#68E0A3</color>
+    <color name="logo_blue">#2196F3</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

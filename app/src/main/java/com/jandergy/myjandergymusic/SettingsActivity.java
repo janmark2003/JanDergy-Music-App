@@ -1,36 +1,43 @@
 package com.jandergy.myjandergymusic;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.audiofx.Equalizer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
-
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -39,13 +46,25 @@ public class SettingsActivity extends AppCompatActivity {
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
-    private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
+    private MarqueeTextView nowPlayingTitle, nowPlayingArtist;
+    private TextView currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
 
-    private View settingsContent;
+    private View settingsContent, eqContainer;
     private ImageView characterImg;
+    private LinearLayout bandsList;
+    
+    private Spinner presetSpinner;
+    private SwitchCompat eqSwitch;
+    private SeekBar bassBoostSeekBar, spatializerSeekBar;
+    private TextView bassBoostValue, spatializerValue;
+
+    private Equalizer localEqualizer; // Only for metadata query
+    private short numberOfBands;
+    private final int[] uiFrequencies = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
+    private final float[] uiBandLevels = new float[10];
 
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
@@ -59,7 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
                 long duration = player.getDuration();
                 seekBar.setProgress((int) currentPos);
                 updateTimers(currentPos, duration);
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 200);
             }
         }
     };
@@ -86,9 +105,57 @@ public class SettingsActivity extends AppCompatActivity {
     private void initUI() {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
+        
+        eqContainer = findViewById(R.id.eq_container);
+        bandsList = findViewById(R.id.bands_list);
+        presetSpinner = findViewById(R.id.preset_spinner);
+        eqSwitch = findViewById(R.id.eq_switch);
+        
+        bassBoostSeekBar = findViewById(R.id.bass_boost_seekbar);
+        bassBoostValue = findViewById(R.id.bass_boost_value);
+        spatializerSeekBar = findViewById(R.id.spatializer_seekbar);
+        spatializerValue = findViewById(R.id.spatializer_value);
+
+        eqSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean("EQ_Enabled", isChecked).apply();
+            Intent intent = new Intent(this, PlaybackService.class);
+            intent.setAction("ACTION_SET_EQ_ENABLED");
+            intent.putExtra("enabled", isChecked);
+            startService(intent);
+        });
+
+        bassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                bassBoostValue.setText(String.format(Locale.US, "%d%%", progress / 10));
+                if (fromUser) {
+                    sharedPreferences.edit().putInt("BassBoost_Strength", progress).apply();
+                    updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) progress);
+                }
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        spatializerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                spatializerValue.setText(String.format(Locale.US, "%d%%", progress / 10));
+                if (fromUser) {
+                    sharedPreferences.edit().putInt("Spatializer_Strength", progress).apply();
+                    updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) progress);
+                }
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
+        
+        // Ensure marquee can work
+        nowPlayingTitle.setSelected(true);
+        nowPlayingArtist.setSelected(true);
 
         currentTimeText = findViewById(R.id.current_time);
         remainingTimeText = findViewById(R.id.remaining_time);
@@ -116,9 +183,17 @@ public class SettingsActivity extends AppCompatActivity {
         btnRepeat.setOnClickListener(v -> {
             if (player != null) {
                 int mode = player.getRepeatMode();
-                if (mode == Player.REPEAT_MODE_OFF) player.setRepeatMode(Player.REPEAT_MODE_ONE);
-                else if (mode == Player.REPEAT_MODE_ONE) player.setRepeatMode(Player.REPEAT_MODE_ALL);
-                else player.setRepeatMode(Player.REPEAT_MODE_OFF);
+                switch (mode) {
+                    case Player.REPEAT_MODE_OFF:
+                        player.setRepeatMode(Player.REPEAT_MODE_ONE);
+                        break;
+                    case Player.REPEAT_MODE_ONE:
+                        player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                        break;
+                    case Player.REPEAT_MODE_ALL:
+                        player.setRepeatMode(Player.REPEAT_MODE_OFF);
+                        break;
+                }
             }
         });
 
@@ -144,11 +219,150 @@ public class SettingsActivity extends AppCompatActivity {
                     updateTimers(progress, player.getDuration());
                 }
             }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+    }
+
+    @UnstableApi
+    private void setupEqualizer(int sessionId) {
+        if (localEqualizer != null) return;
+
+        try {
+            localEqualizer = new Equalizer(0, sessionId);
+            numberOfBands = localEqualizer.getNumberOfBands();
+
+            boolean isEnabled = sharedPreferences.getBoolean("EQ_Enabled", true);
+            eqSwitch.setChecked(isEnabled);
+
+            int savedBassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
+            bassBoostSeekBar.setProgress(savedBassBoost);
+            bassBoostValue.setText(String.format(Locale.US, "%d%%", savedBassBoost / 10));
+            updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) savedBassBoost);
+
+            int savedSpatializer = sharedPreferences.getInt("Spatializer_Strength", 0);
+            spatializerSeekBar.setProgress(savedSpatializer);
+            spatializerValue.setText(String.format(Locale.US, "%d%%", savedSpatializer / 10));
+            updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) savedSpatializer);
+
+            setupPresetSpinner();
+            setupBandSliders();
+
+        } catch (Exception e) {
+            Log.e("SettingsActivity", "Error setting up equalizer", e);
+            eqContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateEffectInService(String action, boolean enabled, short strength) {
+        Intent intent = new Intent(this, PlaybackService.class);
+        intent.setAction(action);
+        intent.putExtra("enabled", enabled);
+        intent.putExtra("strength", strength);
+        startService(intent);
+    }
+
+    private void setupPresetSpinner() {
+        if (localEqualizer == null) return;
+        short numPresets = localEqualizer.getNumberOfPresets();
+        String[] presets = new String[numPresets];
+        for (short i = 0; i < numPresets; i++) {
+            presets[i] = localEqualizer.getPresetName(i);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, presets);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        presetSpinner.setAdapter(adapter);
+
+        int savedPreset = sharedPreferences.getInt("EQ_Preset", 0);
+        if (savedPreset < numPresets) {
+            presetSpinner.setSelection(savedPreset);
+        }
+
+        presetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                sharedPreferences.edit().putInt("EQ_Preset", position).apply();
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void setupBandSliders() {
+        if (localEqualizer == null) return;
+        
+        bandsList.removeAllViews();
+        for (int i = 0; i < uiFrequencies.length; i++) {
+            final int bandIndex = i;
+            View bandView = LayoutInflater.from(this).inflate(R.layout.item_eq_band, bandsList, false);
+
+            TextView freqText = bandView.findViewById(R.id.band_frequency);
+            SeekBar slider = bandView.findViewById(R.id.band_seekbar);
+            final TextView levelText = bandView.findViewById(R.id.band_level);
+
+            String freqStr = (uiFrequencies[i] < 1000) ? uiFrequencies[i] + " Hz" : (uiFrequencies[i] / 1000) + " kHz";
+            freqText.setText(freqStr);
+            slider.setMax(3000); // -15.0 to +15.0 dB, 0.01 step resolution
+            
+            float savedLevel = sharedPreferences.getFloat("UI_EQ_Band_" + bandIndex, 0f);
+            uiBandLevels[bandIndex] = savedLevel;
+            slider.setProgress((int) ((savedLevel + 15) * 100));
+            levelText.setText(String.format(Locale.US, "%.1f dB", savedLevel));
+
+            slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    float level = (progress / 100f) - 15f;
+                    uiBandLevels[bandIndex] = level;
+                    levelText.setText(String.format(Locale.US, "%.1f dB", level));
+                    if (fromUser) {
+                        applyInterpolatedEQ();
+                        sharedPreferences.edit().putFloat("UI_EQ_Band_" + bandIndex, level).apply();
+                    }
+                }
+                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
+
+            bandsList.addView(bandView);
+        }
+        applyInterpolatedEQ();
+    }
+
+    private void applyInterpolatedEQ() {
+        if (localEqualizer == null) return;
+        short[] hardwareLevels = interpolateBands(uiBandLevels, numberOfBands);
+        
+        for (short i = 0; i < numberOfBands; i++) {
+            Intent intent = new Intent(this, PlaybackService.class);
+            intent.setAction("ACTION_SET_EQ_BAND");
+            intent.putExtra("band", i);
+            intent.putExtra("level", hardwareLevels[i]);
+            startService(intent);
+        }
+    }
+
+    private short[] interpolateBands(float[] uiLevels, int hardwareBands) {
+        short[] result = new short[hardwareBands];
+        if (hardwareBands == 5) {
+            // Simplified mapping for standard 5-band hardware
+            result[0] = (short) ((uiLevels[0] * 0.3f + uiLevels[1] * 0.4f + uiLevels[2] * 0.3f) * 100);
+            result[1] = (short) ((uiLevels[3] * 0.5f + uiLevels[4] * 0.5f) * 100);
+            result[2] = (short) ((uiLevels[5] * 0.5f + uiLevels[6] * 0.5f) * 100);
+            result[3] = (short) ((uiLevels[7] * 0.5f + uiLevels[8] * 0.5f) * 100);
+            result[4] = (short) (uiLevels[9] * 100);
+        } else {
+            // Linear interpolation fallback
+            float ratio = (uiLevels.length - 1) / (float) (hardwareBands - 1);
+            for (int i = 0; i < hardwareBands; i++) {
+                float srcPos = i * ratio;
+                int low = (int) srcPos;
+                int high = Math.min(low + 1, uiLevels.length - 1);
+                float weight = srcPos - low;
+                result[i] = (short) ((uiLevels[low] * (1 - weight) + uiLevels[high] * weight) * 100);
+            }
+        }
+        return result;
     }
 
     private void populateSettings() {
@@ -159,16 +373,15 @@ public class SettingsActivity extends AppCompatActivity {
         String appVersion = "1.0";
         try {
             appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
+        } catch (PackageManager.NameNotFoundException ignored) {}
 
-        appVerText.setText("App Version: " + appVersion);
-        deviceModelText.setText("Device Model: " + Build.MODEL);
-        androidVerText.setText("Android Version: " + Build.VERSION.RELEASE);
+        appVerText.setText(String.format(Locale.US, "App Version: %s", appVersion));
+        deviceModelText.setText(String.format(Locale.US, "Device Model: %s", Build.MODEL));
+        androidVerText.setText(String.format(Locale.US, "Android Version: %s", Build.VERSION.RELEASE));
     }
 
     private void startFadeInAnimations() {
+        eqContainer.animate().alpha(1f).setDuration(1200).setStartDelay(300).start();
         settingsContent.animate().alpha(1f).setDuration(1500).setStartDelay(500).start();
         characterImg.animate().alpha(1f).setDuration(1500).setStartDelay(800).start();
     }
@@ -183,7 +396,11 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
-        if (player != null) syncUIWithPlayer();
+        if (player != null) {
+            syncUIWithPlayer();
+            nowPlayingTitle.setSelected(true);
+            nowPlayingArtist.setSelected(true);
+        }
     }
 
     @Override
@@ -192,9 +409,14 @@ public class SettingsActivity extends AppCompatActivity {
         if (controllerFuture != null) {
             MediaController.releaseFuture(controllerFuture);
         }
+        if (localEqualizer != null) {
+            localEqualizer.release();
+            localEqualizer = null;
+        }
         handler.removeCallbacks(updateProgressAction);
     }
 
+    @UnstableApi
     private void initializeController() {
         SessionToken sessionToken = new SessionToken(this, new ComponentName(this, PlaybackService.class));
         controllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
@@ -208,7 +430,11 @@ public class SettingsActivity extends AppCompatActivity {
         }, MoreExecutors.directExecutor());
     }
 
+    @UnstableApi
     private void onControllerConnected() {
+        int sessionId = player.getSessionExtras().getInt("audio_session_id", 0);
+        setupEqualizer(sessionId);
+
         player.addListener(new Player.Listener() {
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
@@ -222,8 +448,12 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 updatePlayPauseIcon();
-                if (isPlaying) handler.post(updateProgressAction);
-                else handler.removeCallbacks(updateProgressAction);
+                if (isPlaying) {
+                    handler.removeCallbacks(updateProgressAction);
+                    handler.post(updateProgressAction);
+                } else {
+                    handler.removeCallbacks(updateProgressAction);
+                }
             }
             @Override
             public void onRepeatModeChanged(int repeatMode) {
@@ -238,14 +468,20 @@ public class SettingsActivity extends AppCompatActivity {
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
+        
+        nowPlayingTitle.setSelected(true);
+        nowPlayingArtist.setSelected(true);
     }
 
     private void syncUIWithPlayer() {
         if (player == null) return;
         updateUIForNowPlaying(player.getCurrentMediaItem());
+        
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
-        seekBar.setMax((int) duration);
+        if (duration > 0) {
+            seekBar.setMax((int) duration);
+        }
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
@@ -264,74 +500,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             nowPlayingTitle.setText(title);
             nowPlayingArtist.setText(artist);
-            nowPlayingTitle.setScrollX(0);
-            nowPlayingArtist.setScrollX(0);
-
-            nowPlayingTitle.post(() -> syncMarquees(nowPlayingTitle, title, nowPlayingArtist, artist));
+            
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             nowPlayingTitle.setText("Select a song");
             nowPlayingArtist.setText("");
-            nowPlayingTitle.setScrollX(0);
-            nowPlayingArtist.setScrollX(0);
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
-    }
-
-    private void syncMarquees(TextView tv1, String text1, TextView tv2, String text2) {
-        if (tv1.getTag() instanceof ValueAnimator) ((ValueAnimator) tv1.getTag()).cancel();
-        if (tv2.getTag() instanceof ValueAnimator) ((ValueAnimator) tv2.getTag()).cancel();
-
-        float w1 = tv1.getPaint().measureText(text1) - (tv1.getWidth() - tv1.getPaddingLeft() - tv1.getPaddingRight());
-        float w2 = tv2.getPaint().measureText(text2) - (tv2.getWidth() - tv2.getPaddingLeft() - tv2.getPaddingRight());
-
-        int maxScroll1 = Math.max(0, (int) w1);
-        int maxScroll2 = Math.max(0, (int) w2);
-
-        if (maxScroll1 == 0 && maxScroll2 == 0) return;
-
-        int longestScroll = Math.max(maxScroll1, maxScroll2);
-        long totalDuration = Math.max(3000, longestScroll * 15L);
-
-        ValueAnimator masterAnimator = ValueAnimator.ofFloat(0f, 1f);
-        masterAnimator.setInterpolator(new LinearInterpolator());
-        masterAnimator.setDuration(totalDuration);
-
-        masterAnimator.addUpdateListener(animation -> {
-            float fraction = (float) animation.getAnimatedValue();
-            if (maxScroll1 > 0) tv1.setScrollX((int) (fraction * maxScroll1));
-            if (maxScroll2 > 0) tv2.setScrollX((int) (fraction * maxScroll2));
-        });
-
-        masterAnimator.addListener(new AnimatorListenerAdapter() {
-            private final Handler marqueeHandler = new Handler(Looper.getMainLooper());
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (tv1.getTag() == masterAnimator) {
-                    marqueeHandler.postDelayed(() -> {
-                        if (tv1.getTag() == masterAnimator) {
-                            tv1.setScrollX(0);
-                            tv2.setScrollX(0);
-                            marqueeHandler.postDelayed(() -> {
-                                if (tv1.getTag() == masterAnimator) {
-                                    masterAnimator.start();
-                                }
-                            }, 2000);
-                        }
-                    }, 5000);
-                }
-            }
-        });
-
-        tv1.setTag(masterAnimator);
-        tv2.setTag(masterAnimator);
-
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (tv1.getTag() == masterAnimator) {
-                masterAnimator.start();
-            }
-        }, 2000);
     }
 
     private void updatePlayPauseIcon() {
@@ -347,10 +522,10 @@ public class SettingsActivity extends AppCompatActivity {
         btnRepeat.setAlpha(mode == Player.REPEAT_MODE_OFF ? 0.4f : 1.0f);
     }
 
-    private void updateTimers(long currentPos, long duration) {
-        if (duration < 0) duration = 0;
+    private void updateTimers(long currentPos, long durationMs) {
+        if (durationMs < 0) durationMs = 0;
         currentTimeText.setText(formatTime(currentPos));
-        remainingTimeText.setText("-" + formatTime(Math.max(0, duration - currentPos)));
+        remainingTimeText.setText("-" + formatTime(Math.max(0, durationMs - currentPos)));
     }
 
     private String formatTime(long millis) {

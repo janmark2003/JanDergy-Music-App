@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+
+    
+    <!-- Headphone Arc (Top) - Scaled for splash -->
+    <path
+        android:pathData="M60,96C60,63 76,41 100,41C124,41 140,63 140,96"
+        android:strokeColor="#7C4DFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    
+    <!-- Headphone padding/cushion -->
+    <!-- <path
+        android:pathData="M88,33C90,29 95,27 100,27C105,27 110,29 112,33"
+        android:strokeColor="#B3FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" /> -->
+    
+    <!-- Left Headphone Ear Cup - Scaled -->
+    <path
+        android:pathData="M52,86C40,86 35,93 35,103L35,129C35,139 40,146 52,146C64,146 69,139 69,129L69,103C69,93 64,86 52,86Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="35"
+                android:startY="86"
+                android:endX="69"
+                android:endY="146"
+                android:startColor="#7C4DFF"
+                android:endColor="#3700B3" />
+        </aapt:attr>
+    </path>
+    
+    <!-- Right Headphone Ear Cup - Scaled -->
+    <path
+        android:pathData="M148,86C136,86 131,93 131,103L131,129C131,139 136,146 148,146C160,146 165,139 165,129L165,103C165,93 160,86 148,86Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="131"
+                android:startY="86"
+                android:endX="165"
+                android:endY="146"
+                android:startColor="#7C4DFF"
+                android:endColor="#3700B3" />
+        </aapt:attr>
+    </path>
+    
+    <!-- Left Ear Cup Inner Detail -->
+    <path
+        android:pathData="M52,95C45,95 42,99 42,103L42,129C42,133 45,137 52,137C59,137 62,133 62,129L62,103C62,99 59,95 52,95Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.6" />
+    
+    <!-- Right Ear Cup Inner Detail -->
+    <path
+        android:pathData="M148,95C141,95 138,99 138,103L138,129C138,133 141,137 148,137C155,137 158,133 158,129L158,103C158,99 155,95 148,95Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.6" />
+    
+    <!-- Central Play Button Circle - Larger for splash -->
+    <path
+        android:pathData="M100,111m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="100"
+                android:centerY="111"
+                android:gradientRadius="32"
+                android:startColor="#7C4DFF"
+                android:centerColor="#6C3DFF"
+                android:endColor="#3700B3" />
+        </aapt:attr>
+    </path>
+    
+    <!-- Play Button Shadow -->
+    <!-- <path
+        android:pathData="M100,103m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0"
+        android:fillColor="#000000"
+        android:fillAlpha="0.08" /> -->
+    
+    <!-- Play Triangle - Larger and centered -->
+    <path
+        android:pathData="M85,89C85,86 87,84 90,86L125,106C128,108 128,114 125,116L90,136C87,138 85,136 85,133Z"
+        android:fillColor="#FFFFFF" />
+    
+    <!-- Sound waves emanating from headphones -->
+    <!-- <path
+        android:pathData="M175,80C185,95 190,105 190,115C190,125 185,135 175,150"
+        android:strokeColor="#F2FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    
+    <path
+        android:pathData="M25,80C15,95 10,105 10,115C10,125 15,135 25,150"
+        android:strokeColor="#F2FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" /> -->
+
+</vector> 

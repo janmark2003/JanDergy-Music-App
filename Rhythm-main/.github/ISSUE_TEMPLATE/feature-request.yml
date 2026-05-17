@@ -1,0 +1,59 @@
+name: Feature Request
+description: Used for requesting features taking into account the complexity to implement
+title: "[FEATURE]: "
+labels: ["feature request"]
+assignees: ["cromaguy"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A brief description of the feature you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Problem/Use Case
+      description: What problem does this feature solve? What use case does it address?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution in detail.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: Based on your understanding, how complex is this to implement?
+      options:
+        - Low (Minor UI tweak / Simple logic)
+        - Medium (New UI component / Moderate logic)
+        - High (Major architectural change / Complex logic)
+        - Not sure
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples that might help illustrate the feature.
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: If you have thoughts on how this could be implemented, feel free to share them.
+      render: markdown

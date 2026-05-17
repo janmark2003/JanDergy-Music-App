@@ -1,9 +1,12 @@
 package com.jandergy.myjandergymusic;
 
 import android.Manifest;
+import android.widget.ImageView;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.view.animation.OvershootInterpolator;
+import com.google.android.material.card.MaterialCardView;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.SharedPreferences;
@@ -22,6 +25,7 @@ import android.transition.ChangeTransform;
 import android.transition.Fade;
 import android.transition.TransitionSet;
 import android.view.View;
+import android.view.animation.AnticipateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
@@ -30,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import android.content.Intent;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -83,12 +88,22 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private MusicSectionsAdapter sectionsAdapter;
 
-    private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
+    private MarqueeTextView nowPlayingTitle, nowPlayingArtist;
+    private TextView currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow, btnSettings;
     private ImageButton btnPrev, btnNext;
     private SearchView searchView;
     private TabLayout tabLayout;
+
+    private View splashScreen;
+    private ImageView splashLogo, logoInHeader;
+    private TextView splashCopyright;
+    private MaterialCardView headerPanel, libraryPanel, playerControls;
+    private android.widget.FrameLayout musicNotesContainer;
+
+    private boolean libraryLoaded = false;
+    private boolean splashFinished = false;
 
     private final AudioAdapter.OnItemClickListener itemClickListener = new AudioAdapter.OnItemClickListener() {
         @Override
@@ -116,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 long duration = player.getDuration();
                 seekBar.setProgress((int) currentPos);
                 updateTimers(currentPos, duration);
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 200);
             }
         }
     };
@@ -237,9 +252,12 @@ public class MainActivity extends AppCompatActivity {
     private void syncUIWithPlayer() {
         if (player == null) return;
         updateUIForNowPlaying(player.getCurrentMediaItem());
+
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
-        seekBar.setMax((int) duration);
+        if (duration > 0) {
+            seekBar.setMax((int) duration);
+        }
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
@@ -252,6 +270,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initUI() {
+        splashScreen = findViewById(R.id.splash_screen);
+        splashLogo = findViewById(R.id.splash_logo);
+        splashCopyright = findViewById(R.id.splash_copyright);
+        musicNotesContainer = findViewById(R.id.music_notes_container);
+        logoInHeader = findViewById(R.id.logo);
+        headerPanel = findViewById(R.id.header_panel);
+        libraryPanel = findViewById(R.id.library_panel);
+        playerControls = findViewById(R.id.player_controls);
+
+        // Set initial states for animation
+        logoInHeader.setAlpha(1f); // Always show header logo now
+        headerPanel.setAlpha(0f);
+        libraryPanel.setAlpha(0f);
+        playerControls.setAlpha(0f);
+
+        // Update copyright text with dynamic info
+        String appVersion = "1.0";
+        try {
+            appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException ignored) {}
+        splashCopyright.setText(String.format("[%s, %s] Janmark The Blue Dragon\nAll Rights Reserved", appVersion, Build.MODEL));
+
         viewPager = findViewById(R.id.view_pager);
         sectionsAdapter = new MusicSectionsAdapter(this);
 
@@ -339,6 +379,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        OnBackPressedCallback backCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Handle Back for Artist Tab
+                MusicListFragment artistFragment = sectionsAdapter.getFragment(1);
+                if (viewPager.getCurrentItem() == 1 && artistFragment.handleBack()) {
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, backCallback);
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -361,74 +416,13 @@ public class MainActivity extends AppCompatActivity {
 
             nowPlayingTitle.setText(title);
             nowPlayingArtist.setText(artist);
-            nowPlayingTitle.setScrollX(0);
-            nowPlayingArtist.setScrollX(0);
-
-            nowPlayingTitle.post(() -> syncMarquees(nowPlayingTitle, title, nowPlayingArtist, artist));
+            
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             nowPlayingTitle.setText("Select a song");
             nowPlayingArtist.setText("");
-            nowPlayingTitle.setScrollX(0);
-            nowPlayingArtist.setScrollX(0);
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
-    }
-
-    private void syncMarquees(TextView tv1, String text1, TextView tv2, String text2) {
-        if (tv1.getTag() instanceof ValueAnimator) ((ValueAnimator) tv1.getTag()).cancel();
-        if (tv2.getTag() instanceof ValueAnimator) ((ValueAnimator) tv2.getTag()).cancel();
-
-        float w1 = tv1.getPaint().measureText(text1) - (tv1.getWidth() - tv1.getPaddingLeft() - tv1.getPaddingRight());
-        float w2 = tv2.getPaint().measureText(text2) - (tv2.getWidth() - tv2.getPaddingLeft() - tv2.getPaddingRight());
-
-        int maxScroll1 = Math.max(0, (int) w1);
-        int maxScroll2 = Math.max(0, (int) w2);
-
-        if (maxScroll1 == 0 && maxScroll2 == 0) return;
-
-        int longestScroll = Math.max(maxScroll1, maxScroll2);
-        long totalDuration = Math.max(3000, longestScroll * 15L);
-
-        ValueAnimator masterAnimator = ValueAnimator.ofFloat(0f, 1f);
-        masterAnimator.setInterpolator(new LinearInterpolator());
-        masterAnimator.setDuration(totalDuration);
-
-        masterAnimator.addUpdateListener(animation -> {
-            float fraction = (float) animation.getAnimatedValue();
-            if (maxScroll1 > 0) tv1.setScrollX((int) (fraction * maxScroll1));
-            if (maxScroll2 > 0) tv2.setScrollX((int) (fraction * maxScroll2));
-        });
-
-        masterAnimator.addListener(new AnimatorListenerAdapter() {
-            private final Handler marqueeHandler = new Handler(Looper.getMainLooper());
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (tv1.getTag() == masterAnimator) {
-                    marqueeHandler.postDelayed(() -> {
-                        if (tv1.getTag() == masterAnimator) {
-                            tv1.setScrollX(0);
-                            tv2.setScrollX(0);
-                            marqueeHandler.postDelayed(() -> {
-                                if (tv1.getTag() == masterAnimator) {
-                                    masterAnimator.start();
-                                }
-                            }, 2000);
-                        }
-                    }, 5000);
-                }
-            }
-        });
-
-        tv1.setTag(masterAnimator);
-        tv2.setTag(masterAnimator);
-
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (tv1.getTag() == masterAnimator) {
-                masterAnimator.start();
-            }
-        }, 2000);
     }
 
     private void updatePlayPauseIcon() {
@@ -598,6 +592,113 @@ public class MainActivity extends AppCompatActivity {
         sectionsAdapter.getFragment(1).updateList(sectionData.artistItems);
         sectionsAdapter.getFragment(2).updateList(sectionData.recentItems);
         sectionsAdapter.getFragment(3).updateList(sectionData.favoriteItems);
+
+        if (!libraryLoaded) {
+            libraryLoaded = true;
+            checkStartEntranceAnimation();
+        }
+    }
+
+    private void checkStartEntranceAnimation() {
+        if (libraryLoaded && !splashFinished) {
+            startEntranceAnimation();
+        }
+    }
+
+    private void startEntranceAnimation() {
+        splashFinished = true;
+
+        // 1. Fade out copyright text and shrink logo
+        splashCopyright.animate().alpha(0f).setDuration(400).start();
+        splashLogo.animate()
+                .scaleX(0f)
+                .scaleY(0f)
+                .alpha(0f)
+                .setDuration(600)
+                .setInterpolator(new AnticipateInterpolator())
+                .start();
+
+        // 2. Show and animate music notes exploding from center
+        musicNotesContainer.setVisibility(View.VISIBLE);
+        for (int i = 0; i < 10; i++) {
+            showAnimatedNote(i);
+        }
+
+        // 3. Fade out splash background after notes animation starts
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            splashScreen.animate()
+                    .alpha(0f)
+                    .setDuration(1000)
+                    .withEndAction(() -> splashScreen.setVisibility(View.GONE))
+                    .start();
+        }, 1200);
+
+        // 4. Bubbly entrance for app elements
+        animateBubbly(headerPanel, 1500);
+        animateBubbly(libraryPanel, 1750);
+        animateBubbly(playerControls, 2000);
+    }
+
+    private void showAnimatedNote(int index) {
+        ImageView note = new ImageView(this);
+        note.setImageResource(R.drawable.ic_music_note);
+        int size = (int) (30 + Math.random() * 35);
+        android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
+                (int) (size * getResources().getDisplayMetrics().density),
+                (int) (size * getResources().getDisplayMetrics().density));
+        note.setLayoutParams(params);
+        
+        musicNotesContainer.addView(note);
+
+        // Position it exactly in the center to start
+        float centerX = musicNotesContainer.getWidth() / 2f - (size * getResources().getDisplayMetrics().density) / 2f;
+        float centerY = musicNotesContainer.getHeight() / 2f - (size * getResources().getDisplayMetrics().density) / 2f;
+        
+        note.setX(centerX);
+        note.setY(centerY);
+        note.setAlpha(0f);
+        note.setScaleX(0f);
+        note.setScaleY(0f);
+
+        // Random end position (explosion effect)
+        float angle = (float) (Math.random() * 2 * Math.PI);
+        float dist = (float) (250 + Math.random() * 450);
+        float endX = centerX + (float) Math.cos(angle) * dist;
+        float endY = centerY + (float) Math.sin(angle) * dist;
+
+        note.animate()
+                .alpha(1f)
+                .scaleX(1.2f)
+                .scaleY(1.2f)
+                .translationX(endX)
+                .translationY(endY)
+                .rotation(angle * 100)
+                .setDuration(1600)
+                .setStartDelay(index * 80L)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> {
+                    note.animate()
+                            .alpha(0f)
+                            .scaleX(0.4f)
+                            .scaleY(0.4f)
+                            .setDuration(600)
+                            .start();
+                })
+                .start();
+    }
+
+    private void animateBubbly(View v, long delay) {
+        v.setScaleX(0.4f);
+        v.setScaleY(0.4f);
+        v.setAlpha(0f);
+        v.animate()
+                .scaleX(1f)
+                .scaleY(1f)
+                .alpha(1f)
+                .setStartDelay(delay)
+                .setDuration(1000)
+                .setInterpolator(new OvershootInterpolator(1.4f))
+                .start();
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {

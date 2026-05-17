@@ -1,0 +1,370 @@
+# Rhythm Features Overview
+
+Complete guide to all features and capabilities in Rhythm Music Player.
+
+---
+
+## 🎵 Audio Playback
+
+### Professional Media3 ExoPlayer Engine
+- **Gapless Playback**: Seamless transitions between tracks
+- **High-Resolution Audio**: Support for FLAC, ALAC, WAV up to 192kHz/24-bit
+- **Format Support**: MP3, AAC, Opus, Vorbis, EAC3-JOC (Dolby Atmos) via FFmpeg, and more
+- **High-Resolution Audio Mode**: Preserve native sample rates and bit depths, bypassing Android processing
+- **Smart Buffering**: Optimized for smooth playback
+
+### Advanced Playback Controls
+- Play, Pause, Skip, Previous
+- Seek with precision timeline
+- Shuffle and Repeat modes (All, One, Off)
+- Queue management with drag-and-drop reordering
+- Playback speed control
+- Sleep timer with fade-out
+- Auto-resume after restart or reboot
+
+---
+
+## 🎨 Material You Design
+
+### Dynamic Theming
+- **Material 3 Expressive**: Updated adaptive shapes, fluid motion, and refined components (v4.2+)
+- **Material You**: Automatic color extraction from wallpaper (Android 12+)
+- **Light/Dark Modes**: System, light, or dark theme
+- **Custom Color Schemes**: Create personalized palettes
+- **Festive Themes**: Seasonal decorations (Christmas, Halloween, etc.)
+- **Font Customization**: Choose from system fonts or import custom fonts
+
+### Modern UI Components
+- Edge-to-edge design with gesture navigation
+- Smooth animations and transitions
+- Responsive layouts for phones, tablets, and foldables
+- Split-screen and multi-window support
+- Adaptive icons and dynamic shortcuts
+
+---
+
+## 🎤 Synchronized Lyrics
+
+### LRCLib Integration
+- **Real-time Lyrics**: Word-by-word synchronized highlighting
+- **Community Database**: Access to thousands of synced lyrics
+- **Karaoke Mode**: Follow along with precise timing
+- **Seek by Tapping**: Jump to specific lyrics timestamp
+- **Auto-Scroll**: Automatic scrolling during playback
+- **Manual Reload**: Refresh lyrics on demand
+
+### Lyrics Management
+- Sync adjustment controls (±offset)
+- Support for embedded lyrics (ID3, Vorbis comments)
+- Multiple language support
+- Save custom sync offsets per track
+- Offline embedded lyrics fallback
+
+---
+
+## 🎛️ Audio Enhancement
+
+### 10-Band Professional Equalizer
+- **Frequency Bands**: 31Hz, 62Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz
+- **Preset Profiles**: Flat, Rock, Pop, Jazz, Classical, Electronic, Hip Hop, Vocal Boost
+- **Custom EQ**: Create and save personalized profiles
+- **Real-time Processing**: Instant audio adjustments
+- **Import/Export**: Share EQ profiles
+
+### AutoEQ Integration
+- **6032+ Device Presets**: Optimized profiles for headphones and speakers
+- **Automatic Detection**: Recognize connected audio devices
+- **Smart Suggestions**: Recommend profiles for detected devices
+- **Profile Search**: Find presets by brand and model
+- **Device Management**: Save and organize your audio devices
+
+### Audio Effects
+- **Bass Boost**: Enhance low frequencies (0-1000)
+- **Virtualizer/Spatial Audio**: 3D sound effect (Android 13+)
+- **Volume Normalization**: Consistent playback levels
+- **Audio Focus**: Automatic pause for calls and notifications
+
+---
+
+## 📚 Library Management
+
+### Smart Organization
+- **Songs**: All tracks with sorting and filtering
+- **Albums**: Album-based browsing with artwork
+- **Artists**: Artist-based organization with album grouping
+- **Playlists**: Custom and auto-generated playlists
+- **Genres**: Genre-based categorization
+- **Folders**: File system browser
+
+### Search & Discovery
+- **Instant Search**: Real-time results across all categories
+- **Fuzzy Matching**: Find songs with approximate spelling
+- **Multi-Category Search**: Search songs, albums, artists simultaneously
+- **Recent Searches**: Quick access to previous searches
+- **Search Filters**: Filter by artist, album, or genre
+
+### Metadata Editing
+- Edit song title, artist, album, genre
+- Modify track number and year
+- Album artwork editing (embed or fetch online)
+- Batch metadata operations
+- Automatic metadata detection
+
+---
+
+## 📋 Playlist Features
+
+### Playlist Management
+- **Create/Edit/Delete**: Full playlist control
+- **Drag & Drop Reordering**: Visual song arrangement
+- **Multi-Select**: Batch add/remove operations
+- **Smart Playlists**: Recently Added, Most Played, Favorites
+- **Grid/List Views**: Switch between viewing modes
+- **Playlist Artwork**: Auto-generated from songs
+
+### Import/Export
+- **Formats**: JSON, M3U, M3U8, PLS
+- **Bulk Export**: Export all playlists at once
+- **Custom Locations**: Choose export directory
+- **Import from Files**: Load external playlists
+- **Cross-Platform**: Compatible with other players
+
+---
+
+## 📊 Playback Statistics
+
+### Rhythm Stats
+- **Play Count**: Track listening frequency
+- **Total Playtime**: Accumulated listening hours
+- **Most Played**: Top songs, albums, artists
+- **Recently Played**: Listening history
+- **Skip Rate**: Track skip statistics
+- **Listening Trends**: Visualize habits over time
+
+### Listening Insights
+- Daily, weekly, monthly breakdowns
+- Genre distribution analysis
+- Peak listening times
+- Favorite artists ranking
+- Album completion rates
+
+---
+
+## 📱 Home Screen Widgets
+
+### Glance Widgets (Modern)
+- **6 Responsive Layouts**: 2x1, 2x2, 3x2, 4x2, 3x3, 4x4
+- **Material 3 Design**: Dynamic colors and theming
+- **Real-time Updates**: Instant playback state sync
+- **Playback Controls**: Play/pause, skip controls
+- **Album Art**: Dynamic artwork display
+- **Customizable**: Corner radius and transparency settings
+
+### Legacy Widgets
+- **7 RemoteViews Layouts**: Including 5x5 size
+- **Compatibility**: Works on all Android versions
+- **Battery Efficient**: Optimized background updates
+- **Theme Adaptive**: Matches system theme
+
+---
+
+## 🌐 Online Integration
+
+### LRCLib
+- Community-driven lyrics database
+- Automatic lyrics fetching
+- Configurable API endpoints
+- Offline fallback support
+
+### Deezer API
+- High-quality album artwork
+- Automatic artwork downloading
+- Smart fallback images
+- Configurable fetch settings
+
+### GitHub Updates
+- Automatic update checking
+- In-app update notifications
+- Direct APK downloads
+- Smart update polling
+- Background update checks
+
+### Optional Integrations
+- **Deezer** — high-quality album artwork fetching
+- **YouTube Music** — additional artwork lookup
+- **LRCLib** — community synced lyrics database
+- Last.fm scrobbling
+- Discord Rich Presence
+
+---
+
+## ⚙️ Settings & Customization
+
+### Playback Settings
+- Audio focus behavior
+- Headphone auto-play
+- Bluetooth auto-resume
+- Resume on boot
+- Gapless playback toggle
+- Audio output selection
+
+### Library Settings
+- Media scan intervals
+- Blacklist/whitelist folders
+- Minimum duration filter
+- Auto-scan on startup
+- Storage location preferences
+- Cache management
+
+### Appearance Settings
+- Theme selection (Light/Dark/System)
+- Material You dynamic colors
+- Festive theme toggles
+- Font selection
+- Layout density
+- Animation speed
+- Home screen customization
+
+### Advanced Features
+- Settings search
+- Backup & Restore
+- Auto-backup scheduling
+- Export app settings
+- Developer options
+- Debug logs
+- Crash log history
+
+---
+
+## 🔔 Notifications
+
+### Media Notification
+- **Rich Controls**: Play/pause, skip, previous, favorite
+- **Album Artwork**: Dynamic cover art
+- **Seek Bar**: Timeline scrubbing
+- **Metadata**: Song, artist, album info
+- **Persistent**: Continues in background
+- **Android 13+ Style**: Modern notification design
+
+### Update Notifications
+- New version alerts
+- Automatic check scheduling
+- Smart polling intervals
+- Silent background checks
+- Customizable notification preferences
+
+---
+
+## 🔒 Privacy & Security
+
+### Privacy First
+- ✅ No analytics or tracking
+- ✅ No personal data collection
+- ✅ All data stored locally
+- ✅ No background data transmission
+- ✅ Optional internet features only
+
+### Permissions
+- Granular permission controls
+- Transparent permission usage
+- Android 13+ media permissions
+- Scoped storage (Android 11+)
+- Minimal permission requirements
+
+---
+
+## 💾 Backup & Restore
+
+### Backup Features
+- Full settings backup
+- Playlist export
+- Custom EQ profiles
+- Auto-backup scheduling
+- Cloud storage compatible
+- Encrypted backups (optional)
+
+### Restore Options
+- Settings restoration
+- Playlist import
+- Cross-device sync
+- Version migration support
+
+---
+
+## 🎯 Gestures & Controls
+
+### Playback Gestures
+- Swipe up/down: Volume control
+- Swipe left/right: Skip tracks (configurable)
+- Double-tap: Play/pause
+- Long-press: Context menu
+- Drag album art: Seek
+
+### Library Gestures
+- Pull-to-refresh: Rescan library
+- Swipe actions: Quick playlist add
+- Pinch-to-zoom: Grid density (planned)
+
+---
+
+## 🔄 Updates & Maintenance
+
+### Auto-Update System
+- GitHub integration
+- Background update checks
+- Smart polling (battery-aware)
+- In-app installation
+- Update notifications
+- Version tracking
+
+### Maintenance Features
+- Cache clearing
+- Library optimization
+- Database cleanup
+- Temporary file removal
+- Storage usage monitoring
+
+---
+
+## 📖 Additional Features
+
+### File Explorer
+- Browse music by folder structure
+- File-based organization
+- Quick folder access
+- External storage support
+
+### Queue Management
+- Current queue viewing
+- Queue history
+- Save queue as playlist
+- Clear queue option
+- Queue shuffle
+
+### Accessibility
+- Screen reader support
+- High contrast modes
+- Large text options
+- Haptic feedback controls
+- Keyboard navigation
+
+---
+
+## 🔮 Upcoming Features
+
+### In Development / Planned
+- Desktop companion app
+- Cloud sync
+- Collaborative playlists
+- Advanced visualizations
+- Podcast support
+
+---
+
+**Want more details?** Check out:
+- [Getting Started Guide](https://github.com/cromaguy/Rhythm/wiki/Getting-Started)
+- [Audio Formats](https://github.com/cromaguy/Rhythm/wiki/Audio-Formats)
+- [Technology Stack](https://github.com/cromaguy/Rhythm/wiki/Technology-Stack)
+- [FAQ](https://github.com/cromaguy/Rhythm/wiki/FAQ)
+
+**Have questions?** Join our [Telegram Community](https://t.me/RhythmSupport)!

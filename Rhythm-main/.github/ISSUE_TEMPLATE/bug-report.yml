@@ -1,0 +1,96 @@
+name: Bug Report
+description: Used for reporting issues faced by users and want them addressed
+title: "[BUG]: "
+labels: ["bug"]
+assignees: ["cromaguy"]
+body:
+  - type: markdown
+    attributes:
+      value: "## FAILURE TO COMPLETE THE BUG REPORT WILL RESULT IN YOUR ISSUE BEING DROPPED!"
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Tell us how to see the error.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected vs Actual Behavior
+      description: What did you expect to happen, and what happened instead?
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      placeholder: "e.g., 4.2.334.905-gh"
+    validations:
+      required: true
+
+  - type: input
+    id: android_version
+    attributes:
+      label: Android Version
+      placeholder: "e.g., Android 13"
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      placeholder: "e.g., Samsung Galaxy S23 or FiiO M21"
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Installation Method
+      options:
+        - GitHub Releases
+        - IzzyOnDroid
+        - F-Droid
+        - Manual Build (Source)
+        - Other
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: |
+        - When did this start happening?
+        - Does this happen consistently?
+        - Any recent changes to your device/setup?
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: If applicable, include relevant log output or error messages.
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Attach screenshots here if necessary.

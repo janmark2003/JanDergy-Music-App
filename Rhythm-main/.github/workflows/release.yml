@@ -1,0 +1,84 @@
+name: Build Release APK
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper versioning
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: gradle
+
+      - name: Setup Android-SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create files for signing
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+          SIGNING_PROPERTIES: ${{ secrets.SIGNING_PROPERTIES }}
+          PRIVATE_PROPERTIES: ${{ secrets.PRIVATE_PROPERTIES }}
+        run: |
+          mkdir -p config/signing
+          mkdir -p .config
+          printf '%s' "$SIGNING_KEYSTORE" | base64 -di > ./config/signing/rhythm_keystore.jks
+          printf '%s' "$SIGNING_PROPERTIES" | base64 -di > ./.config/keystore.properties
+          printf '%s' "$PRIVATE_PROPERTIES" | base64 -di > ./config/signing/private.properties
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Build app (GitHub and F-Droid flavors)
+        run: ./gradlew assembleGithubRelease assembleFdroidRelease --stacktrace
+
+      - name: Generate checksums
+        run: |
+          cd app/build/outputs/apk/github/release
+          for file in Rhythm-*-githubRelease*.apk; do
+            if [ -f "$file" ]; then
+              sha256sum "$file" > "$file.sha256"
+              md5sum "$file" > "$file.md5"
+            fi
+          done
+          cd $GITHUB_WORKSPACE/app/build/outputs/apk/fdroid/release
+          for file in Rhythm-*-fdroidRelease*.apk; do
+            if [ -f "$file" ]; then
+              sha256sum "$file" > "$file.sha256"
+              md5sum "$file" > "$file.md5"
+            fi
+          done
+
+      - name: Set prerelease flag
+        id: prerelease
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *alpha* || "$TAG" == *beta* || "$TAG" == *rc* ]]; then
+            echo "value=true" >> $GITHUB_OUTPUT
+          else
+            echo "value=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ steps.prerelease.outputs.value }}
+          generate_release_notes: true
+          files: |
+            app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk
+            app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk.sha256
+            app/build/outputs/apk/github/release/Rhythm-*-githubRelease*.apk.md5
+            app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk
+            app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk.sha256
+            app/build/outputs/apk/fdroid/release/Rhythm-*-fdroidRelease*.apk.md5

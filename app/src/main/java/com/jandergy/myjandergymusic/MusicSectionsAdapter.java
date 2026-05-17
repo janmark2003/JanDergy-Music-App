@@ -15,6 +15,9 @@ public class MusicSectionsAdapter extends FragmentStateAdapter {
         // Instantiated immediately so they always match what ViewPager2 renders
         for (int i = 0; i < fragments.length; i++) {
             fragments[i] = new MusicListFragment();
+            if (i == 1) { // Artist tab
+                fragments[i].setArtistTab(true);
+            }
         }
     }
 
