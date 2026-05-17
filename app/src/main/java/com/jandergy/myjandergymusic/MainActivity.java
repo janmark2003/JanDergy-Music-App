@@ -82,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
     private MusicSectionsAdapter sectionsAdapter;
-    private MusicListFragment allFragment, artistFragment, recentFragment, favoritesFragment;
 
     private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
     private SeekBar seekBar;
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnPrev, btnNext;
     private SearchView searchView;
     private TabLayout tabLayout;
+
     private final AudioAdapter.OnItemClickListener itemClickListener = new AudioAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(AudioAdapter.AudioItem item) {
@@ -446,7 +446,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void openPlayerActivity(AudioAdapter.AudioItem item, View albumArtView) {
         playAudio(item);
-
         setUIVisibility(false);
 
         Intent intent = new Intent(this, FullScreenPlayerActivity.class);
@@ -592,6 +591,13 @@ public class MainActivity extends AppCompatActivity {
                 applySectionData(sectionData);
             });
         });
+    }
+
+    private void applySectionData(SectionData sectionData) {
+        sectionsAdapter.getFragment(0).updateList(sectionData.allItems);
+        sectionsAdapter.getFragment(1).updateList(sectionData.artistItems);
+        sectionsAdapter.getFragment(2).updateList(sectionData.recentItems);
+        sectionsAdapter.getFragment(3).updateList(sectionData.favoriteItems);
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {

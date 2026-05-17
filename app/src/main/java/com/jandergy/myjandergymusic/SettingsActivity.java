@@ -1,5 +1,8 @@
 package com.jandergy.myjandergymusic;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -8,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -35,7 +39,6 @@ public class SettingsActivity extends AppCompatActivity {
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
 
-    // Updated variables to match split Title + Artist UI design elements
     private TextView nowPlayingTitle, nowPlayingArtist, currentTimeText, remainingTimeText;
     private SeekBar seekBar;
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
@@ -72,7 +75,6 @@ public class SettingsActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Initialize user preference stores to bind active favorites heart data state
         sharedPreferences = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
 
@@ -85,7 +87,6 @@ public class SettingsActivity extends AppCompatActivity {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
 
-        // Fixed target endpoints pointing to updated title and artist layout IDs
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
 
@@ -121,7 +122,6 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        // Integrated runtime interactive response binding to toggle favorites seamlessly
         btnFavNow.setOnClickListener(v -> {
             MediaItem item = (player != null) ? player.getCurrentMediaItem() : null;
             if (item != null) {
@@ -182,7 +182,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Dynamically fetch and synchronize active local storage state keys on page wake updates
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
         if (player != null) syncUIWithPlayer();
     }
@@ -250,6 +249,8 @@ public class SettingsActivity extends AppCompatActivity {
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
+        updatePlayPauseIcon();
+
         if (player.isPlaying()) {
             handler.removeCallbacks(updateProgressAction);
             handler.post(updateProgressAction);
@@ -263,12 +264,74 @@ public class SettingsActivity extends AppCompatActivity {
 
             nowPlayingTitle.setText(title);
             nowPlayingArtist.setText(artist);
+            nowPlayingTitle.setScrollX(0);
+            nowPlayingArtist.setScrollX(0);
+
+            nowPlayingTitle.post(() -> syncMarquees(nowPlayingTitle, title, nowPlayingArtist, artist));
             btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             nowPlayingTitle.setText("Select a song");
             nowPlayingArtist.setText("");
+            nowPlayingTitle.setScrollX(0);
+            nowPlayingArtist.setScrollX(0);
             btnFavNow.setImageResource(R.drawable.ic_heart_outline);
         }
+    }
+
+    private void syncMarquees(TextView tv1, String text1, TextView tv2, String text2) {
+        if (tv1.getTag() instanceof ValueAnimator) ((ValueAnimator) tv1.getTag()).cancel();
+        if (tv2.getTag() instanceof ValueAnimator) ((ValueAnimator) tv2.getTag()).cancel();
+
+        float w1 = tv1.getPaint().measureText(text1) - (tv1.getWidth() - tv1.getPaddingLeft() - tv1.getPaddingRight());
+        float w2 = tv2.getPaint().measureText(text2) - (tv2.getWidth() - tv2.getPaddingLeft() - tv2.getPaddingRight());
+
+        int maxScroll1 = Math.max(0, (int) w1);
+        int maxScroll2 = Math.max(0, (int) w2);
+
+        if (maxScroll1 == 0 && maxScroll2 == 0) return;
+
+        int longestScroll = Math.max(maxScroll1, maxScroll2);
+        long totalDuration = Math.max(3000, longestScroll * 15L);
+
+        ValueAnimator masterAnimator = ValueAnimator.ofFloat(0f, 1f);
+        masterAnimator.setInterpolator(new LinearInterpolator());
+        masterAnimator.setDuration(totalDuration);
+
+        masterAnimator.addUpdateListener(animation -> {
+            float fraction = (float) animation.getAnimatedValue();
+            if (maxScroll1 > 0) tv1.setScrollX((int) (fraction * maxScroll1));
+            if (maxScroll2 > 0) tv2.setScrollX((int) (fraction * maxScroll2));
+        });
+
+        masterAnimator.addListener(new AnimatorListenerAdapter() {
+            private final Handler marqueeHandler = new Handler(Looper.getMainLooper());
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (tv1.getTag() == masterAnimator) {
+                    marqueeHandler.postDelayed(() -> {
+                        if (tv1.getTag() == masterAnimator) {
+                            tv1.setScrollX(0);
+                            tv2.setScrollX(0);
+                            marqueeHandler.postDelayed(() -> {
+                                if (tv1.getTag() == masterAnimator) {
+                                    masterAnimator.start();
+                                }
+                            }, 2000);
+                        }
+                    }, 5000);
+                }
+            }
+        });
+
+        tv1.setTag(masterAnimator);
+        tv2.setTag(masterAnimator);
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (tv1.getTag() == masterAnimator) {
+                masterAnimator.start();
+            }
+        }, 2000);
     }
 
     private void updatePlayPauseIcon() {

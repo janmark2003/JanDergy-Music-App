@@ -451,6 +451,11 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         getWindow().setReturnTransition(new Fade().setDuration(180L));
     }
 
+    private void updatePlayPauseIcon() {
+        if (player != null && player.isPlaying()) btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
+        else btnPlayPause.setImageResource(R.drawable.ic_modern_play);
+    }
+
     private void updateShuffleIcon(boolean enabled) {
         btnShuffle.setAlpha(enabled ? 1.0f : 0.4f);
     }
