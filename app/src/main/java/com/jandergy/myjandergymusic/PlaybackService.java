@@ -12,7 +12,6 @@ import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
-import com.jandergy.myjandergymusic.audio.AudioUtils;
 import com.jandergy.myjandergymusic.audio.BitPerfectRenderersFactory;
 import com.jandergy.myjandergymusic.audio.RhythmBassBoostProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmSpatializationProcessor;
@@ -83,30 +82,26 @@ public class PlaybackService extends MediaSessionService {
 
     private void applySavedSettings() {
         SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-        
-        // Apply EQ bands
+
+        // Apply native EQ bands directly (no interpolation)
         if (equalizer != null) {
             short numBands = equalizer.getNumberOfBands();
-            float[] uiLevels = new float[10];
-            for (int i = 0; i < 10; i++) {
-                uiLevels[i] = prefs.getFloat("UI_EQ_Band_" + i, 0f);
-            }
-            short[] hardwareLevels = AudioUtils.interpolateBands(uiLevels, numBands);
             for (short i = 0; i < numBands; i++) {
+                int level = prefs.getInt("EQ_Band_" + i, 0);
                 try {
-                    equalizer.setBandLevel(i, hardwareLevels[i]);
+                    equalizer.setBandLevel(i, (short) level);
                 } catch (Exception ignored) {}
             }
-            
+
             boolean eqEnabled = prefs.getBoolean("EQ_Enabled", true);
             equalizer.setEnabled(eqEnabled);
         }
-        
+
         // Apply Bass Boost
         int bbStrength = prefs.getInt("BassBoost_Strength", 0);
         bassBoostProcessor.setEnabled(bbStrength > 0);
         bassBoostProcessor.setStrength((short) bbStrength);
-        
+
         // Apply Spatializer
         int spStrength = prefs.getInt("Spatializer_Strength", 0);
         spatializationProcessor.setEnabled(spStrength > 0);

@@ -1,15 +1,15 @@
 package com.jandergy.myjandergymusic;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.widget.TextView;
 
 /**
  * A robust TextView for Marquee scrolling that aggressively maintains its focused
- * and selected state. Extends standard TextView for maximum compatibility.
+ * and selected state. Extends AppCompatTextView for maximum compatibility.
  */
-public class MarqueeTextView extends TextView {
+public class MarqueeTextView extends androidx.appcompat.widget.AppCompatTextView {
 
     public MarqueeTextView(Context context) {
         super(context);
@@ -42,5 +42,19 @@ public class MarqueeTextView extends TextView {
     @Override
     public boolean isSelected() {
         return true; // Fake selection to trigger marquee
+    }
+
+    @Override
+    protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
+        if (focused) {
+            super.onFocusChanged(focused, direction, previouslyFocusedRect);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        if (hasWindowFocus) {
+            super.onWindowFocusChanged(hasWindowFocus);
+        }
     }
 }

@@ -180,9 +180,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setUIVisibility(true);
+        if (splashFinished) {
+            restoreViewStates();
+            // Post again after transition duration to catch any overrides from the return transition
+            handler.postDelayed(this::restoreViewStates, 350);
+        }
         if (player != null) {
             syncUIWithPlayer();
+            nowPlayingTitle.setSelected(true);
+            nowPlayingArtist.setSelected(true);
         }
+    }
+
+    private void restoreViewStates() {
+        headerPanel.setAlpha(1f);
+        headerPanel.setScaleX(1f);
+        headerPanel.setScaleY(1f);
+        libraryPanel.setAlpha(1f);
+        libraryPanel.setScaleX(1f);
+        libraryPanel.setScaleY(1f);
+        playerControls.setAlpha(1f);
+        playerControls.setScaleX(1f);
+        playerControls.setScaleY(1f);
+        logoInHeader.setAlpha(1f);
+        logoInHeader.setScaleX(1f);
+        logoInHeader.setScaleY(1f);
     }
 
     @Override

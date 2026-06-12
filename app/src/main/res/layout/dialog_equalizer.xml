@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_glass_panel"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Header: Title + Master Switch -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Audio Equalizer"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/eq_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:thumbTint="@color/logo_blue"
+            app:trackTint="@color/logo_blue" />
+    </RelativeLayout>
+
+    <!-- Preset Spinner -->
+    <Spinner
+        android:id="@+id/preset_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:backgroundTint="@android:color/white"
+        android:layout_marginBottom="12dp"
+        android:overlapAnchor="false"
+        android:spinnerMode="dropdown" />
+
+    <!-- EQ Bands (scrollable) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:fadeScrollbars="false"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:id="@+id/bands_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="12dp"
+        android:background="#30FFFFFF" />
+
+    <!-- Enhancements Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enhancements"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Bass Boost -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="4dp">
+
+        <TextView
+            android:id="@+id/bass_boost_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bass Boost"
+            android:textColor="#B0FFFFFF"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/bass_boost_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="0%"
+            android:textColor="#B0FFFFFF"
+            android:textSize="11sp" />
+
+        <SeekBar
+            android:id="@+id/bass_boost_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bass_boost_label"
+            android:max="1000"
+            android:progressTint="@color/logo_blue"
+            android:thumbTint="@color/logo_blue" />
+    </RelativeLayout>
+
+    <!-- Spatial Audio -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:paddingHorizontal="4dp">
+
+        <TextView
+            android:id="@+id/spatializer_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Spatial Audio"
+            android:textColor="#B0FFFFFF"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/spatializer_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="0%"
+            android:textColor="#B0FFFFFF"
+            android:textSize="11sp" />
+
+        <SeekBar
+            android:id="@+id/spatializer_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/spatializer_label"
+            android:max="1000"
+            android:progressTint="@color/logo_blue"
+            android:thumbTint="@color/logo_blue" />
+    </RelativeLayout>
+</LinearLayout>

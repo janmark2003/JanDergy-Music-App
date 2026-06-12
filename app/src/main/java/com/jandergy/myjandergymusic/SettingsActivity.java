@@ -1,10 +1,10 @@
 package com.jandergy.myjandergymusic;
 
-import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.media.audiofx.Equalizer;
 import android.net.Uri;
 import android.os.Build;
@@ -14,7 +14,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
@@ -23,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,16 +30,19 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -55,20 +58,10 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
 
-    private View settingsContent, eqContainer;
+    private View settingsContent, settingsActions;
     private ImageView characterImg;
-    private LinearLayout bandsList;
-
-    private Spinner presetSpinner;
-    private SwitchCompat eqSwitch;
-    private SeekBar bassBoostSeekBar, spatializerSeekBar;
-    private TextView bassBoostValue, spatializerValue;
 
     private Equalizer localEqualizer;
-    private short numberOfBands;
-    private final int[] uiFrequencies = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
-    private final float[] uiBandLevels = new float[10];
-
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
     private boolean isSpinnerInitializing = true;
@@ -110,53 +103,23 @@ public class SettingsActivity extends AppCompatActivity {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
 
-        eqContainer = findViewById(R.id.eq_container);
-        bandsList = findViewById(R.id.bands_list);
-        presetSpinner = findViewById(R.id.preset_spinner);
-        eqSwitch = findViewById(R.id.eq_switch);
+        settingsActions = findViewById(R.id.settings_actions);
 
-        bassBoostSeekBar = findViewById(R.id.bass_boost_seekbar);
-        bassBoostValue = findViewById(R.id.bass_boost_value);
-        spatializerSeekBar = findViewById(R.id.spatializer_seekbar);
-        spatializerValue = findViewById(R.id.spatializer_value);
+        findViewById(R.id.btn_equalizer).setOnClickListener(v -> showEqualizerDialog());
 
-        eqSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            sharedPreferences.edit().putBoolean("EQ_Enabled", isChecked).apply();
-            Intent intent = new Intent(this, PlaybackService.class);
-            intent.setAction("ACTION_SET_EQ_ENABLED");
-            intent.putExtra("enabled", isChecked);
-            startService(intent);
-        });
+        findViewById(R.id.btn_community).setOnClickListener(v ->
+            Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
+        );
 
-        bassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                bassBoostValue.setText(String.format(Locale.US, "%d%%", progress / 10));
-                if (fromUser) {
-                    sharedPreferences.edit().putInt("BassBoost_Strength", progress).apply();
-                    updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) progress);
-                }
-            }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-
-        spatializerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                spatializerValue.setText(String.format(Locale.US, "%d%%", progress / 10));
-                if (fromUser) {
-                    sharedPreferences.edit().putInt("Spatializer_Strength", progress).apply();
-                    updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) progress);
-                }
-            }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        findViewById(R.id.contact_link).setOnClickListener(v -> {
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+            emailIntent.setData(Uri.parse("mailto:janmarkthebluedragon@gmail.com"));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "JanDergy Music - Concern");
+            startActivity(Intent.createChooser(emailIntent, "Send email"));
         });
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
-
         nowPlayingTitle.setSelected(true);
         nowPlayingArtist.setSelected(true);
 
@@ -233,39 +196,13 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    @UnstableApi
-    private void setupEqualizer(int sessionId) {
+    private void initLocalEqualizer() {
         if (localEqualizer != null) return;
-
         try {
-            localEqualizer = new Equalizer(0, sessionId);
+            localEqualizer = new Equalizer(0, 0);
         } catch (Exception e) {
-            try {
-                localEqualizer = new Equalizer(0, 0);
-            } catch (Exception ex) {
-                Log.e("SettingsActivity", "Error setting up equalizer entirely", ex);
-                eqContainer.setVisibility(View.GONE);
-                return;
-            }
+            Log.e("SettingsActivity", "Error initializing local equalizer", e);
         }
-
-        numberOfBands = localEqualizer.getNumberOfBands();
-
-        boolean isEnabled = sharedPreferences.getBoolean("EQ_Enabled", true);
-        eqSwitch.setChecked(isEnabled);
-
-        int savedBassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
-        bassBoostSeekBar.setProgress(savedBassBoost);
-        bassBoostValue.setText(String.format(Locale.US, "%d%%", savedBassBoost / 10));
-        updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) savedBassBoost);
-
-        int savedSpatializer = sharedPreferences.getInt("Spatializer_Strength", 0);
-        spatializerSeekBar.setProgress(savedSpatializer);
-        spatializerValue.setText(String.format(Locale.US, "%d%%", savedSpatializer / 10));
-        updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) savedSpatializer);
-
-        setupPresetSpinner();
-        setupBandSliders();
     }
 
     private void updateEffectInService(String action, boolean enabled, short strength) {
@@ -276,24 +213,144 @@ public class SettingsActivity extends AppCompatActivity {
         startService(intent);
     }
 
-    private void setupPresetSpinner() {
-        if (localEqualizer == null) return;
-        short numPresets = localEqualizer.getNumberOfPresets();
-        String[] presets = new String[numPresets];
-        for (short i = 0; i < numPresets; i++) {
-            presets[i] = localEqualizer.getPresetName(i);
+    private void showEqualizerDialog() {
+        if (localEqualizer == null) {
+            Toast.makeText(this, "Equalizer not available", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_equalizer, null);
+        dialog.setContentView(dialogView);
+
+        View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet != null) {
+            bottomSheet.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+        SwitchCompat eqSwitch = dialogView.findViewById(R.id.eq_switch);
+        Spinner presetSpinner = dialogView.findViewById(R.id.preset_spinner);
+        LinearLayout bandsList = dialogView.findViewById(R.id.bands_list);
+        SeekBar bassBoostSeekBar = dialogView.findViewById(R.id.bass_boost_seekbar);
+        TextView bassBoostValue = dialogView.findViewById(R.id.bass_boost_value);
+        SeekBar spatializerSeekBar = dialogView.findViewById(R.id.spatializer_seekbar);
+        TextView spatializerValue = dialogView.findViewById(R.id.spatializer_value);
+
+        // Master Switch
+        eqSwitch.setChecked(sharedPreferences.getBoolean("EQ_Enabled", true));
+        eqSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean("EQ_Enabled", isChecked).apply();
+            Intent intent = new Intent(this, PlaybackService.class);
+            intent.setAction("ACTION_SET_EQ_ENABLED");
+            intent.putExtra("enabled", isChecked);
+            startService(intent);
+        });
+
+        // Bass Boost
+        int savedBassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
+        bassBoostSeekBar.setProgress(savedBassBoost);
+        bassBoostValue.setText(String.format(Locale.US, "%d%%", savedBassBoost / 10));
+        bassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                bassBoostValue.setText(String.format(Locale.US, "%d%%", progress / 10));
+                if (fromUser) {
+                    sharedPreferences.edit().putInt("BassBoost_Strength", progress).apply();
+                }
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) seekBar.getProgress());
+            }
+        });
+
+        // Spatial Audio
+        int savedSpatializer = sharedPreferences.getInt("Spatializer_Strength", 0);
+        spatializerSeekBar.setProgress(savedSpatializer);
+        spatializerValue.setText(String.format(Locale.US, "%d%%", savedSpatializer / 10));
+        spatializerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                spatializerValue.setText(String.format(Locale.US, "%d%%", progress / 10));
+                if (fromUser) {
+                    sharedPreferences.edit().putInt("Spatializer_Strength", progress).apply();
+                }
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) seekBar.getProgress());
+            }
+        });
+
+        // Preset Spinner
+        isSpinnerInitializing = true;
+        short numPresets = localEqualizer.getNumberOfPresets();
+        List<String> presets = new ArrayList<>();
+        presets.add("Custom");
+        for (short i = 0; i < numPresets; i++) {
+            presets.add(localEqualizer.getPresetName(i));
+        }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, presets);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         presetSpinner.setAdapter(adapter);
 
-        isSpinnerInitializing = true;
         int savedPreset = sharedPreferences.getInt("EQ_Preset", 0);
-        if (savedPreset < numPresets) {
-            presetSpinner.setSelection(savedPreset);
+        if (savedPreset < presets.size()) {
+            presetSpinner.setSelection(savedPreset, false);
         }
 
+        // Native Band Sliders
+        short bands = localEqualizer.getNumberOfBands();
+        short[] range = localEqualizer.getBandLevelRange();
+        int minLevel = range[0];
+        int maxLevel = range[1];
+
+        for (short i = 0; i < bands; i++) {
+            final short bandIndex = i;
+            View bandView = LayoutInflater.from(this).inflate(R.layout.item_eq_band, bandsList, false);
+
+            TextView freqText = bandView.findViewById(R.id.band_frequency);
+            SeekBar slider = bandView.findViewById(R.id.band_seekbar);
+            final TextView levelText = bandView.findViewById(R.id.band_level);
+
+            int freq = localEqualizer.getCenterFreq(bandIndex) / 1000;
+            freqText.setText(freq >= 1000 ? (freq / 1000) + " kHz" : freq + " Hz");
+
+            slider.setMax(maxLevel - minLevel);
+
+            int savedLevel = sharedPreferences.getInt("EQ_Band_" + bandIndex, 0);
+            slider.setProgress(savedLevel - minLevel);
+            levelText.setText((savedLevel / 100) + " dB");
+
+            slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    int newLevel = progress + minLevel;
+                    levelText.setText((newLevel / 100) + " dB");
+                    if (fromUser) {
+                        presetSpinner.setSelection(0);
+                        sharedPreferences.edit().putInt("EQ_Preset", 0).apply();
+                        sharedPreferences.edit().putInt("EQ_Band_" + bandIndex, newLevel).apply();
+                    }
+                }
+                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    int newLevel = seekBar.getProgress() + minLevel;
+                    Intent intent = new Intent(SettingsActivity.this, PlaybackService.class);
+                    intent.setAction("ACTION_SET_EQ_BAND");
+                    intent.putExtra("band", bandIndex);
+                    intent.putExtra("level", (short) newLevel);
+                    startService(intent);
+                }
+            });
+
+            bandsList.addView(bandView);
+        }
+
+        // Spinner listener (after bands are inflated so preset apply works)
         presetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -302,129 +359,35 @@ public class SettingsActivity extends AppCompatActivity {
                     return;
                 }
                 sharedPreferences.edit().putInt("EQ_Preset", position).apply();
-                applyPresetToUI(position);
+                if (position > 0) {
+                    try {
+                        localEqualizer.usePreset((short) (position - 1));
+                        short numBands = localEqualizer.getNumberOfBands();
+                        short[] eqRange = localEqualizer.getBandLevelRange();
+                        int min = eqRange[0];
+                        for (short b = 0; b < numBands; b++) {
+                            short level = localEqualizer.getBandLevel(b);
+                            sharedPreferences.edit().putInt("EQ_Band_" + b, level).apply();
+                            View bv = bandsList.getChildAt(b);
+                            if (bv != null) {
+                                ((SeekBar) bv.findViewById(R.id.band_seekbar)).setProgress(level - min);
+                                ((TextView) bv.findViewById(R.id.band_level)).setText((level / 100) + " dB");
+                            }
+                            Intent intent = new Intent(SettingsActivity.this, PlaybackService.class);
+                            intent.setAction("ACTION_SET_EQ_BAND");
+                            intent.putExtra("band", b);
+                            intent.putExtra("level", level);
+                            startService(intent);
+                        }
+                    } catch (Exception e) {
+                        Log.e("SettingsActivity", "Error applying preset", e);
+                    }
+                }
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
-    }
 
-    private void applyPresetToUI(int presetIndex) {
-        if (localEqualizer == null) return;
-        try {
-            localEqualizer.usePreset((short) presetIndex);
-            short hwBands = localEqualizer.getNumberOfBands();
-
-            for (int i = 0; i < uiFrequencies.length; i++) {
-                int uiFreqMilliHz = uiFrequencies[i] * 1000;
-                short bestHwBand = 0;
-                int minDiff = Integer.MAX_VALUE;
-
-                for (short j = 0; j < hwBands; j++) {
-                    int hwFreqMilliHz = localEqualizer.getCenterFreq(j);
-                    int diff = Math.abs(hwFreqMilliHz - uiFreqMilliHz);
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        bestHwBand = j;
-                    }
-                }
-
-                short hwLevelMillibels = localEqualizer.getBandLevel(bestHwBand);
-                float levelDb = hwLevelMillibels / 100f;
-
-                uiBandLevels[i] = levelDb;
-                sharedPreferences.edit().putFloat("UI_EQ_Band_" + i, levelDb).apply();
-
-                View bandView = bandsList.getChildAt(i);
-                if (bandView != null) {
-                    SeekBar slider = bandView.findViewById(R.id.band_seekbar);
-                    TextView levelText = bandView.findViewById(R.id.band_level);
-                    if (slider != null && levelText != null) {
-                        slider.setProgress((int) ((levelDb + 15) * 100));
-                        levelText.setText(String.format(Locale.US, "%.1f dB", levelDb));
-                    }
-                }
-            }
-
-            applyInterpolatedEQ();
-
-        } catch (Exception e) {
-            Log.e("SettingsActivity", "Error applying preset to UI", e);
-        }
-    }
-
-    private void setupBandSliders() {
-        if (localEqualizer == null) return;
-
-        bandsList.removeAllViews();
-        for (int i = 0; i < uiFrequencies.length; i++) {
-            final int bandIndex = i;
-            View bandView = LayoutInflater.from(this).inflate(R.layout.item_eq_band, bandsList, false);
-
-            TextView freqText = bandView.findViewById(R.id.band_frequency);
-            SeekBar slider = bandView.findViewById(R.id.band_seekbar);
-            final TextView levelText = bandView.findViewById(R.id.band_level);
-
-            String freqStr = (uiFrequencies[i] < 1000) ? uiFrequencies[i] + " Hz" : (uiFrequencies[i] / 1000) + " kHz";
-            freqText.setText(freqStr);
-            slider.setMax(3000);
-
-            float savedLevel = sharedPreferences.getFloat("UI_EQ_Band_" + bandIndex, 0f);
-            uiBandLevels[bandIndex] = savedLevel;
-            slider.setProgress((int) ((savedLevel + 15) * 100));
-            levelText.setText(String.format(Locale.US, "%.1f dB", savedLevel));
-
-            slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    float level = (progress / 100f) - 15f;
-                    uiBandLevels[bandIndex] = level;
-                    levelText.setText(String.format(Locale.US, "%.1f dB", level));
-                    if (fromUser) {
-                        applyInterpolatedEQ();
-                        sharedPreferences.edit().putFloat("UI_EQ_Band_" + bandIndex, level).apply();
-                    }
-                }
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
-
-            bandsList.addView(bandView);
-        }
-        applyInterpolatedEQ();
-    }
-
-    private void applyInterpolatedEQ() {
-        if (localEqualizer == null) return;
-        short[] hardwareLevels = interpolateBands(uiBandLevels, numberOfBands);
-
-        for (short i = 0; i < numberOfBands; i++) {
-            Intent intent = new Intent(this, PlaybackService.class);
-            intent.setAction("ACTION_SET_EQ_BAND");
-            intent.putExtra("band", i);
-            intent.putExtra("level", hardwareLevels[i]);
-            startService(intent);
-        }
-    }
-
-    private short[] interpolateBands(float[] uiLevels, int hardwareBands) {
-        short[] result = new short[hardwareBands];
-        if (hardwareBands == 5) {
-            result[0] = (short) ((uiLevels[0] * 0.3f + uiLevels[1] * 0.4f + uiLevels[2] * 0.3f) * 100);
-            result[1] = (short) ((uiLevels[3] * 0.5f + uiLevels[4] * 0.5f) * 100);
-            result[2] = (short) ((uiLevels[5] * 0.5f + uiLevels[6] * 0.5f) * 100);
-            result[3] = (short) ((uiLevels[7] * 0.5f + uiLevels[8] * 0.5f) * 100);
-            result[4] = (short) (uiLevels[9] * 100);
-        } else {
-            float ratio = (uiLevels.length - 1) / (float) (hardwareBands - 1);
-            for (int i = 0; i < hardwareBands; i++) {
-                float srcPos = i * ratio;
-                int low = (int) srcPos;
-                int high = Math.min(low + 1, uiLevels.length - 1);
-                float weight = srcPos - low;
-                result[i] = (short) ((uiLevels[low] * (1 - weight) + uiLevels[high] * weight) * 100);
-            }
-        }
-        return result;
+        dialog.show();
     }
 
     private void populateSettings() {
@@ -443,7 +406,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void startFadeInAnimations() {
-        eqContainer.animate().alpha(1f).setDuration(1200).setStartDelay(300).start();
+        settingsActions.animate().alpha(1f).setDuration(1200).setStartDelay(300).start();
         settingsContent.animate().alpha(1f).setDuration(1500).setStartDelay(500).start();
         characterImg.animate().alpha(1f).setDuration(1500).setStartDelay(800).start();
     }
@@ -471,11 +434,16 @@ public class SettingsActivity extends AppCompatActivity {
         if (controllerFuture != null) {
             MediaController.releaseFuture(controllerFuture);
         }
+        handler.removeCallbacks(updateProgressAction);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         if (localEqualizer != null) {
             localEqualizer.release();
             localEqualizer = null;
         }
-        handler.removeCallbacks(updateProgressAction);
     }
 
     @UnstableApi
@@ -494,8 +462,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @UnstableApi
     private void onControllerConnected() {
-        int sessionId = player.getSessionExtras().getInt("audio_session_id", 0);
-        setupEqualizer(sessionId);
+        initLocalEqualizer();
 
         player.addListener(new Player.Listener() {
             @Override
