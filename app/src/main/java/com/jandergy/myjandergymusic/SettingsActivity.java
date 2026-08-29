@@ -38,10 +38,15 @@ import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import androidx.viewpager2.widget.ViewPager2;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +65,10 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageButton btnPrev, btnNext;
 
     private View settingsContent, settingsActions, flyerCard;
+    private ViewPager2 flyerViewPager;
+    private final Handler slideHandler = new Handler(Looper.getMainLooper());
+    private Runnable slideRunnable;
+    private static final long AUTO_SLIDE_INTERVAL_MS = 3500;
     private android.widget.FrameLayout musicNotesContainer;
     private long lastBannerClickTime = 0;
     private ImageView characterImg;
@@ -127,8 +136,8 @@ public class SettingsActivity extends AppCompatActivity {
             int repeatMode = extras.getInt("REPEAT_MODE");
             boolean shuffleMode = extras.getBoolean("SHUFFLE_MODE");
 
-            nowPlayingTitle.setText(title);
-            nowPlayingArtist.setText(artist);
+            nowPlayingTitle.setText(FormatUtils.cleanTitle(title, null));
+            nowPlayingArtist.setText(FormatUtils.cleanArtist(artist));
 
             if (duration > 0) {
                 seekBar.setMax((int) duration);
@@ -152,15 +161,52 @@ public class SettingsActivity extends AppCompatActivity {
         characterImg = findViewById(R.id.character_img);
         settingsActions = findViewById(R.id.settings_actions);
         flyerCard = findViewById(R.id.flyer_card);
+        flyerViewPager = findViewById(R.id.flyer_view_pager);
         musicNotesContainer = findViewById(R.id.music_notes_container);
 
-        flyerCard.setOnClickListener(v -> triggerBannerAnimation());
+        if (flyerViewPager != null) {
+            List<Integer> flyerImages = Arrays.asList(
+                    R.drawable.flyer_1,
+                    R.drawable.flyer_2,
+                    R.drawable.flyer_3,
+                    R.drawable.flyer_4,
+                    R.drawable.flyer_5,
+                    R.drawable.flyer_6
+            );
+            FlyerPagerAdapter adapter = new FlyerPagerAdapter(flyerImages, v -> triggerBannerAnimation());
+            flyerViewPager.setAdapter(adapter);
+
+            slideRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (flyerViewPager != null && flyerViewPager.getAdapter() != null) {
+                        int current = flyerViewPager.getCurrentItem();
+                        int count = flyerViewPager.getAdapter().getItemCount();
+                        if (count > 0) {
+                            flyerViewPager.setCurrentItem((current + 1) % count, true);
+                        }
+                        slideHandler.postDelayed(this, AUTO_SLIDE_INTERVAL_MS);
+                    }
+                }
+            };
+
+            flyerViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    super.onPageScrollStateChanged(state);
+                    if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                        slideHandler.removeCallbacks(slideRunnable);
+                    } else if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                        slideHandler.removeCallbacks(slideRunnable);
+                        slideHandler.postDelayed(slideRunnable, AUTO_SLIDE_INTERVAL_MS);
+                    }
+                }
+            });
+        }
 
         findViewById(R.id.btn_equalizer).setOnClickListener(v -> showEqualizerDialog());
 
-        findViewById(R.id.btn_community).setOnClickListener(v ->
-            Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.btn_community).setOnClickListener(v -> showCommunityDialog());
 
         findViewById(R.id.contact_link).setOnClickListener(v -> {
             Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
@@ -263,6 +309,37 @@ public class SettingsActivity extends AppCompatActivity {
         intent.putExtra("enabled", enabled);
         intent.putExtra("strength", strength);
         startService(intent);
+    }
+
+    private void showCommunityDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_community, null);
+        dialog.setContentView(dialogView);
+
+        View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet != null) {
+            bottomSheet.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+        dialogView.findViewById(R.id.card_bluesky).setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bsky.app/profile/janmarkbluederg.bsky.social"));
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(this, "Could not open link", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialogView.findViewById(R.id.card_telegram).setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/JanmarkTheBlueDragon"));
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(this, "Could not open link", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
     }
 
     private void showEqualizerDialog() {
@@ -492,6 +569,10 @@ public class SettingsActivity extends AppCompatActivity {
         settingsActions.animate().alpha(1f).setDuration(1200).setStartDelay(300).start();
         settingsContent.animate().alpha(1f).setDuration(1500).setStartDelay(500).start();
         characterImg.animate().alpha(1f).setDuration(1500).setStartDelay(800).start();
+        View playerControls = findViewById(R.id.player_controls);
+        if (playerControls != null) {
+            playerControls.animate().alpha(1f).setDuration(1500).setStartDelay(500).start();
+        }
     }
 
     private void triggerBannerAnimation() {
@@ -605,6 +686,18 @@ public class SettingsActivity extends AppCompatActivity {
             nowPlayingTitle.setSelected(true);
             nowPlayingArtist.setSelected(true);
         }
+        if (slideRunnable != null) {
+            slideHandler.removeCallbacks(slideRunnable);
+            slideHandler.postDelayed(slideRunnable, AUTO_SLIDE_INTERVAL_MS);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (slideRunnable != null) {
+            slideHandler.removeCallbacks(slideRunnable);
+        }
     }
 
     @Override
@@ -614,11 +707,17 @@ public class SettingsActivity extends AppCompatActivity {
             MediaController.releaseFuture(controllerFuture);
         }
         handler.removeCallbacks(updateProgressAction);
+        if (slideRunnable != null) {
+            slideHandler.removeCallbacks(slideRunnable);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (slideRunnable != null) {
+            slideHandler.removeCallbacks(slideRunnable);
+        }
         if (localEqualizer != null) {
             localEqualizer.release();
             localEqualizer = null;
@@ -707,8 +806,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
-            String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
+            String title = FormatUtils.cleanTitle(mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
+            String artist = FormatUtils.cleanArtist(mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
 
             if (!nowPlayingTitle.getText().toString().equals(title)) {
                 nowPlayingTitle.setText(title);

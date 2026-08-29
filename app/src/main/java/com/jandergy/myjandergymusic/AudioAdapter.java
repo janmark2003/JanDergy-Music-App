@@ -28,7 +28,7 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
 
     private List<AudioItem> items;
     private List<AudioItem> filteredItems;
-    private final OnItemClickListener listener;
+    private OnItemClickListener listener;
     private String currentQuery = "";
 
     private Set<String> favoriteIds = new HashSet<>();
@@ -38,6 +38,10 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
         this.filteredItems = new ArrayList<>(items);
         this.listener = listener;
         setHasStableIds(true);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     public void setFavoriteIds(Set<String> favoriteIds) {
@@ -65,30 +69,41 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         AudioItem item = filteredItems.get(position);
-        holder.titleView.setText(item.title);
-        holder.artistView.setText(item.artist);
+        holder.titleView.setText(FormatUtils.cleanTitle(item.title, null));
+        holder.artistView.setText(FormatUtils.cleanArtist(item.artist));
         holder.descView.setText(formatDuration(item.duration));
         
         boolean isFav = favoriteIds.contains(String.valueOf(item.id));
         holder.favBtn.setImageResource(isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         
         holder.albumArt.setTag(item.id);
-        holder.albumArt.setImageResource(R.drawable.blank_icon_album);
-        ArtworkLoader.loadBitmap(holder.itemView.getContext().getContentResolver(), item.uri, 160, bitmap -> {
-            Object tag = holder.albumArt.getTag();
-            if (!(tag instanceof Long) || !tag.equals(item.id)) {
-                return;
-            }
-            if (bitmap != null) {
-                holder.albumArt.setImageBitmap(bitmap);
-            } else {
-                holder.albumArt.setImageResource(R.drawable.blank_icon_album);
-            }
-        });
+        android.graphics.Bitmap cachedBitmap = ArtworkLoader.getCachedBitmap(item.uri, 160);
+        if (cachedBitmap != null) {
+            holder.albumArt.setImageBitmap(cachedBitmap);
+        } else {
+            holder.albumArt.setImageResource(R.drawable.cover_ep);
+            ArtworkLoader.loadBitmap(holder.itemView.getContext().getContentResolver(), item.uri, 160, bitmap -> {
+                Object tag = holder.albumArt.getTag();
+                if (!(tag instanceof Long) || !tag.equals(item.id)) {
+                    return;
+                }
+                if (bitmap != null) {
+                    holder.albumArt.setImageBitmap(bitmap);
+                } else {
+                    holder.albumArt.setImageResource(R.drawable.cover_ep);
+                }
+            });
+        }
 
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
-        holder.favBtn.setOnClickListener(v -> listener.onFavoriteClick(item));
-        holder.albumArt.setOnClickListener(v -> listener.onAlbumArtClick(item, holder.albumArt));
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onItemClick(item);
+        });
+        holder.favBtn.setOnClickListener(v -> {
+            if (listener != null) listener.onFavoriteClick(item);
+        });
+        holder.albumArt.setOnClickListener(v -> {
+            if (listener != null) listener.onAlbumArtClick(item, holder.albumArt);
+        });
     }
 
     private String formatDuration(long durationMs) {

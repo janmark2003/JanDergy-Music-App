@@ -24,15 +24,34 @@ public class MusicListFragment extends Fragment {
     private List<AudioAdapter.AudioItem> audioItems = new ArrayList<>();
     private List<ArtistFolderAdapter.ArtistGroup> artistGroups = new ArrayList<>();
     private AudioAdapter.OnItemClickListener listener;
-    private boolean isArtistTab = false;
     private boolean showingSongsInArtistTab = false;
+    private Set<String> favoriteIds = new HashSet<>();
 
-    public void setArtistTab(boolean isArtistTab) {
-        this.isArtistTab = isArtistTab;
+    public static MusicListFragment newInstance(int position) {
+        MusicListFragment fragment = new MusicListFragment();
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        args.putBoolean("isArtistTab", position == 1);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public int getPosition() {
+        if (getArguments() != null) {
+            return getArguments().getInt("position", 0);
+        }
+        return 0;
+    }
+
+    public boolean isArtistTab() {
+        if (getArguments() != null) {
+            return getArguments().getBoolean("isArtistTab", false);
+        }
+        return false;
     }
 
     public boolean handleBack() {
-        if (isArtistTab && showingSongsInArtistTab) {
+        if (isArtistTab() && showingSongsInArtistTab) {
             showingSongsInArtistTab = false;
             if (artistAdapter != null) {
                 recyclerView.setAdapter(artistAdapter);
@@ -42,9 +61,11 @@ public class MusicListFragment extends Fragment {
         return false;
     }
 
-    // Added setter to wire up clicks on early-allocated instances
     public void setOnItemClickListener(AudioAdapter.OnItemClickListener listener) {
         this.listener = listener;
+        if (adapter != null) {
+            adapter.setOnItemClickListener(listener);
+        }
     }
 
     @Nullable
@@ -58,15 +79,10 @@ public class MusicListFragment extends Fragment {
         recyclerView.setPadding(0, verticalPadding, 0, verticalPadding * 2);
         recyclerView.setHasFixedSize(true);
         recyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        if (isArtistTab) {
-            artistAdapter = new ArtistFolderAdapter(artistGroups, (artistName, songs) -> {
-                // When an artist folder is clicked, we show the songs for that artist
-                // For now, we can just play the first song or show a sub-list
-                // If the user wants a sub-list, we would need to navigate.
-                // But the user said "folder by folder", so we show the artist list first.
-                // Let's implement a simple way to "enter" the folder.
-                showArtistSongs(songs);
-            });
+        recyclerView.setItemViewCacheSize(12);
+
+        if (isArtistTab()) {
+            artistAdapter = new ArtistFolderAdapter(artistGroups, (artistName, songs) -> showArtistSongs(songs));
             recyclerView.setAdapter(artistAdapter);
         } else {
             adapter = new AudioAdapter(audioItems, listener);
@@ -76,15 +92,20 @@ public class MusicListFragment extends Fragment {
         return recyclerView;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).populateFragment(this);
+        }
+    }
+
     private void showArtistSongs(List<AudioAdapter.AudioItem> songs) {
-        // Switch from artistAdapter to regular adapter to show songs
         showingSongsInArtistTab = true;
         adapter = new AudioAdapter(songs, listener);
         adapter.setFavoriteIds(favoriteIds);
         recyclerView.setAdapter(adapter);
     }
-
-    private Set<String> favoriteIds = new HashSet<>();
 
     public void setFavoriteIds(Set<String> favoriteIds) {
         this.favoriteIds = favoriteIds;
@@ -94,14 +115,14 @@ public class MusicListFragment extends Fragment {
     }
 
     public void updateList(List<AudioAdapter.AudioItem> newList) {
-        this.audioItems = newList;
-        if (isArtistTab) {
-            artistGroups = groupSongsByArtist(newList);
+        this.audioItems = newList != null ? newList : new ArrayList<>();
+        if (isArtistTab()) {
+            artistGroups = groupSongsByArtist(this.audioItems);
         }
 
         if (recyclerView == null) return; // Wait for onCreateView
 
-        if (isArtistTab) {
+        if (isArtistTab()) {
             if (!showingSongsInArtistTab) {
                 if (artistAdapter != null) {
                     artistAdapter.updateData(artistGroups);
@@ -112,7 +133,11 @@ public class MusicListFragment extends Fragment {
             }
         } else {
             if (adapter != null) {
-                adapter.updateList(newList);
+                adapter.updateList(this.audioItems);
+            } else {
+                adapter = new AudioAdapter(this.audioItems, listener);
+                adapter.setFavoriteIds(favoriteIds);
+                recyclerView.setAdapter(adapter);
             }
         }
     }
@@ -120,7 +145,7 @@ public class MusicListFragment extends Fragment {
     private List<ArtistFolderAdapter.ArtistGroup> groupSongsByArtist(List<AudioAdapter.AudioItem> songs) {
         java.util.Map<String, List<AudioAdapter.AudioItem>> map = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (AudioAdapter.AudioItem item : songs) {
-            String artist = item.artist != null ? item.artist : "Unknown Artist";
+            String artist = FormatUtils.cleanArtist(item.artist);
             if (!map.containsKey(artist)) {
                 map.put(artist, new ArrayList<>());
             }
@@ -134,7 +159,7 @@ public class MusicListFragment extends Fragment {
     }
 
     public void filter(String query) {
-        if (isArtistTab && !showingSongsInArtistTab && artistAdapter != null) {
+        if (isArtistTab() && !showingSongsInArtistTab && artistAdapter != null) {
             artistAdapter.filter(query);
         } else if (adapter != null) {
             adapter.filter(query);

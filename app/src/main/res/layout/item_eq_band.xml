@@ -21,8 +21,8 @@
         android:layout_weight="1"
         android:max="3000"
         android:progress="1500"
-        android:progressTint="@color/logo_blue"
-        android:thumbTint="@color/logo_blue" />
+        android:progressTint="@color/accent_neon"
+        android:thumbTint="@color/accent_neon" />
 
     <TextView
         android:id="@+id/band_level"

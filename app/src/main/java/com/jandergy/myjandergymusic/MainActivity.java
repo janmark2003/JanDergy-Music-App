@@ -34,7 +34,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.content.Intent;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
     private MusicSectionsAdapter sectionsAdapter;
+    private volatile SectionData lastSectionData;
 
     private MarqueeTextView nowPlayingTitle, nowPlayingArtist;
     private TextView currentTimeText, remainingTimeText;
@@ -199,12 +200,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private final Runnable debouncedLoadRunnable = this::loadAudioFiles;
+
     private void registerMusicObserver() {
         musicObserver = new ContentObserver(handler) {
             @Override
             public void onChange(boolean selfChange) {
                 super.onChange(selfChange);
-                loadAudioFiles();
+                // Debounce rapid MediaStore change events (e.g. batch file drops)
+                handler.removeCallbacks(debouncedLoadRunnable);
+                handler.postDelayed(debouncedLoadRunnable, 800);
             }
         };
         getContentResolver().registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, musicObserver);
@@ -248,6 +253,12 @@ public class MainActivity extends AppCompatActivity {
             syncUIWithPlayer();
             nowPlayingTitle.setSelected(true);
             nowPlayingArtist.setSelected(true);
+        }
+
+        if (allAudioItems.isEmpty()) {
+            loadAudioFiles();
+        } else {
+            refreshSections();
         }
 
         // Handle direct opening of player from notification
@@ -295,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacks(debouncedLoadRunnable);
         try {
             unregisterReceiver(favoriteReceiver);
         } catch (Exception ignored) {}
@@ -406,11 +418,6 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager = findViewById(R.id.view_pager);
         sectionsAdapter = new MusicSectionsAdapter(this);
-
-        for (int i = 0; i < 4; i++) {
-            sectionsAdapter.getFragment(i).setOnItemClickListener(itemClickListener);
-        }
-
         viewPager.setAdapter(sectionsAdapter);
 
         tabLayout = findViewById(R.id.tab_layout);
@@ -422,9 +429,6 @@ public class MainActivity extends AppCompatActivity {
                 case 3: tab.setIcon(R.drawable.ic_heart_filled); break;
             }
         }).attach();
-        
-        btnRepeat = findViewById(R.id.btn_repeat);
-        btnRepeat.setImageResource(R.drawable.ic_repeat);
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
@@ -449,8 +453,10 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) { return false; }
             @Override
             public boolean onQueryTextChange(String newText) {
-                for (int i = 0; i < 4; i++) {
-                    sectionsAdapter.getFragment(i).filter(newText);
+                for (androidx.fragment.app.Fragment f : getSupportFragmentManager().getFragments()) {
+                    if (f instanceof MusicListFragment) {
+                        ((MusicListFragment) f).filter(newText);
+                    }
                 }
                 return true;
             }
@@ -489,9 +495,13 @@ public class MainActivity extends AppCompatActivity {
         OnBackPressedCallback backCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                MusicListFragment artistFragment = sectionsAdapter.getFragment(1);
-                if (viewPager.getCurrentItem() == 1 && artistFragment.handleBack()) {
-                    return;
+                for (androidx.fragment.app.Fragment f : getSupportFragmentManager().getFragments()) {
+                    if (f instanceof MusicListFragment) {
+                        MusicListFragment mlf = (MusicListFragment) f;
+                        if (mlf.getPosition() == 1 && viewPager.getCurrentItem() == 1 && mlf.handleBack()) {
+                            return;
+                        }
+                    }
                 }
                 setEnabled(false);
                 getOnBackPressedDispatcher().onBackPressed();
@@ -517,8 +527,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            String title = mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : "Unknown Title";
-            String artist = mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : "Unknown Artist";
+            String title = FormatUtils.cleanTitle(mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
+            String artist = FormatUtils.cleanArtist(mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
 
             if (!nowPlayingTitle.getText().toString().equals(title)) {
                 nowPlayingTitle.setText(title);
@@ -527,7 +537,11 @@ public class MainActivity extends AppCompatActivity {
                 nowPlayingArtist.setText(artist);
             }
 
-            btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            boolean isFav;
+            synchronized (favoritesLock) {
+                isFav = favoriteIds.contains(mediaItem.mediaId);
+            }
+            btnFavNow.setImageResource(isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             if (!nowPlayingTitle.getText().toString().equals("Select a song")) {
                 nowPlayingTitle.setText("Select a song");
@@ -665,9 +679,9 @@ public class MainActivity extends AppCompatActivity {
             try (Cursor cursor = getContentResolver().query(
                     collection,
                     projection,
-                    MediaStore.Audio.Media.IS_MUSIC + "!= 0",
+                    MediaStore.Audio.Media.IS_MUSIC + " != 0 AND " + MediaStore.Audio.Media.DURATION + " > 2000",
                     null,
-                    MediaStore.Audio.Media.TITLE + " COLLATE NOCASE ASC")) {
+                    MediaStore.Audio.Media.DATE_ADDED + " DESC")) {
                 if (cursor != null) {
                     int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
                     int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
@@ -698,8 +712,8 @@ public class MainActivity extends AppCompatActivity {
                         AudioAdapter.AudioItem item = new AudioAdapter.AudioItem(
                                 id,
                                 contentUri,
-                                title != null && !title.trim().isEmpty() ? title : "Unknown title",
-                                artist != null && !artist.trim().isEmpty() ? artist : "Unknown artist",
+                                FormatUtils.cleanTitle(title, data),
+                                FormatUtils.cleanArtist(artist),
                                 folderName,
                                 duration,
                                 date);
@@ -729,19 +743,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void applySectionData(SectionData sectionData) {
-        Set<String> favs;
+    public void populateFragment(MusicListFragment fragment) {
+        if (fragment == null) return;
+        int position = fragment.getPosition();
         synchronized (favoritesLock) {
-            favs = new HashSet<>(favoriteIds);
+            fragment.setFavoriteIds(new HashSet<>(favoriteIds));
         }
-        for (int i = 0; i < 4; i++) {
-            MusicListFragment fragment = sectionsAdapter.getFragment(i);
-            fragment.setFavoriteIds(favs);
-            fragment.updateList(i == 0 ? sectionData.allItems :
-                                i == 1 ? sectionData.artistItems :
-                                i == 2 ? sectionData.recentItems :
-                                sectionData.favoriteItems);
+        fragment.setOnItemClickListener(itemClickListener);
+        if (lastSectionData != null) {
+            fragment.updateList(position == 0 ? lastSectionData.allItems :
+                                position == 1 ? lastSectionData.artistItems :
+                                position == 2 ? lastSectionData.recentItems :
+                                lastSectionData.favoriteItems);
         }
+    }
+
+    private void updateAllFragments() {
+        for (androidx.fragment.app.Fragment f : getSupportFragmentManager().getFragments()) {
+            if (f instanceof MusicListFragment) {
+                populateFragment((MusicListFragment) f);
+            }
+        }
+    }
+
+    private void applySectionData(SectionData sectionData) {
+        this.lastSectionData = sectionData;
+        updateAllFragments();
 
         if (!libraryLoaded) {
             libraryLoaded = true;
@@ -871,9 +898,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences.edit().putStringSet(FAVORITES_KEY, favs).apply();
 
         // Immediate sync with fragments
-        for (int i = 0; i < 4; i++) {
-            sectionsAdapter.getFragment(i).setFavoriteIds(favs);
-        }
+        updateAllFragments();
 
         MediaItem current = (player != null) ? player.getCurrentMediaItem() : null;
         if (current != null && current.mediaId.equals(idStr)) {
@@ -1007,6 +1032,7 @@ public class MainActivity extends AppCompatActivity {
                     .setMediaMetadata(new androidx.media3.common.MediaMetadata.Builder()
                             .setTitle(audio.title)
                             .setArtist(audio.artist)
+                            .setArtworkUri(audio.uri)
                             .build())
                     .setRequestMetadata(new androidx.media3.common.MediaItem.RequestMetadata.Builder()
                             .setMediaUri(audio.uri)
@@ -1055,6 +1081,9 @@ public class MainActivity extends AppCompatActivity {
                 bundle.putString("TITLE", item.mediaMetadata.title != null ? item.mediaMetadata.title.toString() : "");
                 bundle.putString("ARTIST", item.mediaMetadata.artist != null ? item.mediaMetadata.artist.toString() : "");
                 bundle.putString("MEDIA_ID", item.mediaId);
+                if (item.requestMetadata != null && item.requestMetadata.mediaUri != null) {
+                    bundle.putString("URI", item.requestMetadata.mediaUri.toString());
+                }
                 bundle.putLong("POSITION", player.getCurrentPosition());
                 bundle.putLong("DURATION", player.getDuration());
                 bundle.putBoolean("IS_PLAYING", player.isPlaying());

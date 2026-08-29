@@ -49,7 +49,7 @@ public class ArtistFolderAdapter extends RecyclerView.Adapter<ArtistFolderAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ArtistGroup group = filteredGroups.get(position);
-        holder.artistName.setText(group.artistName);
+        holder.artistName.setText(FormatUtils.cleanArtist(group.artistName));
         holder.songCount.setText(String.format(Locale.getDefault(), "%d songs", group.songs.size()));
         holder.itemView.setOnClickListener(v -> listener.onArtistClick(group.artistName, group.songs));
     }

@@ -36,8 +36,8 @@ public final class ArtworkLoader {
     }
 
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
-    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
-    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 1024L / CACHE_SIZE_DIVISOR)) {
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(3);
+    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>(Math.max(4096, (int) (Runtime.getRuntime().maxMemory() / 1024L / CACHE_SIZE_DIVISOR))) {
         @Override
         protected int sizeOf(@NonNull String key, @NonNull Bitmap value) {
             return value.getByteCount() / 1024;
@@ -48,11 +48,20 @@ public final class ArtworkLoader {
     private ArtworkLoader() {
     }
 
+    @Nullable
+    static Bitmap getCachedBitmap(@NonNull Uri uri, int size) {
+        return BITMAP_CACHE.get(buildKey(uri, size));
+    }
+
     static void loadBitmap(@NonNull ContentResolver resolver, @NonNull Uri uri, int size, @NonNull BitmapCallback callback) {
         final String key = buildKey(uri, size);
         Bitmap cachedBitmap = BITMAP_CACHE.get(key);
         if (cachedBitmap != null) {
-            MAIN_HANDLER.post(() -> callback.onBitmapLoaded(cachedBitmap));
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                callback.onBitmapLoaded(cachedBitmap);
+            } else {
+                MAIN_HANDLER.post(() -> callback.onBitmapLoaded(cachedBitmap));
+            }
             return;
         }
 
@@ -75,7 +84,11 @@ public final class ArtworkLoader {
         Bitmap cachedBitmap = BITMAP_CACHE.get(key);
         int[] cachedPalette = PALETTE_CACHE.get(key);
         if (cachedBitmap != null && cachedPalette != null) {
-            MAIN_HANDLER.post(() -> callback.onArtworkLoaded(cachedBitmap, cachedPalette));
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                callback.onArtworkLoaded(cachedBitmap, cachedPalette);
+            } else {
+                MAIN_HANDLER.post(() -> callback.onArtworkLoaded(cachedBitmap, cachedPalette));
+            }
             return;
         }
 
@@ -100,7 +113,7 @@ public final class ArtworkLoader {
     }
 
     @Nullable
-    private static Bitmap decodeBitmap(@NonNull ContentResolver resolver, @NonNull Uri uri, int size) {
+    static Bitmap decodeBitmap(@NonNull ContentResolver resolver, @NonNull Uri uri, int size) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 return resolver.loadThumbnail(uri, new Size(size, size), null);

@@ -102,10 +102,8 @@ abstract class RhythmAudioProcessor : AudioProcessor {
     }
     
     override fun isActive(): Boolean {
-        val active = isEnabled() && 
-            inputAudioFormat != AudioProcessor.AudioFormat.NOT_SET &&
+        return inputAudioFormat != AudioProcessor.AudioFormat.NOT_SET &&
             encoding == C.ENCODING_PCM_16BIT
-        return active
     }
     
     override fun queueInput(inputBuffer: ByteBuffer) {

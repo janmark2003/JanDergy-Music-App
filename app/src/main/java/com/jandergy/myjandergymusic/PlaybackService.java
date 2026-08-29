@@ -19,6 +19,15 @@ import com.jandergy.myjandergymusic.audio.BitPerfectRenderersFactory;
 import com.jandergy.myjandergymusic.audio.Rhythm8DProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmBassBoostProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmSpatializationProcessor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import androidx.media3.common.util.BitmapLoader;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlaybackService extends MediaSessionService {
     private MediaSession mediaSession = null;
@@ -75,7 +84,40 @@ public class PlaybackService extends MediaSessionService {
         mediaSession = new MediaSession.Builder(this, player)
                 .setExtras(extras)
                 .setSessionActivity(pendingIntent)
+                .setBitmapLoader(new CustomBitmapLoader())
                 .build();
+    }
+
+    private final ExecutorService bitmapExecutor = Executors.newSingleThreadExecutor();
+
+    private class CustomBitmapLoader implements BitmapLoader {
+        @Override
+        public boolean supportsMimeType(String mimeType) {
+            return mimeType == null || mimeType.startsWith("image/");
+        }
+
+        @Override
+        public ListenableFuture<Bitmap> decodeBitmap(byte[] data) {
+            try {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                return Futures.immediateFuture(bitmap);
+            } catch (Exception e) {
+                return Futures.immediateFailedFuture(e);
+            }
+        }
+
+        @Override
+        public ListenableFuture<Bitmap> loadBitmap(Uri uri) {
+            SettableFuture<Bitmap> future = SettableFuture.create();
+            bitmapExecutor.execute(() -> {
+                Bitmap bitmap = ArtworkLoader.decodeBitmap(getContentResolver(), uri, 512);
+                if (bitmap == null) {
+                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cover_ep);
+                }
+                future.set(bitmap);
+            });
+            return future;
+        }
     }
 
     @UnstableApi

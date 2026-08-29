@@ -28,8 +28,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:thumbTint="@color/logo_blue"
-            app:trackTint="@color/logo_blue" />
+            android:thumbTint="@color/accent_neon"
+            app:trackTint="@color/accent_neon" />
     </RelativeLayout>
 
     <!-- Preset Spinner -->
@@ -102,8 +102,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/bass_boost_label"
             android:max="1000"
-            android:progressTint="@color/logo_blue"
-            android:thumbTint="@color/logo_blue" />
+            android:progressTint="@color/accent_neon"
+            android:thumbTint="@color/accent_neon" />
     </RelativeLayout>
 
     <!-- Spatial Audio -->
@@ -136,8 +136,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/spatializer_label"
             android:max="1000"
-            android:progressTint="@color/logo_blue"
-            android:thumbTint="@color/logo_blue" />
+            android:progressTint="@color/accent_neon"
+            android:thumbTint="@color/accent_neon" />
     </RelativeLayout>
 
     <!-- 8D Audio Toggle -->
@@ -160,7 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:thumbTint="@color/logo_blue"
-            app:trackTint="@color/logo_blue" />
+            android:thumbTint="@color/accent_neon"
+            app:trackTint="@color/accent_neon" />
     </RelativeLayout>
 </LinearLayout>

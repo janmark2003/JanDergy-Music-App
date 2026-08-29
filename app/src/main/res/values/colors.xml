@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="surface_dark">#FF090B10</color>
-    <color name="surface_panel">#D9151820</color>
-    <color name="surface_panel_strong">#EE11151E</color>
-    <color name="glass_stroke">#24FFFFFF</color>
-    <color name="glass_text_secondary">#B8FFFFFF</color>
-    <color name="accent_green">#68E0A3</color>
-    <color name="logo_blue">#2196F3</color>
+    <color name="surface_dark">#FF0A0B0E</color>
+    <color name="surface_panel">#FF12141C</color>
+    <color name="surface_panel_strong">#FF181A24</color>
+    <color name="surface_input">#FF1F2230</color>
+    <color name="glass_stroke">#FF282C3D</color>
+    <color name="glass_text_secondary">#FF94A3B8</color>
+    <color name="accent_green">#FF00E5FF</color>
+    <color name="logo_blue">#FF00E5FF</color>
+    <color name="accent_neon">#FF00E5FF</color>
+    <color name="opaque_card_bg">#FF12141C</color>
+    <color name="opaque_stroke">#FF282C3D</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>
