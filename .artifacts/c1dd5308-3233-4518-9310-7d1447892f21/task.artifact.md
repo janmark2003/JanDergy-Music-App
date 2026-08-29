@@ -1,0 +1,4 @@
+- [x] Fix `MainActivity.java`: Broadcast flags and cleanup
+- [x] Fix `SettingsActivity.java`: `UnstableApi`, back navigation, and cleanup
+- [x] Fix `PlaybackService.java`: `UnstableApi` in listeners
+- [x] Verify build with `assembleDebug`

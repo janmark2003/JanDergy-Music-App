@@ -13,8 +13,10 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
 
@@ -29,11 +31,18 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
     private final OnItemClickListener listener;
     private String currentQuery = "";
 
+    private Set<String> favoriteIds = new HashSet<>();
+
     public AudioAdapter(List<AudioItem> items, OnItemClickListener listener) {
         this.items = items;
         this.filteredItems = new ArrayList<>(items);
         this.listener = listener;
         setHasStableIds(true);
+    }
+
+    public void setFavoriteIds(Set<String> favoriteIds) {
+        this.favoriteIds = favoriteIds;
+        notifyDataSetChanged();
     }
 
     public void updateList(List<AudioItem> newList) {
@@ -60,7 +69,8 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
         holder.artistView.setText(item.artist);
         holder.descView.setText(formatDuration(item.duration));
         
-        holder.favBtn.setImageResource(item.isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+        boolean isFav = favoriteIds.contains(String.valueOf(item.id));
+        holder.favBtn.setImageResource(isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         
         holder.albumArt.setTag(item.id);
         holder.albumArt.setImageResource(R.drawable.blank_icon_album);

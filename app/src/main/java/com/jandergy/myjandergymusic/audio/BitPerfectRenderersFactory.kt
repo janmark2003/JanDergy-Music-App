@@ -21,6 +21,7 @@ class BitPerfectRenderersFactory(
     private val enableBitPerfect: Boolean = false,
     private val bassBoostProcessor: RhythmBassBoostProcessor? = null,
     private val spatializationProcessor: RhythmSpatializationProcessor? = null,
+    private val eightDProcessor: Rhythm8DProcessor? = null
 ) : DefaultRenderersFactory(context) {
     
     override fun buildAudioRenderers(
@@ -37,7 +38,8 @@ class BitPerfectRenderersFactory(
             context, 
             enableBitPerfect,
             bassBoostProcessor,
-            spatializationProcessor
+            spatializationProcessor,
+            eightDProcessor
         )
         
         super.buildAudioRenderers(

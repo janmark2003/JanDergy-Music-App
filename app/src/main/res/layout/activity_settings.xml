@@ -24,6 +24,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/flyer_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        android:alpha="0"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo"
+        app:layout_constraintBottom_toTopOf="@+id/settings_actions"
+        app:layout_constraintVertical_bias="0.5">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/flyer_1"
+            android:scaleType="centerCrop"
+            android:contentDescription="Promotional Flyer" />
+    </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout
         android:id="@+id/settings_actions"
         android:layout_width="0dp"
@@ -173,7 +199,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:transitionName="player_box_transition"
         app:cardBackgroundColor="@android:color/transparent"
         app:cardCornerRadius="30dp"
         app:cardElevation="0dp"
@@ -248,10 +273,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
                 android:progressTint="@color/logo_blue"
-                android:thumbTint="@color/logo_blue" />
+                android:thumbTint="@color/logo_blue"
+                android:splitTrack="false"
+                android:transitionName="seekbar_transition" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -290,7 +315,7 @@
                     android:layout_height="32dp"
                     android:alpha="0.6"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_directions"
+                    android:src="@drawable/ic_shuffle"
                     app:tint="@android:color/white" />
 
                 <ImageButton
@@ -333,5 +358,13 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <FrameLayout
+        android:id="@+id/music_notes_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="10dp"
+        android:clipChildren="false"
+        android:clipToPadding="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

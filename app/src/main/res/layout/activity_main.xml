@@ -137,7 +137,6 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:alpha="0"
-        android:transitionName="player_box_transition"
         app:cardBackgroundColor="@android:color/transparent"
         app:cardCornerRadius="30dp"
         app:cardElevation="0dp"
@@ -212,10 +211,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
                 android:progressTint="@color/logo_blue"
-                android:thumbTint="@color/logo_blue" />
+                android:thumbTint="@color/logo_blue"
+                android:splitTrack="false"
+                android:transitionName="seekbar_transition" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -254,7 +253,7 @@
                     android:layout_height="32dp"
                     android:alpha="0.6"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_directions"
+                    android:src="@drawable/ic_shuffle"
                     app:tint="@android:color/white" />
 
                 <ImageButton

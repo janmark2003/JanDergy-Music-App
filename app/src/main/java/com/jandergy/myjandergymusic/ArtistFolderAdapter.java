@@ -23,10 +23,20 @@ public class ArtistFolderAdapter extends RecyclerView.Adapter<ArtistFolderAdapte
     private final OnArtistClickListener listener;
     private String currentQuery = "";
 
+    public String getCurrentQuery() {
+        return currentQuery;
+    }
+
     public ArtistFolderAdapter(List<ArtistGroup> artistGroups, OnArtistClickListener listener) {
-        this.artistGroups = artistGroups;
+        this.artistGroups = new ArrayList<>(artistGroups);
         this.filteredGroups = new ArrayList<>(artistGroups);
         this.listener = listener;
+    }
+
+    public void updateData(List<ArtistGroup> newGroups) {
+        this.artistGroups.clear();
+        this.artistGroups.addAll(newGroups);
+        filter(currentQuery); // Re-apply current search/filter
     }
 
     @NonNull

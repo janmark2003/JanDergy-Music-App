@@ -19,7 +19,8 @@ object BitPerfectAudioSink {
         context: Context, 
         enableBitPerfect: Boolean,
         bassBoostProcessor: RhythmBassBoostProcessor? = null,
-        spatializationProcessor: RhythmSpatializationProcessor? = null
+        spatializationProcessor: RhythmSpatializationProcessor? = null,
+        eightDProcessor: Rhythm8DProcessor? = null
     ): AudioSink {
         Log.d(TAG, "Creating AudioSink (bit-perfect: $enableBitPerfect)")
         
@@ -31,7 +32,7 @@ object BitPerfectAudioSink {
         } else {
             builder.setEnableFloatOutput(false)
             
-            val processors = listOfNotNull(bassBoostProcessor, spatializationProcessor)
+            val processors = listOfNotNull(bassBoostProcessor, spatializationProcessor, eightDProcessor)
             
             if (processors.isNotEmpty()) {
                 Log.d(TAG, "Configuring audio processor chain with ${processors.size} processors")

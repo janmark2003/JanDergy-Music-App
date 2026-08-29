@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.graphics.Insets;
@@ -58,7 +59,9 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageButton btnPlayPause, btnShuffle, btnRepeat, btnFavNow;
     private ImageButton btnPrev, btnNext;
 
-    private View settingsContent, settingsActions;
+    private View settingsContent, settingsActions, flyerCard;
+    private android.widget.FrameLayout musicNotesContainer;
+    private long lastBannerClickTime = 0;
     private ImageView characterImg;
 
     private Equalizer localEqualizer;
@@ -73,6 +76,11 @@ public class SettingsActivity extends AppCompatActivity {
             if (player != null && player.isPlaying()) {
                 long currentPos = player.getCurrentPosition();
                 long duration = player.getDuration();
+                
+                if (duration > 0 && seekBar.getMax() != (int) duration) {
+                    seekBar.setMax((int) duration);
+                }
+                
                 seekBar.setProgress((int) currentPos);
                 updateTimers(currentPos, duration);
                 handler.postDelayed(this, 200);
@@ -85,6 +93,14 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
+
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                supportFinishAfterTransition();
+            }
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.settings_root), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -95,15 +111,50 @@ public class SettingsActivity extends AppCompatActivity {
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
 
         initUI();
+        applyInitialState();
         populateSettings();
         startFadeInAnimations();
+    }
+
+    private void applyInitialState() {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.containsKey("TITLE")) {
+            String title = extras.getString("TITLE");
+            String artist = extras.getString("ARTIST");
+            long pos = extras.getLong("POSITION");
+            long duration = extras.getLong("DURATION");
+            boolean isPlaying = extras.getBoolean("IS_PLAYING");
+            int repeatMode = extras.getInt("REPEAT_MODE");
+            boolean shuffleMode = extras.getBoolean("SHUFFLE_MODE");
+
+            nowPlayingTitle.setText(title);
+            nowPlayingArtist.setText(artist);
+
+            if (duration > 0) {
+                seekBar.setMax((int) duration);
+                seekBar.setProgress((int) pos);
+                updateTimers(pos, duration);
+            }
+
+            btnPlayPause.setImageResource(isPlaying ? R.drawable.ic_modern_pause : R.drawable.ic_modern_play);
+            updateRepeatIcon(repeatMode);
+            updateShuffleIcon(shuffleMode);
+
+            String mediaId = extras.getString("MEDIA_ID");
+            if (mediaId != null) {
+                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            }
+        }
     }
 
     private void initUI() {
         settingsContent = findViewById(R.id.settings_content);
         characterImg = findViewById(R.id.character_img);
-
         settingsActions = findViewById(R.id.settings_actions);
+        flyerCard = findViewById(R.id.flyer_card);
+        musicNotesContainer = findViewById(R.id.music_notes_container);
+
+        flyerCard.setOnClickListener(v -> triggerBannerAnimation());
 
         findViewById(R.id.btn_equalizer).setOnClickListener(v -> showEqualizerDialog());
 
@@ -201,7 +252,8 @@ public class SettingsActivity extends AppCompatActivity {
         try {
             localEqualizer = new Equalizer(0, 0);
         } catch (Exception e) {
-            Log.e("SettingsActivity", "Error initializing local equalizer", e);
+            Log.w("SettingsActivity", "Session 0 equalizer restricted on this device, using dynamic fallback", e);
+            localEqualizer = null;
         }
     }
 
@@ -214,11 +266,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void showEqualizerDialog() {
-        if (localEqualizer == null) {
-            Toast.makeText(this, "Equalizer not available", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_equalizer, null);
         dialog.setContentView(dialogView);
@@ -235,6 +282,7 @@ public class SettingsActivity extends AppCompatActivity {
         TextView bassBoostValue = dialogView.findViewById(R.id.bass_boost_value);
         SeekBar spatializerSeekBar = dialogView.findViewById(R.id.spatializer_seekbar);
         TextView spatializerValue = dialogView.findViewById(R.id.spatializer_value);
+        SwitchCompat eightDSwitch = dialogView.findViewById(R.id.eight_d_switch);
 
         // Master Switch
         eqSwitch.setChecked(sharedPreferences.getBoolean("EQ_Enabled", true));
@@ -284,13 +332,27 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // 8D Audio
+        eightDSwitch.setChecked(sharedPreferences.getBoolean("RHYTHM_8D_ENABLED", false));
+        eightDSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean("RHYTHM_8D_ENABLED", isChecked).apply();
+            Intent intent = new Intent(this, PlaybackService.class);
+            intent.setAction("ACTION_SET_8D_AUDIO");
+            intent.putExtra("enabled", isChecked);
+            startService(intent);
+        });
+
         // Preset Spinner
         isSpinnerInitializing = true;
-        short numPresets = localEqualizer.getNumberOfPresets();
         List<String> presets = new ArrayList<>();
         presets.add("Custom");
-        for (short i = 0; i < numPresets; i++) {
-            presets.add(localEqualizer.getPresetName(i));
+        if (localEqualizer != null) {
+            try {
+                short numPresets = localEqualizer.getNumberOfPresets();
+                for (short i = 0; i < numPresets; i++) {
+                    presets.add(localEqualizer.getPresetName(i));
+                }
+            } catch (Exception ignored) {}
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, presets);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -302,10 +364,22 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         // Native Band Sliders
-        short bands = localEqualizer.getNumberOfBands();
-        short[] range = localEqualizer.getBandLevelRange();
-        int minLevel = range[0];
-        int maxLevel = range[1];
+        short bands = 5;
+        int minLevel = -1500;
+        int maxLevel = 1500;
+        String[] fallbackFreqLabels = {"60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz"};
+
+        if (localEqualizer != null) {
+            try {
+                bands = localEqualizer.getNumberOfBands();
+                short[] range = localEqualizer.getBandLevelRange();
+                minLevel = range[0];
+                maxLevel = range[1];
+            } catch (Exception ignored) {}
+        }
+
+        final int finalMinLevel = minLevel;
+        final int finalMaxLevel = maxLevel;
 
         for (short i = 0; i < bands; i++) {
             final short bandIndex = i;
@@ -315,19 +389,27 @@ public class SettingsActivity extends AppCompatActivity {
             SeekBar slider = bandView.findViewById(R.id.band_seekbar);
             final TextView levelText = bandView.findViewById(R.id.band_level);
 
-            int freq = localEqualizer.getCenterFreq(bandIndex) / 1000;
-            freqText.setText(freq >= 1000 ? (freq / 1000) + " kHz" : freq + " Hz");
+            if (localEqualizer != null) {
+                try {
+                    int freq = localEqualizer.getCenterFreq(bandIndex) / 1000;
+                    freqText.setText(freq >= 1000 ? (freq / 1000) + " kHz" : freq + " Hz");
+                } catch (Exception e) {
+                    freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+                }
+            } else {
+                freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+            }
 
-            slider.setMax(maxLevel - minLevel);
+            slider.setMax(finalMaxLevel - finalMinLevel);
 
             int savedLevel = sharedPreferences.getInt("EQ_Band_" + bandIndex, 0);
-            slider.setProgress(savedLevel - minLevel);
+            slider.setProgress(savedLevel - finalMinLevel);
             levelText.setText((savedLevel / 100) + " dB");
 
             slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    int newLevel = progress + minLevel;
+                    int newLevel = progress + finalMinLevel;
                     levelText.setText((newLevel / 100) + " dB");
                     if (fromUser) {
                         presetSpinner.setSelection(0);
@@ -338,7 +420,7 @@ public class SettingsActivity extends AppCompatActivity {
                 @Override public void onStartTrackingTouch(SeekBar seekBar) {}
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    int newLevel = seekBar.getProgress() + minLevel;
+                    int newLevel = seekBar.getProgress() + finalMinLevel;
                     Intent intent = new Intent(SettingsActivity.this, PlaybackService.class);
                     intent.setAction("ACTION_SET_EQ_BAND");
                     intent.putExtra("band", bandIndex);
@@ -359,7 +441,7 @@ public class SettingsActivity extends AppCompatActivity {
                     return;
                 }
                 sharedPreferences.edit().putInt("EQ_Preset", position).apply();
-                if (position > 0) {
+                if (position > 0 && localEqualizer != null) {
                     try {
                         localEqualizer.usePreset((short) (position - 1));
                         short numBands = localEqualizer.getNumberOfBands();
@@ -406,11 +488,108 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void startFadeInAnimations() {
+        flyerCard.animate().alpha(1f).setDuration(1000).setStartDelay(200).start();
         settingsActions.animate().alpha(1f).setDuration(1200).setStartDelay(300).start();
         settingsContent.animate().alpha(1f).setDuration(1500).setStartDelay(500).start();
         characterImg.animate().alpha(1f).setDuration(1500).setStartDelay(800).start();
     }
 
+    private void triggerBannerAnimation() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastBannerClickTime < 5000) {
+            return;
+        }
+        lastBannerClickTime = currentTime;
+
+        animateBubblyClick(flyerCard);
+
+        for (int i = 0; i < 20; i++) {
+            showAnimatedNoteFromBanner();
+        }
+    }
+
+    private void animateBubblyClick(View v) {
+        v.animate()
+                .scaleX(1.1f)
+                .scaleY(1.1f)
+                .setDuration(150)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> {
+                    v.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(400)
+                            .setInterpolator(new android.view.animation.OvershootInterpolator(2.0f))
+                            .start();
+                })
+                .start();
+    }
+
+    private void showAnimatedNoteFromBanner() {
+        ImageView note = new ImageView(this);
+        note.setImageResource(R.drawable.ic_music_note);
+
+        int[] colors = {0xFFFF1493, 0xFF00BFFF, 0xFFFFD700, 0xFF32CD32, 0xFFFF4500, 0xFF9370DB};
+        int color = colors[(int) (Math.random() * colors.length)];
+        note.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+
+        int size = (int) (24 + Math.random() * 32);
+        android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
+                (int) (size * getResources().getDisplayMetrics().density),
+                (int) (size * getResources().getDisplayMetrics().density));
+        note.setLayoutParams(params);
+
+        musicNotesContainer.addView(note);
+
+        // Get center of the banner
+        int[] location = new int[2];
+        flyerCard.getLocationInWindow(location);
+        float startX = location[0] + flyerCard.getWidth() / 2f - params.width / 2f;
+        float startY = location[1] + flyerCard.getHeight() / 2f - params.height / 2f;
+
+        // Note: locationInWindow might need offset if container is not full screen or has padding
+        // Since music_notes_container is match_parent, we can just use raw coords if it's the root child.
+        // Better: use relative to container
+        int[] containerLoc = new int[2];
+        musicNotesContainer.getLocationInWindow(containerLoc);
+        startX -= containerLoc[0];
+        startY -= containerLoc[1];
+
+        note.setX(startX);
+        note.setY(startY);
+        note.setAlpha(0f);
+        note.setScaleX(0f);
+        note.setScaleY(0f);
+
+        float angle = (float) (Math.random() * 2 * Math.PI);
+        float dist = (float) (150 + Math.random() * 400);
+        float endX = startX + (float) Math.cos(angle) * dist;
+        float endY = startY + (float) Math.sin(angle) * dist;
+
+        note.animate()
+                .alpha(1f)
+                .scaleX(1.2f)
+                .scaleY(1.2f)
+                .translationX(endX)
+                .translationY(endY)
+                .rotation((float) (Math.random() * 720 - 360))
+                .setDuration(800 + (long)(Math.random() * 600))
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> {
+                    // Pop animation
+                    note.animate()
+                            .scaleX(1.8f)
+                            .scaleY(1.8f)
+                            .alpha(0f)
+                            .setDuration(250)
+                            .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                            .withEndAction(() -> musicNotesContainer.removeView(note))
+                            .start();
+                })
+                .start();
+    }
+
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onStart() {
         super.onStart();
@@ -418,7 +597,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
         if (player != null) {
@@ -508,9 +687,13 @@ public class SettingsActivity extends AppCompatActivity {
 
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
+        
         if (duration > 0) {
             seekBar.setMax((int) duration);
+        } else {
+            seekBar.setMax(100);
         }
+        
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
@@ -554,7 +737,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateRepeatIcon(int mode) {
-        btnRepeat.setAlpha(mode == Player.REPEAT_MODE_OFF ? 0.4f : 1.0f);
+        if (mode == Player.REPEAT_MODE_OFF) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(0.4f);
+        } else if (mode == Player.REPEAT_MODE_ALL) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(1.0f);
+        } else if (mode == Player.REPEAT_MODE_ONE) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat_one);
+            btnRepeat.setAlpha(1.0f);
+        }
     }
 
     private void updateTimers(long currentPos, long durationMs) {
@@ -574,9 +766,4 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        supportFinishAfterTransition();
-        super.onBackPressed();
-    }
 }

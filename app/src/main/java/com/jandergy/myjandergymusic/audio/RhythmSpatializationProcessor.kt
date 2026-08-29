@@ -40,22 +40,30 @@ class RhythmSpatializationProcessor : RhythmAudioProcessor() {
         
         val width = when {
             strength == 0.toShort() -> 1.0f
-            strength <= 300 -> 1.0f + (strength / 300.0f) * 0.5f
-            strength <= 700 -> 1.5f + ((strength - 300) / 400.0f) * 0.8f
-            else -> 2.3f + ((strength - 700) / 300.0f) * 0.7f
+            strength <= 500 -> 1.0f + (strength / 500.0f) * 0.8f
+            else -> 1.8f + ((strength - 500) / 500.0f) * 1.2f
         }
+        
+        // Center preservation factor: 1.0 (no change) to 0.7 (reduce mid slightly to enhance space)
+        val midGain = 1.0f - (strength / 1000.0f) * 0.15f
         
         for (i in 0 until sampleCount - 1 step 2) {
             val left = samples[i] / 32768.0f
             val right = samples[i + 1] / 32768.0f
             
+            // M/S Decomposition
             val mid = (left + right) * 0.5f
             val side = (left - right) * 0.5f
             
+            // Process Side for widening
             val wideSide = side * width
             
-            val newLeft = mid + wideSide
-            val newRight = mid - wideSide
+            // Process Mid for focus
+            val focusedMid = mid * midGain
+            
+            // Reconstruct
+            val newLeft = focusedMid + wideSide
+            val newRight = focusedMid - wideSide
             
             samples[i] = (softClip(newLeft) * 32767.0f).toInt().toShort()
             samples[i + 1] = (softClip(newRight) * 32767.0f).toInt().toShort()

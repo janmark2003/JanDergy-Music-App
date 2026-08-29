@@ -1,5 +1,6 @@
 package com.jandergy.myjandergymusic;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.audiofx.Equalizer;
@@ -7,12 +8,15 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
+import com.jandergy.myjandergymusic.audio.AudioUtils;
 import com.jandergy.myjandergymusic.audio.BitPerfectRenderersFactory;
+import com.jandergy.myjandergymusic.audio.Rhythm8DProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmBassBoostProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmSpatializationProcessor;
 
@@ -20,6 +24,7 @@ public class PlaybackService extends MediaSessionService {
     private MediaSession mediaSession = null;
     private RhythmBassBoostProcessor bassBoostProcessor;
     private RhythmSpatializationProcessor spatializationProcessor;
+    private Rhythm8DProcessor eightDProcessor;
     private Equalizer equalizer;
     private ExoPlayer player;
     private int activeSessionId = -1;
@@ -31,15 +36,19 @@ public class PlaybackService extends MediaSessionService {
         
         bassBoostProcessor = new RhythmBassBoostProcessor();
         spatializationProcessor = new RhythmSpatializationProcessor();
+        eightDProcessor = new Rhythm8DProcessor();
         
         BitPerfectRenderersFactory renderersFactory = new BitPerfectRenderersFactory(
                 this,
                 false, // Bit-perfect disabled by default
                 bassBoostProcessor,
-                spatializationProcessor
+                spatializationProcessor,
+                eightDProcessor
         );
         
-        player = new ExoPlayer.Builder(this, renderersFactory).build();
+        player = new ExoPlayer.Builder(this, renderersFactory)
+                .setHandleAudioBecomingNoisy(true)
+                .build();
         
         player.addListener(new Player.Listener() {
             @Override
@@ -50,11 +59,22 @@ public class PlaybackService extends MediaSessionService {
             }
         });
         
+        // PendingIntent that launches MainActivity when user taps media controls
+        Intent sessionIntent = new Intent(this, MainActivity.class);
+        sessionIntent.putExtra("OPEN_PLAYER", true);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                sessionIntent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
         Bundle extras = new Bundle();
         extras.putInt("audio_session_id", player.getAudioSessionId());
         
         mediaSession = new MediaSession.Builder(this, player)
                 .setExtras(extras)
+                .setSessionActivity(pendingIntent)
                 .build();
     }
 
@@ -82,21 +102,25 @@ public class PlaybackService extends MediaSessionService {
 
     private void applySavedSettings() {
         SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-
-        // Apply native EQ bands directly (no interpolation)
+        
+        // Apply EQ bands
         if (equalizer != null) {
             short numBands = equalizer.getNumberOfBands();
+            float[] uiLevels = new float[10];
+            for (int i = 0; i < 10; i++) {
+                uiLevels[i] = prefs.getFloat("UI_EQ_Band_" + i, 0f);
+            }
+            short[] hardwareLevels = AudioUtils.interpolateBands(uiLevels, numBands);
             for (short i = 0; i < numBands; i++) {
-                int level = prefs.getInt("EQ_Band_" + i, 0);
                 try {
-                    equalizer.setBandLevel(i, (short) level);
+                    equalizer.setBandLevel(i, hardwareLevels[i]);
                 } catch (Exception ignored) {}
             }
-
+            
             boolean eqEnabled = prefs.getBoolean("EQ_Enabled", true);
             equalizer.setEnabled(eqEnabled);
         }
-
+        
         // Apply Bass Boost
         int bbStrength = prefs.getInt("BassBoost_Strength", 0);
         bassBoostProcessor.setEnabled(bbStrength > 0);
@@ -106,8 +130,13 @@ public class PlaybackService extends MediaSessionService {
         int spStrength = prefs.getInt("Spatializer_Strength", 0);
         spatializationProcessor.setEnabled(spStrength > 0);
         spatializationProcessor.setStrength((short) spStrength);
+
+        // Apply 8D Audio
+        boolean eightDEnabled = prefs.getBoolean("RHYTHM_8D_ENABLED", false);
+        eightDProcessor.setEnabled(eightDEnabled);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
@@ -127,10 +156,25 @@ public class PlaybackService extends MediaSessionService {
                     spatializationProcessor.setStrength(strength);
                     break;
                 }
+                case "ACTION_SET_8D_AUDIO": {
+                    boolean enabled = intent.getBooleanExtra("enabled", false);
+                    eightDProcessor.setEnabled(enabled);
+                    break;
+                }
                 case "ACTION_SET_EQ_ENABLED": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
-                    ensureEqualizerInitialized();
-                    if (equalizer != null) equalizer.setEnabled(enabled);
+                    if (equalizer != null) {
+                        try {
+                            equalizer.setEnabled(enabled);
+                            Log.d("PlaybackService", "Hardware EQ toggled: " + enabled);
+                        } catch (Exception e) {
+                            Log.e("PlaybackService", "Error toggling hardware EQ", e);
+                            activeSessionId = -1; // Force re-init on next check
+                            ensureEqualizerInitialized();
+                        }
+                    } else {
+                        ensureEqualizerInitialized();
+                    }
                     break;
                 }
                 case "ACTION_SET_EQ_BAND": {

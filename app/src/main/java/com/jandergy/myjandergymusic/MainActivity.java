@@ -2,13 +2,14 @@ package com.jandergy.myjandergymusic;
 
 import android.Manifest;
 import android.widget.ImageView;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.view.animation.OvershootInterpolator;
 import com.google.android.material.card.MaterialCardView;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
@@ -70,14 +71,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_REQUEST_CODES = 100;
     private static final String PREFS_NAME = "MusicPrefs";
     private static final String FAVORITES_KEY = "Favorites";
+    private static final String RECENTLY_PLAYED_KEY = "RecentlyPlayed";
 
     private MediaController player;
     private ListenableFuture<MediaController> controllerFuture;
     private final List<AudioAdapter.AudioItem> allAudioItems = new ArrayList<>();
+    private final List<Long> recentlyPlayedIds = new ArrayList<>();
     private SharedPreferences sharedPreferences;
+    private final Object favoritesLock = new Object();
     private Set<String> favoriteIds = new HashSet<>();
     private final ExecutorService libraryExecutor = Executors.newSingleThreadExecutor();
     private final AtomicInteger libraryLoadVersion = new AtomicInteger();
@@ -129,6 +132,12 @@ public class MainActivity extends AppCompatActivity {
             if (player != null && player.isPlaying()) {
                 long currentPos = player.getCurrentPosition();
                 long duration = player.getDuration();
+                
+                // Ensure SeekBar max is correct even if duration was loaded late
+                if (duration > 0 && seekBar.getMax() != (int) duration) {
+                    seekBar.setMax((int) duration);
+                }
+                
                 seekBar.setProgress((int) currentPos);
                 updateTimers(currentPos, duration);
                 handler.postDelayed(this, 200);
@@ -137,6 +146,15 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private ContentObserver musicObserver;
+    private final  BroadcastReceiver favoriteReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (favoritesLock) {
+                favoriteIds = new HashSet<>(sharedPreferences.getStringSet(FAVORITES_KEY, new HashSet<>()));
+            }
+            refreshSections();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,11 +169,34 @@ public class MainActivity extends AppCompatActivity {
         });
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        favoriteIds = new HashSet<>(sharedPreferences.getStringSet(FAVORITES_KEY, new HashSet<>()));
+        synchronized (favoritesLock) {
+            favoriteIds = new HashSet<>(sharedPreferences.getStringSet(FAVORITES_KEY, new HashSet<>()));
+        }
+
+        // Load recently played
+        String recentIdsStr = sharedPreferences.getString(RECENTLY_PLAYED_KEY, "");
+        if (!recentIdsStr.isEmpty()) {
+            for (String id : recentIdsStr.split(",")) {
+                try {
+                    recentlyPlayedIds.add(Long.parseLong(id));
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        if (getIntent().getBooleanExtra("OPEN_PLAYER", false)) {
+            splashFinished = true;
+        }
 
         initUI();
         registerMusicObserver();
         checkPermissions();
+        
+        IntentFilter filter = new IntentFilter("com.jandergy.myjandergymusic.FAVORITE_CHANGED");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.registerReceiver(this, favoriteReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(favoriteReceiver, filter);
+        }
     }
 
     private void registerMusicObserver() {
@@ -177,6 +218,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent.getBooleanExtra("OPEN_PLAYER", false)) {
+            intent.removeExtra("OPEN_PLAYER");
+            if (!splashFinished) {
+                splashFinished = true;
+                if (splashScreen != null) splashScreen.setVisibility(View.GONE);
+                if (headerPanel != null) headerPanel.setAlpha(1f);
+                if (libraryPanel != null) libraryPanel.setAlpha(1f);
+                if (playerControls != null) playerControls.setAlpha(1f);
+                setUIVisibility(true);
+            }
+            launchFullScreenPlayer();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         setUIVisibility(true);
@@ -190,6 +249,23 @@ public class MainActivity extends AppCompatActivity {
             nowPlayingTitle.setSelected(true);
             nowPlayingArtist.setSelected(true);
         }
+
+        // Handle direct opening of player from notification
+        if (getIntent().getBooleanExtra("OPEN_PLAYER", false)) {
+            getIntent().removeExtra("OPEN_PLAYER");
+            launchFullScreenPlayer();
+        }
+    }
+
+    private void launchFullScreenPlayer() {
+        Intent intent = new Intent(this, FullScreenPlayerActivity.class);
+        intent.putExtras(createPlaybackStateBundle());
+
+        Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
+        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
+
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair);
+        startActivity(intent, options.toBundle());
     }
 
     private void restoreViewStates() {
@@ -219,6 +295,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            unregisterReceiver(favoriteReceiver);
+        } catch (Exception ignored) {}
         getContentResolver().unregisterContentObserver(musicObserver);
         libraryExecutor.shutdownNow();
     }
@@ -277,9 +356,14 @@ public class MainActivity extends AppCompatActivity {
 
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
+        
+        // Use a default max if duration is not yet available to prevent glitches
         if (duration > 0) {
             seekBar.setMax((int) duration);
+        } else {
+            seekBar.setMax(100);
         }
+        
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
@@ -301,10 +385,18 @@ public class MainActivity extends AppCompatActivity {
         libraryPanel = findViewById(R.id.library_panel);
         playerControls = findViewById(R.id.player_controls);
 
+        if (splashFinished) {
+            splashScreen.setVisibility(View.GONE);
+            headerPanel.setAlpha(1f);
+            libraryPanel.setAlpha(1f);
+            playerControls.setAlpha(1f);
+        } else {
+            headerPanel.setAlpha(0f);
+            libraryPanel.setAlpha(0f);
+            playerControls.setAlpha(0f);
+        }
+
         logoInHeader.setAlpha(1f);
-        headerPanel.setAlpha(0f);
-        libraryPanel.setAlpha(0f);
-        playerControls.setAlpha(0f);
 
         String appVersion = "1.0";
         try {
@@ -330,6 +422,9 @@ public class MainActivity extends AppCompatActivity {
                 case 3: tab.setIcon(R.drawable.ic_heart_filled); break;
             }
         }).attach();
+        
+        btnRepeat = findViewById(R.id.btn_repeat);
+        btnRepeat.setImageResource(R.drawable.ic_repeat);
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
@@ -345,15 +440,7 @@ public class MainActivity extends AppCompatActivity {
         btnSettings = findViewById(R.id.btn_settings);
         searchView = findViewById(R.id.search_view);
 
-        View miniPlayerBox = findViewById(R.id.player_controls);
-        miniPlayerBox.setOnClickListener(v -> {
-            Intent intent = new Intent(this, FullScreenPlayerActivity.class);
-            Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-            Pair<View, String> playerPair = Pair.create(miniPlayerBox, "player_box_transition");
-
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair);
-            startActivity(intent, options.toBundle());
-        });
+        playerControls.setOnClickListener(v -> launchFullScreenPlayer());
 
         btnSettings.setOnClickListener(v -> launchSettings());
 
@@ -457,22 +544,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
+        intent.putExtras(createPlaybackStateBundle());
+
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-        Pair<View, String> playerPair = Pair.create(findViewById(R.id.player_controls), "player_box_transition");
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair);
+        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair);
         startActivity(intent, options.toBundle());
     }
 
     private void openPlayerActivity(AudioAdapter.AudioItem item, View albumArtView) {
         playAudio(item);
-        setUIVisibility(false);
 
         Intent intent = new Intent(this, FullScreenPlayerActivity.class);
+        intent.putExtras(createPlaybackStateBundle());
+
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-        Pair<View, String> playerPair = Pair.create(findViewById(R.id.player_controls), "player_box_transition");
+        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
         Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");
 
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, playerPair, artPair);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair, artPair);
         startActivity(intent, options.toBundle());
     }
 
@@ -494,7 +584,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateRepeatIcon(int mode) {
-        btnRepeat.setAlpha(mode == Player.REPEAT_MODE_OFF ? 0.4f : 1.0f);
+        if (mode == Player.REPEAT_MODE_OFF) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(0.4f);
+        } else if (mode == Player.REPEAT_MODE_ALL) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(1.0f);
+        } else if (mode == Player.REPEAT_MODE_ONE) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat_one);
+            btnRepeat.setAlpha(1.0f);
+        }
     }
 
     private AudioAdapter.AudioItem findItemById(long id) {
@@ -507,12 +606,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
-        String permission = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                ? Manifest.permission.READ_MEDIA_AUDIO
-                : Manifest.permission.READ_EXTERNAL_STORAGE;
+        List<String> permissionsToRequest = new ArrayList<>();
 
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, 100);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO);
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), 100);
         } else {
             loadAudioFiles();
         }
@@ -522,10 +632,17 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 100) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean audioPermissionGranted = true;
+            for (int i = 0; i < permissions.length; i++) {
+                String p = permissions[i];
+                if (Manifest.permission.READ_MEDIA_AUDIO.equals(p) || Manifest.permission.READ_EXTERNAL_STORAGE.equals(p)) {
+                    audioPermissionGranted = (grantResults.length > i && grantResults[i] == PackageManager.PERMISSION_GRANTED);
+                }
+            }
+            if (audioPermissionGranted) {
                 loadAudioFiles();
             } else {
-                Toast.makeText(this, "Permission denied.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Audio storage permission denied.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -613,10 +730,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applySectionData(SectionData sectionData) {
-        sectionsAdapter.getFragment(0).updateList(sectionData.allItems);
-        sectionsAdapter.getFragment(1).updateList(sectionData.artistItems);
-        sectionsAdapter.getFragment(2).updateList(sectionData.recentItems);
-        sectionsAdapter.getFragment(3).updateList(sectionData.favoriteItems);
+        Set<String> favs;
+        synchronized (favoritesLock) {
+            favs = new HashSet<>(favoriteIds);
+        }
+        for (int i = 0; i < 4; i++) {
+            MusicListFragment fragment = sectionsAdapter.getFragment(i);
+            fragment.setFavoriteIds(favs);
+            fragment.updateList(i == 0 ? sectionData.allItems :
+                                i == 1 ? sectionData.artistItems :
+                                i == 2 ? sectionData.recentItems :
+                                sectionData.favoriteItems);
+        }
 
         if (!libraryLoaded) {
             libraryLoaded = true;
@@ -643,8 +768,8 @@ public class MainActivity extends AppCompatActivity {
                 .start();
 
         musicNotesContainer.setVisibility(View.VISIBLE);
-        for (int i = 0; i < 10; i++) {
-            showAnimatedNote(i);
+        for (int i = 0; i < 30; i++) {
+            showAnimatedNote();
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -660,10 +785,16 @@ public class MainActivity extends AppCompatActivity {
         animateBubbly(playerControls, 2000);
     }
 
-    private void showAnimatedNote(int index) {
+    private void showAnimatedNote() {
         ImageView note = new ImageView(this);
         note.setImageResource(R.drawable.ic_music_note);
-        int size = (int) (30 + Math.random() * 35);
+        
+        // Random confetti colors
+        int[] colors = {0xFFFF1493, 0xFF00BFFF, 0xFFFFD700, 0xFF32CD32, 0xFFFF4500, 0xFF9370DB};
+        int color = colors[(int) (Math.random() * colors.length)];
+        note.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+        
+        int size = (int) (20 + Math.random() * 40);
         android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
                 (int) (size * getResources().getDisplayMetrics().density),
                 (int) (size * getResources().getDisplayMetrics().density));
@@ -681,26 +812,29 @@ public class MainActivity extends AppCompatActivity {
         note.setScaleY(0f);
 
         float angle = (float) (Math.random() * 2 * Math.PI);
-        float dist = (float) (250 + Math.random() * 450);
+        float dist = (float) (200 + Math.random() * 500);
         float endX = centerX + (float) Math.cos(angle) * dist;
         float endY = centerY + (float) Math.sin(angle) * dist;
 
+        float randomOpacity = 0.4f + (float) Math.random() * 0.6f;
+
         note.animate()
-                .alpha(1f)
+                .alpha(randomOpacity)
                 .scaleX(1.2f)
                 .scaleY(1.2f)
                 .translationX(endX)
                 .translationY(endY)
-                .rotation(angle * 100)
-                .setDuration(1600)
-                .setStartDelay(index * 80L)
+                .rotation(angle * 180 / (float)Math.PI + (float)Math.random() * 360)
+                .setDuration(1200 + (long)(Math.random() * 800))
+                .setStartDelay((long) (Math.random() * 400))
                 .setInterpolator(new DecelerateInterpolator())
                 .withEndAction(() -> {
                     note.animate()
                             .alpha(0f)
-                            .scaleX(0.4f)
-                            .scaleY(0.4f)
+                            .scaleX(0.2f)
+                            .scaleY(0.2f)
                             .setDuration(600)
+                            .withEndAction(() -> musicNotesContainer.removeView(note))
                             .start();
                 })
                 .start();
@@ -721,18 +855,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleFavorite(AudioAdapter.AudioItem item) {
-        item.isFavorite = !item.isFavorite;
-        if (item.isFavorite) {
-            favoriteIds.add(String.valueOf(item.id));
-        } else {
-            favoriteIds.remove(String.valueOf(item.id));
+        String idStr = String.valueOf(item.id);
+        Set<String> favs;
+        synchronized (favoritesLock) {
+            if (favoriteIds.contains(idStr)) {
+                favoriteIds.remove(idStr);
+                item.isFavorite = false;
+            } else {
+                favoriteIds.add(idStr);
+                item.isFavorite = true;
+            }
+            favs = new HashSet<>(favoriteIds);
         }
 
-        sharedPreferences.edit().putStringSet(FAVORITES_KEY, favoriteIds).apply();
+        sharedPreferences.edit().putStringSet(FAVORITES_KEY, favs).apply();
+
+        // Immediate sync with fragments
+        for (int i = 0; i < 4; i++) {
+            sectionsAdapter.getFragment(i).setFavoriteIds(favs);
+        }
 
         MediaItem current = (player != null) ? player.getCurrentMediaItem() : null;
-        if (current != null && current.mediaId.equals(String.valueOf(item.id))) {
-            btnFavNow.setImageResource(item.isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+        if (current != null && current.mediaId.equals(idStr)) {
+            synchronized (favoritesLock) {
+                btnFavNow.setImageResource(favoriteIds.contains(idStr) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            }
         }
 
         refreshSections();
@@ -740,6 +887,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void playAudio(AudioAdapter.AudioItem item) {
         if (player == null) return;
+        
+        // Track recently played
+        synchronized (recentlyPlayedIds) {
+            recentlyPlayedIds.remove(item.id);
+            recentlyPlayedIds.add(0, item.id);
+            if (recentlyPlayedIds.size() > 50) recentlyPlayedIds.remove(recentlyPlayedIds.size() - 1);
+            
+            // Persist recently played
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < recentlyPlayedIds.size(); i++) {
+                sb.append(recentlyPlayedIds.get(i));
+                if (i < recentlyPlayedIds.size() - 1) sb.append(",");
+            }
+            sharedPreferences.edit().putString(RECENTLY_PLAYED_KEY, sb.toString()).apply();
+        }
+        refreshSections();
 
         MediaItem currentItem = player.getCurrentMediaItem();
         if (currentItem != null && currentItem.mediaId.equals(String.valueOf(item.id))) {
@@ -800,13 +963,36 @@ public class MainActivity extends AppCompatActivity {
         List<AudioAdapter.AudioItem> artistItems = new ArrayList<>(sourceItems);
         Collections.sort(artistItems, (a, b) -> a.folderName.compareToIgnoreCase(b.folderName));
 
-        List<AudioAdapter.AudioItem> recentItems = new ArrayList<>(sourceItems);
-        Collections.sort(recentItems, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
+        List<AudioAdapter.AudioItem> recentItems = new ArrayList<>();
+        synchronized (recentlyPlayedIds) {
+            for (Long id : recentlyPlayedIds) {
+                for (AudioAdapter.AudioItem item : sourceItems) {
+                    if (item.id == id) {
+                        recentItems.add(item);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // If nothing played yet, show by date added as fallback
+        if (recentItems.isEmpty()) {
+            recentItems.addAll(sourceItems);
+            Collections.sort(recentItems, (a, b) -> Long.compare(b.dateAdded, a.dateAdded));
+        }
 
         List<AudioAdapter.AudioItem> favoriteItems = new ArrayList<>();
+        Set<String> favsSnapshot;
+        synchronized (favoritesLock) {
+            favsSnapshot = new HashSet<>(favoriteIds);
+        }
+        
         for (AudioAdapter.AudioItem item : sourceItems) {
-            if (item.isFavorite) {
+            if (favsSnapshot.contains(String.valueOf(item.id))) {
+                item.isFavorite = true;
                 favoriteItems.add(item);
+            } else {
+                item.isFavorite = false;
             }
         }
         return new SectionData(allItems, artistItems, recentItems, favoriteItems);
@@ -859,6 +1045,24 @@ public class MainActivity extends AppCompatActivity {
             this.recentItems = recentItems;
             this.favoriteItems = favoriteItems;
         }
+    }
+
+    private Bundle createPlaybackStateBundle() {
+        Bundle bundle = new Bundle();
+        if (player != null) {
+            MediaItem item = player.getCurrentMediaItem();
+            if (item != null) {
+                bundle.putString("TITLE", item.mediaMetadata.title != null ? item.mediaMetadata.title.toString() : "");
+                bundle.putString("ARTIST", item.mediaMetadata.artist != null ? item.mediaMetadata.artist.toString() : "");
+                bundle.putString("MEDIA_ID", item.mediaId);
+                bundle.putLong("POSITION", player.getCurrentPosition());
+                bundle.putLong("DURATION", player.getDuration());
+                bundle.putBoolean("IS_PLAYING", player.isPlaying());
+                bundle.putInt("REPEAT_MODE", player.getRepeatMode());
+                bundle.putBoolean("SHUFFLE_MODE", player.getShuffleModeEnabled());
+            }
+        }
+        return bundle;
     }
 
     private void updateTimers(long currentPos, long duration) {

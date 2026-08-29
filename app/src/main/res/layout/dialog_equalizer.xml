@@ -139,4 +139,28 @@
             android:progressTint="@color/logo_blue"
             android:thumbTint="@color/logo_blue" />
     </RelativeLayout>
+
+    <!-- 8D Audio Toggle -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8D Audio Mode (Rotate)"
+            android:textColor="#B0FFFFFF"
+            android:textSize="11sp"
+            android:layout_centerVertical="true" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/eight_d_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:thumbTint="@color/logo_blue"
+            app:trackTint="@color/logo_blue" />
+    </RelativeLayout>
 </LinearLayout>

@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MusicListFragment extends Fragment {
 
@@ -68,6 +70,7 @@ public class MusicListFragment extends Fragment {
             recyclerView.setAdapter(artistAdapter);
         } else {
             adapter = new AudioAdapter(audioItems, listener);
+            adapter.setFavoriteIds(favoriteIds);
             recyclerView.setAdapter(adapter);
         }
         return recyclerView;
@@ -77,17 +80,35 @@ public class MusicListFragment extends Fragment {
         // Switch from artistAdapter to regular adapter to show songs
         showingSongsInArtistTab = true;
         adapter = new AudioAdapter(songs, listener);
+        adapter.setFavoriteIds(favoriteIds);
         recyclerView.setAdapter(adapter);
+    }
+
+    private Set<String> favoriteIds = new HashSet<>();
+
+    public void setFavoriteIds(Set<String> favoriteIds) {
+        this.favoriteIds = favoriteIds;
+        if (adapter != null) {
+            adapter.setFavoriteIds(favoriteIds);
+        }
     }
 
     public void updateList(List<AudioAdapter.AudioItem> newList) {
         this.audioItems = newList;
         if (isArtistTab) {
-            // Group by artist
             artistGroups = groupSongsByArtist(newList);
-            if (artistAdapter != null && !showingSongsInArtistTab) {
-                artistAdapter = new ArtistFolderAdapter(artistGroups, (artistName, songs) -> showArtistSongs(songs));
-                recyclerView.setAdapter(artistAdapter);
+        }
+
+        if (recyclerView == null) return; // Wait for onCreateView
+
+        if (isArtistTab) {
+            if (!showingSongsInArtistTab) {
+                if (artistAdapter != null) {
+                    artistAdapter.updateData(artistGroups);
+                } else {
+                    artistAdapter = new ArtistFolderAdapter(artistGroups, (artistName, songs) -> showArtistSongs(songs));
+                    recyclerView.setAdapter(artistAdapter);
+                }
             }
         } else {
             if (adapter != null) {

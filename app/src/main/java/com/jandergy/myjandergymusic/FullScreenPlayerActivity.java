@@ -1,6 +1,7 @@
 package com.jandergy.myjandergymusic;
 
 import android.animation.Animator;
+import android.content.Intent;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.ComponentName;
@@ -69,6 +70,11 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             if (player != null && player.isPlaying()) {
                 long currentPos = player.getCurrentPosition();
                 long duration = player.getDuration();
+                
+                if (duration > 0 && seekBar.getMax() != (int) duration) {
+                    seekBar.setMax((int) duration);
+                }
+                
                 seekBar.setProgress((int) currentPos);
                 updateTimers(currentPos, duration);
                 handler.postDelayed(this, 200);
@@ -93,8 +99,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
 
         initUI();
+        applyInitialState();
         findViewById(R.id.player_root).post(this::supportStartPostponedEnterTransition);
-        applyBubblyEntrance();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -118,6 +124,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         btnNext = findViewById(R.id.btn_next);
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnRepeat = findViewById(R.id.btn_repeat);
+        btnRepeat.setImageResource(R.drawable.ic_repeat);
         btnFavNow = findViewById(R.id.btn_fav_now);
 
         fullAlbumArt.setOnClickListener(this::bubblyClick);
@@ -176,20 +183,38 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void applyBubblyEntrance() {
-        View[] elements = {fullAlbumArt, fullSongTitle, fullArtistName};
-        for (int i = 0; i < elements.length; i++) {
-            elements[i].setScaleX(0.7f);
-            elements[i].setScaleY(0.7f);
-            elements[i].setAlpha(0f);
-            elements[i].animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .alpha(1f)
-                    .setDuration(950)
-                    .setStartDelay(220 + (i * 120L))
-                    .setInterpolator(new OvershootInterpolator())
-                    .start();
+
+
+    private void applyInitialState() {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.containsKey("TITLE")) {
+            String title = extras.getString("TITLE");
+            String artist = extras.getString("ARTIST");
+            long pos = extras.getLong("POSITION");
+            long duration = extras.getLong("DURATION");
+            boolean isPlaying = extras.getBoolean("IS_PLAYING");
+            int repeatMode = extras.getInt("REPEAT_MODE");
+            boolean shuffleMode = extras.getBoolean("SHUFFLE_MODE");
+
+            fullSongTitle.setText(title);
+            fullArtistName.setText(artist);
+            fullSongTitle.setSelected(true);
+            fullArtistName.setSelected(true);
+
+            if (duration > 0) {
+                seekBar.setMax((int) duration);
+                seekBar.setProgress((int) pos);
+                updateTimers(pos, duration);
+            }
+
+            btnPlayPause.setImageResource(isPlaying ? R.drawable.ic_modern_pause : R.drawable.ic_modern_play);
+            updateRepeatIcon(repeatMode);
+            updateShuffleIcon(shuffleMode);
+            
+            String mediaId = extras.getString("MEDIA_ID");
+            if (mediaId != null) {
+                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            }
         }
     }
 
@@ -207,6 +232,10 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         }
         sharedPreferences.edit().putStringSet("Favorites", favoriteIds).apply();
         btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+        
+        // Notify MainActivity
+        Intent intent = new Intent("com.jandergy.myjandergymusic.FAVORITE_CHANGED");
+        sendBroadcast(intent);
     }
 
     @Override
@@ -288,9 +317,13 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         updateUIForNowPlaying(player.getCurrentMediaItem());
         long currentPos = player.getCurrentPosition();
         long duration = player.getDuration();
+        
         if (duration > 0) {
             seekBar.setMax((int) duration);
+        } else {
+            seekBar.setMax(100);
         }
+        
         seekBar.setProgress((int) currentPos);
         updateTimers(currentPos, duration);
 
@@ -405,7 +438,16 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void updateRepeatIcon(int mode) {
-        btnRepeat.setAlpha(mode == Player.REPEAT_MODE_OFF ? 0.4f : 1.0f);
+        if (mode == Player.REPEAT_MODE_OFF) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(0.4f);
+        } else if (mode == Player.REPEAT_MODE_ALL) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat);
+            btnRepeat.setAlpha(1.0f);
+        } else if (mode == Player.REPEAT_MODE_ONE) {
+            btnRepeat.setImageResource(R.drawable.ic_repeat_one);
+            btnRepeat.setAlpha(1.0f);
+        }
     }
 
     private void updateTimers(long currentPos, long duration) {

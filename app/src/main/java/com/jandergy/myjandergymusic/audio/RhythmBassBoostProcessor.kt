@@ -74,26 +74,31 @@ class RhythmBassBoostProcessor : RhythmAudioProcessor() {
             updateFilterCoeff()
         }
         
-        val gain = when {
-            strength == 0.toShort() -> 1.0f
-            strength <= 100 -> 1.0f + (strength / 100.0f) * 0.3f
-            strength <= 500 -> 1.3f + ((strength - 100) / 400.0f) * 0.9f
-            else -> 2.2f + ((strength - 500) / 500.0f) * 1.8f
-        }
+        // Strength maps to 0..1000
+        // We want a gain of 1.0 (0dB) to 4.0 (+12dB)
+        val targetGain = 1.0f + (strength / 1000.0f) * 3.0f
+        
+        // Auto-gain compensation: reduce overall volume as bass increases
+        // to prevent clipping and keep perceived loudness stable
+        val outputGain = 1.0f / (1.0f + (strength / 1000.0f) * 0.5f)
         
         val isStereo = channelCount == 2
         
         for (i in 0 until sampleCount) {
             val channelIdx = if (isStereo) i % 2 else 0
             val input = samples[i] / 32768.0f
+            
+            // High-quality IIR Low-pass (Shelf filter component)
             val lowPass = prevSample[channelIdx] + filterCoeff * (input - prevSample[channelIdx])
             prevSample[channelIdx] = lowPass
             
-            val bassBoost = lowPass * (gain - 1.0f)
-            val output = input + bassBoost
+            // Boost only the low frequencies
+            val bassBoosted = input + (lowPass * (targetGain - 1.0f))
             
-            val limited = softLimitSample(output)
-            samples[i] = (limited * 32767.0f).toInt().toShort()
+            // Apply compensation and soft limit
+            val finalOutput = bassBoosted * outputGain
+            
+            samples[i] = (softLimitSample(finalOutput) * 32767.0f).toInt().toShort()
         }
     }
 }

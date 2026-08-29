@@ -23,7 +23,7 @@ abstract class RhythmAudioProcessor : AudioProcessor {
         // Simple buffer pool to reduce allocations
         private val bufferPool = mutableListOf<ShortArray>()
         private val byteBufferPool = mutableListOf<ByteBuffer>()
-        private const val MAX_POOL_SIZE = 4
+        private const val MAX_POOL_SIZE = 8 // Increased for heavier processing
         
         fun acquireShortArray(size: Int): ShortArray {
             synchronized(bufferPool) {
