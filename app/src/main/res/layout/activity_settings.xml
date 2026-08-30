@@ -16,11 +16,12 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="7dp"
+        android:layout_width="150dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="6dp"
         android:src="@drawable/logo"
+        android:scaleType="fitStart"
         android:transitionName="logo_transition"
         android:contentDescription="App Logo"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,8 +32,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
         android:alpha="0"
         app:cardBackgroundColor="@color/surface_panel"
         app:cardCornerRadius="16dp"
@@ -44,7 +45,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo"
         app:layout_constraintBottom_toTopOf="@+id/settings_actions"
-        app:layout_constraintVertical_bias="0.5">
+        app:layout_constraintVertical_bias="0.0">
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/flyer_view_pager"
@@ -57,17 +58,20 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
         android:alpha="0"
         android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/flyer_card"
         app:layout_constraintBottom_toTopOf="@+id/settings_content"
+        app:layout_constraintVertical_bias="0.0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:id="@+id/btn_equalizer"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="44dp"
             android:background="@drawable/bg_opaque_card"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -82,7 +86,7 @@
                 android:layout_weight="1"
                 android:text="Equalizer &amp; Audio DSP"
                 android:textColor="@android:color/white"
-                android:textSize="14.5sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -90,14 +94,14 @@
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textColor="@color/accent_neon"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/btn_community"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
             android:background="@drawable/bg_opaque_card"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -112,7 +116,7 @@
                 android:layout_weight="1"
                 android:text="Community"
                 android:textColor="@android:color/white"
-                android:textSize="14.5sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -120,18 +124,78 @@
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textColor="@color/accent_neon"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_terms_of_service"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_opaque_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Terms of Service"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="›"
+                android:textColor="@color/accent_neon"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_privacy_policy"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_opaque_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Privacy Policy"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="›"
+                android:textColor="@color/accent_neon"
+                android:textSize="18sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/contact_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:layout_gravity="center_horizontal"
             android:text="For concerns, Contact us"
             android:textColor="@color/accent_neon"
-            android:textSize="12.5sp"
+            android:textSize="12sp"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>

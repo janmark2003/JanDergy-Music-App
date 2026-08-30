@@ -97,26 +97,33 @@ public class MovingBlurView extends View {
     }
 
     private class Blob {
-        float x, y;
-        float vx, vy;
+        float baseX, baseY;
+        float angle;
+        float angleSpeed;
+        float driftRange;
         float radius;
+        float baseRadius;
         int color;
+        float x, y;
 
         Blob(int color) {
             this.color = color;
-            this.x = random.nextFloat();
-            this.y = random.nextFloat();
-            this.vx = (random.nextFloat() - 0.5f) * 0.005f;
-            this.vy = (random.nextFloat() - 0.5f) * 0.005f;
-            this.radius = 0.3f + random.nextFloat() * 0.4f;
+            this.baseX = random.nextFloat();
+            this.baseY = random.nextFloat();
+            this.angle = random.nextFloat() * (float) (2 * Math.PI);
+            this.angleSpeed = 0.015f + random.nextFloat() * 0.02f;
+            this.driftRange = 0.12f + random.nextFloat() * 0.15f;
+            this.baseRadius = 0.35f + random.nextFloat() * 0.35f;
+            this.radius = baseRadius;
+            this.x = baseX;
+            this.y = baseY;
         }
 
         void update() {
-            x += vx;
-            y += vy;
-
-            if (x < 0 || x > 1) vx *= -1;
-            if (y < 0 || y > 1) vy *= -1;
+            angle += angleSpeed;
+            x = baseX + (float) Math.sin(angle) * driftRange;
+            y = baseY + (float) Math.cos(angle * 0.8f) * driftRange;
+            radius = baseRadius + (float) Math.sin(angle * 0.5f) * 0.08f;
         }
     }
 }

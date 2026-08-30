@@ -96,13 +96,40 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
         }
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onItemClick(item);
+            v.animate().cancel();
+            v.animate()
+                    .scaleX(0.97f)
+                    .scaleY(0.97f)
+                    .setDuration(70)
+                    .withEndAction(() -> {
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start();
+                        if (listener != null) listener.onItemClick(item);
+                    })
+                    .start();
         });
         holder.favBtn.setOnClickListener(v -> {
-            if (listener != null) listener.onFavoriteClick(item);
+            v.animate().cancel();
+            v.animate()
+                    .scaleX(0.85f)
+                    .scaleY(0.85f)
+                    .setDuration(80)
+                    .withEndAction(() -> {
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(140).start();
+                        if (listener != null) listener.onFavoriteClick(item);
+                    })
+                    .start();
         });
         holder.albumArt.setOnClickListener(v -> {
-            if (listener != null) listener.onAlbumArtClick(item, holder.albumArt);
+            v.animate().cancel();
+            v.animate()
+                    .scaleX(0.92f)
+                    .scaleY(0.92f)
+                    .setDuration(80)
+                    .withEndAction(() -> {
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start();
+                        if (listener != null) listener.onAlbumArtClick(item, holder.albumArt);
+                    })
+                    .start();
         });
     }
 

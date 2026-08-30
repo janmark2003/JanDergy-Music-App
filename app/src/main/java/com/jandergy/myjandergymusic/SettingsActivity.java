@@ -23,6 +23,12 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.transition.ChangeBounds;
+import android.transition.ChangeImageTransform;
+import android.transition.ChangeTransform;
+import android.transition.Fade;
+import android.transition.TransitionSet;
+import android.view.animation.DecelerateInterpolator;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.OptIn;
@@ -101,6 +107,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        configureTransitions();
         setContentView(R.layout.activity_settings);
 
         getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
@@ -109,6 +116,11 @@ public class SettingsActivity extends AppCompatActivity {
                 supportFinishAfterTransition();
             }
         });
+
+        ImageView logoView = findViewById(R.id.logo);
+        if (logoView != null) {
+            logoView.setOnClickListener(v -> supportFinishAfterTransition());
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.settings_root), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -204,16 +216,58 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        findViewById(R.id.btn_equalizer).setOnClickListener(v -> showEqualizerDialog());
+        findViewById(R.id.btn_equalizer).setOnClickListener(v -> {
+            springClick(v);
+            showEqualizerDialog();
+        });
 
-        findViewById(R.id.btn_community).setOnClickListener(v -> showCommunityDialog());
+        findViewById(R.id.btn_community).setOnClickListener(v -> {
+            springClick(v);
+            showCommunityDialog();
+        });
+
+        findViewById(R.id.btn_terms_of_service).setOnClickListener(v -> {
+            springClick(v);
+            showTermsOfServiceDialog();
+        });
+
+        findViewById(R.id.btn_privacy_policy).setOnClickListener(v -> {
+            springClick(v);
+            showPrivacyPolicyDialog();
+        });
 
         findViewById(R.id.contact_link).setOnClickListener(v -> {
+            springClick(v);
             Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
             emailIntent.setData(Uri.parse("mailto:janmarkthebluedragon@gmail.com"));
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "JanDergy Music - Concern");
             startActivity(Intent.createChooser(emailIntent, "Send email"));
         });
+
+        if (characterImg != null) {
+            characterImg.setOnClickListener(v -> {
+                v.animate().cancel();
+                v.animate()
+                        .translationY(-20f)
+                        .scaleX(0.95f)
+                        .scaleY(1.05f)
+                        .setDuration(180)
+                        .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                        .withEndAction(() -> {
+                            v.animate()
+                                    .translationY(0f)
+                                    .scaleX(1.0f)
+                                    .scaleY(1.0f)
+                                    .setDuration(220)
+                                    .setInterpolator(new android.view.animation.OvershootInterpolator(2.2f))
+                                    .start();
+                        })
+                        .start();
+                for (int i = 0; i < 8; i++) {
+                    showAnimatedNoteFromBanner();
+                }
+            });
+        }
 
         nowPlayingTitle = findViewById(R.id.now_playing_title);
         nowPlayingArtist = findViewById(R.id.now_playing_artist);
@@ -231,10 +285,7 @@ public class SettingsActivity extends AppCompatActivity {
         btnFavNow = findViewById(R.id.btn_fav_now);
 
         androidx.cardview.widget.CardView playerControls = findViewById(R.id.player_controls);
-        playerControls.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingsActivity.this, FullScreenPlayerActivity.class);
-            startActivity(intent);
-        });
+        setupMiniPlayerCardClick(playerControls, this::launchFullScreenPlayer);
 
         btnPlayPause.setOnClickListener(v -> {
             if (player == null) return;
@@ -339,6 +390,126 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        dialog.show();
+    }
+
+    private void showTermsOfServiceDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_legal_doc, null);
+        dialog.setContentView(dialogView);
+
+        View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet != null) {
+            bottomSheet.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+        TextView titleView = dialogView.findViewById(R.id.legal_title);
+        TextView subtitleView = dialogView.findViewById(R.id.legal_subtitle);
+        TextView contentView = dialogView.findViewById(R.id.legal_content);
+
+        titleView.setText("Terms of Service");
+        subtitleView.setText("JanDergy Music - Effective Date: August 2026");
+
+        String termsText = "TERMS OF SERVICE\n\n"
+                + "Last Updated: August 30, 2026\n"
+                + "Application: JanDergy Music (Version 1.1.0-patch2)\n"
+                + "Developer: Janmark Abo (JanDergy)\n\n"
+                + "1. ACCEPTANCE OF TERMS\n"
+                + "By downloading, installing, accessing, or using the JanDergy Music mobile application (\"Application\", \"Service\", or \"Software\"), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms of Service (\"Terms\"). If you do not agree with any part of these Terms, you must immediately discontinue use and uninstall the Application.\n\n"
+                + "2. DESCRIPTION OF SERVICE\n"
+                + "JanDergy Music is an offline local audio playback application developed for Android devices. The Application provides digital signal processing (DSP) features including hardware equalizers, 8D binaural spatialization, bass boost filtering, offline playlist management, and local audio file organization. The Application processes audio files that are stored locally on your device storage. JanDergy Music does not provide streaming content, commercial music licensing, or unauthorized media acquisition services.\n\n"
+                + "3. INTELLECTUAL PROPERTY AND LICENSING\n"
+                + "3.1. Application License: Subject to your compliance with these Terms, the developer grants you a personal, revocable, non-exclusive, non-transferable, non-sublicensable license to use the Software solely for personal, non-commercial entertainment purposes on supported Android devices.\n\n"
+                + "3.2. Ownership: All copyrights, trademarks, design rights, logos, user interface designs, and proprietary DSP algorithms embodied within the Application remain the intellectual property of Janmark Abo and respective open-source licensors.\n\n"
+                + "3.3. User Content: You retain full ownership and legal responsibility for all media files and audio content stored on your hardware. You represent and warrant that you possess all necessary copyright licenses or personal authorizations to reproduce and listen to the audio files you load into the Application.\n\n"
+                + "4. USER CONDUCT AND PROHIBITED ACTIVITIES\n"
+                + "You agree that you shall not:\n"
+                + "a) Reverse engineer, decompile, disassemble, or derive the source code of the proprietary components of the Application, except where permitted by applicable statutory law.\n"
+                + "b) Sublicense, lease, rent, redistribute, or commercially monetize the Application without prior written consent from the developer.\n"
+                + "c) Modify, tamper with, or circumvent any security controls, licensing verifications, or audio processing safeguards.\n"
+                + "d) Use the Application in any manner that violates local, national, or international copyright and intellectual property legislation.\n\n"
+                + "5. AUDIO PROCESSING AND HEARING SAFETY DISCLAIMER\n"
+                + "5.1. Audio Levels and Hearing Protection: JanDergy Music includes amplification algorithms, hardware equalizer overrides, bass boost filters, and 8D binaural spatialization routines capable of producing high sound pressure levels (SPL). You are solely responsible for regulating output volumes to safe thresholds. Extended exposure to high sound levels through earphones or headphones can cause permanent hearing impairment or acoustic trauma.\n\n"
+                + "5.2. Safety Awareness: You agree not to use binaural 8D spatial audio or sound-isolating effects while operating motor vehicles, cycling, or performing tasks that demand complete auditory situational awareness for physical safety.\n\n"
+                + "6. THIRD-PARTY PLATFORMS AND EXTERNAL LINKS\n"
+                + "The Application may display links or redirection intents to third-party community channels (including Telegram, BlueSky, or external web destinations). These third-party services operate under their own independent terms of service and privacy practices. The developer exercises no editorial or operational control over third-party platforms and disclaims all liability arising from your interaction with external services.\n\n"
+                + "7. DISCLAIMER OF WARRANTIES\n"
+                + "THE APPLICATION IS PROVIDED TO YOU ON AN \"AS IS\" AND \"AS AVAILABLE\" BASIS, WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND. TO THE MAXIMUM EXTENT PERMITTED UNDER APPLICABLE LAW, THE DEVELOPER EXPRESSLY DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. THE DEVELOPER DOES NOT WARRANT THAT THE SOFTWARE WILL OPERATE UNINTERRUPTED, BUG-FREE, OR FULLY COMPATIBLE WITH ALL ANDROID FIRMWARES, HARDWARE EQUALIZERS, OR AUDIO SINKS.\n\n"
+                + "8. LIMITATION OF LIABILITY\n"
+                + "TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE DEVELOPER, AFFILIATES, OR LICENSORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, OR PUNITIVE DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, LOSS OF DATA, DEVICE DAMAGE, AUDIO HARDWARE FAILURE, OR HEARING IMPAIRMENT) ARISING OUT OF OR IN CONNECTION WITH YOUR USE OR INABILITY TO USE THE APPLICATION, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\n\n"
+                + "9. MODIFICATIONS AND TERMINATION\n"
+                + "The developer reserves the right, at sole discretion, to modify, update, or discontinue features of the Application or these Terms at any time without prior notice. Continued use of the Application following the publication of revised Terms constitutes formal acceptance of the revised Terms.\n\n"
+                + "10. GOVERNING LAW AND SEVERABILITY\n"
+                + "These Terms shall be construed and governed in accordance with the substantive laws of the applicable legal jurisdiction, without giving effect to conflict of laws principles. If any provision of these Terms is deemed invalid or unenforceable by a court of competent jurisdiction, the remaining provisions shall remain in full force and effect.\n\n"
+                + "11. CONTACT AND INQUIRIES\n"
+                + "For legal inquiries, copyright notices, or technical concerns regarding these Terms, please contact:\n"
+                + "Developer: Janmark Abo\n"
+                + "Email: janmarkthebluedragon@gmail.com";
+
+        contentView.setText(termsText);
+        dialogView.findViewById(R.id.btn_close_legal).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showPrivacyPolicyDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_legal_doc, null);
+        dialog.setContentView(dialogView);
+
+        View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet != null) {
+            bottomSheet.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+        TextView titleView = dialogView.findViewById(R.id.legal_title);
+        TextView subtitleView = dialogView.findViewById(R.id.legal_subtitle);
+        TextView contentView = dialogView.findViewById(R.id.legal_content);
+
+        titleView.setText("Privacy Policy");
+        subtitleView.setText("JanDergy Music - Effective Date: August 2026");
+
+        String privacyText = "PRIVACY POLICY\n\n"
+                + "Last Updated: August 30, 2026\n"
+                + "Application: JanDergy Music (Version 1.1.0-patch2)\n"
+                + "Developer: Janmark Abo (JanDergy)\n\n"
+                + "1. INTRODUCTION AND PURPOSE\n"
+                + "JanDergy Music (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This Privacy Policy provides a transparent, formal explanation of how the Application functions with respect to your information, local media storage, device permissions, and data processing. JanDergy Music is engineered with an offline-first, zero-surveillance design philosophy.\n\n"
+                + "2. ZERO-COLLECTION AND NO DATA SALE COMMITMENT\n"
+                + "2.1. No Personal Data Harvesting: JanDergy Music does not collect, record, harvest, or transmit your personal identifiable information (PII) to remote servers, external advertisers, or third-party data brokers.\n\n"
+                + "2.2. No Account Registration: The Application does not require account creation, social logins, email registration, or identity verification.\n\n"
+                + "2.3. No Sale of User Information: We do not sell, rent, monetize, or disclose your data under any circumstances.\n\n"
+                + "3. DEVICE PERMISSIONS AND OPERATIONAL USAGE\n"
+                + "To function as a fully featured media player, JanDergy Music requires access to specific system permissions. All requested permissions are utilized exclusively on your device for immediate functional operations:\n"
+                + "a) READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE: Required strictly to index, read, and decode audio files stored in your device storage, SD card, or music directories, and to extract local ID3 tags (track title, artist, album, duration, and embedded artwork).\n"
+                + "b) POST_NOTIFICATIONS: Required on Android 13 (API level 33) and above to display the persistent media player notification, current playback status, track artwork, and playback controls in the system notification shade.\n"
+                + "c) FOREGROUND_SERVICE and FOREGROUND_SERVICE_MEDIA_PLAYBACK: Required by Android system architecture to maintain smooth, continuous background music playback and audio DSP filtering when the screen is turned off or when switching to other applications.\n"
+                + "d) WAKE_LOCK: Utilized to prevent CPU sleep state interruptions while music playback is actively ongoing.\n\n"
+                + "4. LOCAL DATA STORAGE AND PREFERENCES\n"
+                + "All application configurations and user customizations are maintained strictly on your local device via Android SharedPreferences and internal cache:\n"
+                + "a) Audio Preferences: Hardware equalizer band levels, Bass Boost strength, Spatializer depth, and 8D Audio toggles.\n"
+                + "b) Library Preferences: Favorite track lists, repeat and shuffle states, playback speed parameters, and sleep timer selections.\n"
+                + "c) Cached Artwork: Temporary scaled bitmap images of album artwork are decoded and held in application cache to optimize smooth UI rendering and reduce battery consumption.\n"
+                + "No configuration data or listening history is transmitted outside your local hardware.\n\n"
+                + "5. THIRD-PARTY LIBRARIES AND NETWORK INTEGRATIONS\n"
+                + "5.1. Media Playback Architecture: The Application uses Google AndroidX Media3 (ExoPlayer) libraries for native decoding and audio pipeline execution. These libraries operate locally on your device.\n\n"
+                + "5.2. External Links: The Application provides external hyperlinks to developer community pages (Telegram, BlueSky). Accessing these links opens your default browser or native apps under their respective privacy policies. JanDergy Music does not inject tracking pixels, cookies, or referrers into external links.\n\n"
+                + "6. DATA RETENTION AND COMPLETE DELETION\n"
+                + "Because JanDergy Music stores all operational data locally on your device, you maintain full control over your information at all times. You can permanently erase all stored settings, favorites, and cached artwork by:\n"
+                + "a) Selecting \"Clear Storage\" or \"Clear Data\" for JanDergy Music in your Android System Settings (Settings > Apps > JanDergy Music > Storage).\n"
+                + "b) Uninstalling the Application from your device, which automatically instructs Android to delete all application private data directories.\n\n"
+                + "7. CHILDREN'S PRIVACY COMPLIANCE\n"
+                + "JanDergy Music is a general-audience local media utility and does not knowingly collect personal information from children under the age of 13 (or under the applicable age of digital consent in your jurisdiction). Because no personal information is gathered whatsoever, the Application complies with COPPA and global child privacy regulations.\n\n"
+                + "8. SECURITY PRACTICES\n"
+                + "We prioritize the security of your device by following modern Android security recommendations, including scoped storage compliance, strict intent boundaries, and minimal attack surfaces. No unencrypted network listeners or remote debugging ports are maintained in release builds.\n\n"
+                + "9. REVISIONS TO THIS PRIVACY POLICY\n"
+                + "We reserve the right to revise or update this Privacy Policy to reflect modifications in statutory regulations or application functionality. Revisions become effective immediately upon being posted within the Application.\n\n"
+                + "10. CONTACT AND DATA PROTECTION INQUIRIES\n"
+                + "If you have any questions, formal privacy concerns, or legal inquiries regarding this Privacy Policy, please contact the developer:\n"
+                + "Developer: Janmark Abo\n"
+                + "Email: janmarkthebluedragon@gmail.com";
+
+        contentView.setText(privacyText);
+        dialogView.findViewById(R.id.btn_close_legal).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
@@ -589,21 +760,92 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void animateBubblyClick(View v) {
+    private void springClick(View v) {
+        if (v == null) return;
+        v.animate().cancel();
         v.animate()
-                .scaleX(1.1f)
-                .scaleY(1.1f)
-                .setDuration(150)
+                .scaleX(0.94f)
+                .scaleY(0.94f)
+                .setDuration(90)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .withEndAction(() -> {
                     v.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(400)
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(160)
                             .setInterpolator(new android.view.animation.OvershootInterpolator(2.0f))
                             .start();
                 })
                 .start();
+    }
+
+    private void animateBubblyClick(View v) {
+        springClick(v);
+    }
+
+    private void launchFullScreenPlayer() {
+        Intent intent = new Intent(this, FullScreenPlayerActivity.class);
+        intent.putExtras(createPlaybackStateBundle());
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    private Bundle createPlaybackStateBundle() {
+        Bundle bundle = new Bundle();
+        if (player != null) {
+            MediaItem item = player.getCurrentMediaItem();
+            if (item != null) {
+                bundle.putString("TITLE", item.mediaMetadata.title != null ? item.mediaMetadata.title.toString() : "");
+                bundle.putString("ARTIST", item.mediaMetadata.artist != null ? item.mediaMetadata.artist.toString() : "");
+                bundle.putString("MEDIA_ID", item.mediaId);
+                if (item.requestMetadata != null && item.requestMetadata.mediaUri != null) {
+                    bundle.putString("URI", item.requestMetadata.mediaUri.toString());
+                }
+                bundle.putLong("POSITION", player.getCurrentPosition());
+                bundle.putLong("DURATION", player.getDuration());
+                bundle.putBoolean("IS_PLAYING", player.isPlaying());
+                bundle.putInt("REPEAT_MODE", player.getRepeatMode());
+                bundle.putBoolean("SHUFFLE_MODE", player.getShuffleModeEnabled());
+            }
+        }
+        return bundle;
+    }
+
+    private void setupMiniPlayerCardClick(View playerControlsCard, Runnable onOpenPlayer) {
+        if (playerControlsCard == null) return;
+        View.OnClickListener clickListener = v -> onOpenPlayer.run();
+        attachNonFunctionalClicks(playerControlsCard, clickListener);
+    }
+
+    private void attachNonFunctionalClicks(View view, View.OnClickListener clickListener) {
+        if (view == null) return;
+        int id = view.getId();
+        if (id == R.id.btn_play_pause || id == R.id.btn_next || id == R.id.btn_prev
+                || id == R.id.btn_shuffle || id == R.id.btn_repeat || id == R.id.btn_fav_now
+                || id == R.id.seek_bar) {
+            return;
+        }
+        view.setOnClickListener(clickListener);
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                attachNonFunctionalClicks(group.getChildAt(i), clickListener);
+            }
+        }
+    }
+
+    private void configureTransitions() {
+        TransitionSet sharedTransition = new TransitionSet()
+                .addTransition(new ChangeBounds())
+                .addTransition(new ChangeTransform())
+                .addTransition(new ChangeImageTransform())
+                .setDuration(350L)
+                .setInterpolator(new DecelerateInterpolator());
+        getWindow().setSharedElementsUseOverlay(true);
+        getWindow().setSharedElementEnterTransition(sharedTransition);
+        getWindow().setSharedElementReturnTransition(sharedTransition);
+        getWindow().setEnterTransition(new Fade().setDuration(220L));
+        getWindow().setReturnTransition(new Fade().setDuration(200L));
     }
 
     private void showAnimatedNoteFromBanner() {

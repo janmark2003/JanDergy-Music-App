@@ -271,12 +271,8 @@ public class MainActivity extends AppCompatActivity {
     private void launchFullScreenPlayer() {
         Intent intent = new Intent(this, FullScreenPlayerActivity.class);
         intent.putExtras(createPlaybackStateBundle());
-
-        Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
-
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair);
-        startActivity(intent, options.toBundle());
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void restoreViewStates() {
@@ -444,9 +440,12 @@ public class MainActivity extends AppCompatActivity {
         btnSettings = findViewById(R.id.btn_settings);
         searchView = findViewById(R.id.search_view);
 
-        playerControls.setOnClickListener(v -> launchFullScreenPlayer());
+        setupMiniPlayerCardClick(playerControls, this::launchFullScreenPlayer);
 
-        btnSettings.setOnClickListener(v -> launchSettings());
+        btnSettings.setOnClickListener(v -> {
+            springClick(v);
+            launchSettings();
+        });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -463,19 +462,28 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnPlayPause.setOnClickListener(v -> {
+            springClick(v);
             if (player == null) return;
             if (player.isPlaying()) player.pause();
             else player.play();
         });
 
-        btnNext.setOnClickListener(v -> { if (player != null) player.seekToNext(); });
-        btnPrev.setOnClickListener(v -> { if (player != null) player.seekToPrevious(); });
+        btnNext.setOnClickListener(v -> {
+            springClick(v);
+            if (player != null) player.seekToNext();
+        });
+        btnPrev.setOnClickListener(v -> {
+            springClick(v);
+            if (player != null) player.seekToPrevious();
+        });
 
         btnShuffle.setOnClickListener(v -> {
+            springClick(v);
             if (player != null) player.setShuffleModeEnabled(!player.getShuffleModeEnabled());
         });
 
         btnRepeat.setOnClickListener(v -> {
+            springClick(v);
             if (player != null) {
                 int mode = player.getRepeatMode();
                 if (mode == Player.REPEAT_MODE_OFF) player.setRepeatMode(Player.REPEAT_MODE_ONE);
@@ -485,6 +493,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnFavNow.setOnClickListener(v -> {
+            springClick(v);
             MediaItem item = (player != null) ? player.getCurrentMediaItem() : null;
             if (item != null) {
                 AudioAdapter.AudioItem audio = findItemById(Long.parseLong(item.mediaId));
@@ -561,8 +570,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtras(createPlaybackStateBundle());
 
         Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair);
         startActivity(intent, options.toBundle());
     }
 
@@ -571,13 +579,8 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, FullScreenPlayerActivity.class);
         intent.putExtras(createPlaybackStateBundle());
-
-        Pair<View, String> logoPair = Pair.create(findViewById(R.id.logo), "logo_transition");
-        Pair<View, String> seekPair = Pair.create(seekBar, "seekbar_transition");
-        Pair<View, String> artPair = Pair.create(albumArtView, "album_art_transition");
-
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, logoPair, seekPair, artPair);
-        startActivity(intent, options.toBundle());
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void setUIVisibility(boolean visible) {
@@ -881,6 +884,48 @@ public class MainActivity extends AppCompatActivity {
                 .start();
     }
 
+    private void springClick(View v) {
+        if (v == null) return;
+        v.animate().cancel();
+        v.animate()
+                .scaleX(0.88f)
+                .scaleY(0.88f)
+                .setDuration(90)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> {
+                    v.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(160)
+                            .setInterpolator(new OvershootInterpolator(2.0f))
+                            .start();
+                })
+                .start();
+    }
+
+    private void setupMiniPlayerCardClick(View playerControlsCard, Runnable onOpenPlayer) {
+        if (playerControlsCard == null) return;
+        View.OnClickListener clickListener = v -> onOpenPlayer.run();
+        attachNonFunctionalClicks(playerControlsCard, clickListener);
+    }
+
+    private void attachNonFunctionalClicks(View view, View.OnClickListener clickListener) {
+        if (view == null) return;
+        int id = view.getId();
+        if (id == R.id.btn_play_pause || id == R.id.btn_next || id == R.id.btn_prev
+                || id == R.id.btn_shuffle || id == R.id.btn_repeat || id == R.id.btn_fav_now
+                || id == R.id.seek_bar) {
+            return;
+        }
+        view.setOnClickListener(clickListener);
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                attachNonFunctionalClicks(group.getChildAt(i), clickListener);
+            }
+        }
+    }
+
     private void toggleFavorite(AudioAdapter.AudioItem item) {
         String idStr = String.valueOf(item.id);
         Set<String> favs;
@@ -1047,13 +1092,13 @@ public class MainActivity extends AppCompatActivity {
                 .addTransition(new ChangeBounds())
                 .addTransition(new ChangeTransform())
                 .addTransition(new ChangeImageTransform())
-                .setDuration(320L)
+                .setDuration(350L)
                 .setInterpolator(new DecelerateInterpolator());
-        getWindow().setSharedElementsUseOverlay(false);
+        getWindow().setSharedElementsUseOverlay(true);
         getWindow().setSharedElementEnterTransition(sharedTransition);
         getWindow().setSharedElementReturnTransition(sharedTransition);
         getWindow().setEnterTransition(new Fade().setDuration(220L));
-        getWindow().setReturnTransition(new Fade().setDuration(180L));
+        getWindow().setReturnTransition(new Fade().setDuration(200L));
     }
 
     private static class SectionData {

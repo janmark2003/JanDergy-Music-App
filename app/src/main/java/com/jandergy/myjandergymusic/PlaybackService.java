@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
@@ -55,7 +56,18 @@ public class PlaybackService extends MediaSessionService {
                 eightDProcessor
         );
         
+        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                        30000, // minBufferMs
+                        60000, // maxBufferMs
+                        1500,  // bufferForPlaybackMs
+                        2500   // bufferForPlaybackAfterRebufferMs
+                )
+                .setPrioritizeTimeOverSizeThresholds(true)
+                .build();
+
         player = new ExoPlayer.Builder(this, renderersFactory)
+                .setLoadControl(loadControl)
                 .setHandleAudioBecomingNoisy(true)
                 .build();
         

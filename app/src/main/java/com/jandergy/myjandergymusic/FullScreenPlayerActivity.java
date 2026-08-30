@@ -138,8 +138,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        configureTransitions();
-        supportPostponeEnterTransition();
         setContentView(R.layout.activity_full_screen_player);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.player_root), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -153,12 +151,13 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         initUI();
         initLocalEqualizer();
         applyInitialState();
-        findViewById(R.id.player_root).post(this::supportStartPostponedEnterTransition);
+        animateEntrance();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                supportFinishAfterTransition();
+                finish();
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
     }
@@ -324,10 +323,73 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         }
     }
 
+    private void animateEntrance() {
+        animateLogoPop();
+
+        View albumCard = findViewById(R.id.album_art_card);
+        View toolbar = findViewById(R.id.feature_toolbar);
+        View controls = findViewById(R.id.player_controls);
+
+        View[] views = {albumCard, toolbar, controls};
+        for (int i = 0; i < views.length; i++) {
+            View view = views[i];
+            if (view != null) {
+                view.setAlpha(0f);
+                view.setTranslationY(30f + i * 15f);
+                view.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(450)
+                        .setStartDelay(40 + i * 50)
+                        .setInterpolator(new DecelerateInterpolator())
+                        .start();
+            }
+        }
+    }
+
+    private void animateLogoPop() {
+        View logoView = findViewById(R.id.logo);
+        if (logoView != null) {
+            logoView.post(() -> {
+                logoView.setPivotX(logoView.getWidth() / 2f);
+                logoView.setPivotY(logoView.getHeight() / 2f);
+                logoView.setScaleX(0.7f);
+                logoView.setScaleY(0.7f);
+                logoView.setAlpha(0f);
+                logoView.animate()
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .alpha(1.0f)
+                        .setDuration(320)
+                        .setInterpolator(new DecelerateInterpolator(1.8f))
+                        .start();
+            });
+        }
+    }
+
+    private void springClick(View v) {
+        if (v == null) return;
+        v.animate().cancel();
+        // Scale down on touch (inward, guaranteed zero overlap with neighbors)
+        v.animate()
+                .scaleX(0.88f)
+                .scaleY(0.88f)
+                .setDuration(90)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> {
+                    // Rebound smoothly back to normal (1.0f)
+                    v.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(160)
+                            .setInterpolator(new OvershootInterpolator(2.0f))
+                            .start();
+                })
+                .start();
+    }
+
     private void bubblyClick(View v) {
-        v.animate().scaleX(1.3f).scaleY(1.3f).setDuration(200).withEndAction(() ->
-                v.animate().scaleX(1f).scaleY(1f).setDuration(200).start()
-        ).start();
+        springClick(v);
     }
 
     private void toggleFavorite(String mediaId) {
@@ -380,7 +442,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         float speed = SPEED_STEPS[currentSpeedIndex];
 
         if (player != null) {
-            player.setPlaybackParameters(new PlaybackParameters(speed));
+            player.setPlaybackSpeed(speed);
         }
 
         speedLabel.setText(String.format(Locale.US, "%.2fx", speed).replace(".00", ".0"));
@@ -851,7 +913,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
 
         // Restore playback speed if set
         if (currentSpeedIndex != 2) {
-            player.setPlaybackParameters(new PlaybackParameters(SPEED_STEPS[currentSpeedIndex]));
+            player.setPlaybackSpeed(SPEED_STEPS[currentSpeedIndex]);
         }
     }
 
