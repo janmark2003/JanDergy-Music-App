@@ -16,7 +16,9 @@ class RhythmSpatializationProcessor : RhythmAudioProcessor() {
         private const val TAG = "RhythmSpatialization"
     }
     
+    @Volatile
     private var strength: Short = 0
+    @Volatile
     private var enabled: Boolean = false
     
     fun setEnabled(enable: Boolean) {

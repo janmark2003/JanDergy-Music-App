@@ -56,6 +56,7 @@ class Rhythm8DProcessor : RhythmAudioProcessor() {
         get() = phase
 
     // Smooth bypass state tracking
+    @Volatile
     private var enabledTarget = 0.0
     private var enabledSm = 0.0
 

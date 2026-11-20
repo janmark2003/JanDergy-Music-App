@@ -18,18 +18,18 @@ class RhythmBassBoostProcessor : RhythmAudioProcessor() {
         private const val BASS_CUTOFF_FREQ = 150.0 // Hz
     }
     
+    @Volatile
     private var strength: Short = 0
+    @Volatile
     private var enabled: Boolean = false
-    
-    private var prevSample = FloatArray(2) // Support stereo
+
+    private var prevSample = FloatArray(2)
+    @Volatile
     private var filterCoeff = 0f
-    
+
     fun setEnabled(enable: Boolean) {
         Log.d(TAG, "Bass boost enabled: $enable")
         this.enabled = enable
-        if (!enable) {
-            prevSample.fill(0f)
-        }
     }
 
     fun setStrength(strength: Short) {
@@ -37,11 +37,31 @@ class RhythmBassBoostProcessor : RhythmAudioProcessor() {
         updateFilterCoeff()
         Log.d(TAG, "Bass boost strength set to: ${this.strength}")
     }
-    
+
     fun getStrength(): Short = strength
-    
+
     override fun isEnabled(): Boolean = enabled
-    
+
+    override fun onAudioFormatConfigured(sampleRate: Int, channelCount: Int) {
+        val channels = maxOf(2, channelCount)
+        if (prevSample.size < channels) {
+            prevSample = FloatArray(channels)
+        } else {
+            prevSample.fill(0f)
+        }
+        updateFilterCoeff()
+    }
+
+    override fun flush() {
+        super.flush()
+        prevSample.fill(0f)
+    }
+
+    override fun reset() {
+        super.reset()
+        prevSample.fill(0f)
+    }
+
     private fun updateFilterCoeff() {
         if (sampleRate <= 0) return
         val rc = 1.0 / (2.0 * PI * BASS_CUTOFF_FREQ)
@@ -82,10 +102,13 @@ class RhythmBassBoostProcessor : RhythmAudioProcessor() {
         // to prevent clipping and keep perceived loudness stable
         val outputGain = 1.0f / (1.0f + (strength / 1000.0f) * 0.5f)
         
-        val isStereo = channelCount == 2
-        
+        val channels = channelCount.coerceAtLeast(1)
+        if (prevSample.size < channels) {
+            prevSample = FloatArray(channels)
+        }
+
         for (i in 0 until sampleCount) {
-            val channelIdx = if (isStereo) i % 2 else 0
+            val channelIdx = i % channels
             val input = samples[i] / 32768.0f
             
             // High-quality IIR Low-pass (Shelf filter component)

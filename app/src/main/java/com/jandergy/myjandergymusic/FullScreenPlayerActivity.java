@@ -52,7 +52,6 @@ import androidx.palette.graphics.Palette;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,6 +63,7 @@ import java.util.concurrent.ExecutionException;
 public class FullScreenPlayerActivity extends AppCompatActivity {
 
     private MediaController player;
+    private Player.Listener playerListener;
     private ListenableFuture<MediaController> controllerFuture;
 
     private TextView currentTimeText, remainingTimeText;
@@ -87,9 +87,12 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private Set<String> favoriteIds = new HashSet<>();
 
-    // Playback Speeds
-    private static final float[] SPEED_STEPS = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
-    private int currentSpeedIndex = 2; // Default 1.0x
+    // Playback Speed & Pitch Mode
+    private static final float MIN_SPEED = 0.50f;
+    private static final float MAX_SPEED = 2.00f;
+    private static final float SPEED_STEP = 0.05f;
+    private float currentPlaybackSpeed = 1.0f;
+    private boolean keepOriginalPitch = true;
 
     // Sleep Timer
     private CountDownTimer sleepTimer;
@@ -111,15 +114,18 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     private final Runnable updateProgressAction = new Runnable() {
         @Override
         public void run() {
-            if (player != null && player.isPlaying()) {
-                long currentPos = player.getCurrentPosition();
+            if (player != null && player.isPlaying() && !isFinishing() && !isDestroyed()) {
+                long currentPos = Math.max(0L, player.getCurrentPosition());
                 long duration = player.getDuration();
-                
-                if (duration > 0 && seekBar.getMax() != (int) duration) {
-                    seekBar.setMax((int) duration);
+
+                if (duration > 0) {
+                    int maxDuration = clampToInt(duration);
+                    if (seekBar.getMax() != maxDuration) {
+                        seekBar.setMax(maxDuration);
+                    }
                 }
-                
-                seekBar.setProgress((int) currentPos);
+
+                seekBar.setProgress(clampToInt(currentPos));
                 updateTimers(currentPos, duration);
 
                 // Check A-B Loop threshold
@@ -134,6 +140,27 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         }
     };
 
+    private Set<String> loadFavoriteIds() {
+        Set<String> stored = sharedPreferences.getStringSet("Favorites", null);
+        return stored != null ? new HashSet<>(stored) : new HashSet<>();
+    }
+
+    private int clampToInt(long value) {
+        if (value <= 0L)
+            return 0;
+        if (value > Integer.MAX_VALUE)
+            return Integer.MAX_VALUE;
+        return (int) value;
+    }
+
+    private void sendServiceCommand(Intent intent) {
+        try {
+            startService(intent);
+        } catch (IllegalStateException | SecurityException e) {
+            Log.w("FullScreenPlayerActivity", "Unable to send service command: " + intent.getAction(), e);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,10 +173,11 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         });
 
         sharedPreferences = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
+        favoriteIds = loadFavoriteIds();
+        currentPlaybackSpeed = clampSpeed(sharedPreferences.getFloat("Playback_Speed", 1.0f));
+        keepOriginalPitch = sharedPreferences.getBoolean("Playback_Keep_Pitch", true);
 
         initUI();
-        initLocalEqualizer();
         applyInitialState();
         animateEntrance();
 
@@ -199,32 +227,41 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         fullAlbumArt.setOnClickListener(this::bubblyClick);
 
         btnPlayPause.setOnClickListener(v -> {
-            if (player == null) return;
-            if (player.isPlaying()) player.pause();
-            else player.play();
+            if (player == null)
+                return;
+            if (player.isPlaying())
+                player.pause();
+            else
+                player.play();
             bubblyClick(v);
         });
 
         btnNext.setOnClickListener(v -> {
-            if (player != null) player.seekToNext();
+            if (player != null)
+                player.seekToNext();
             bubblyClick(v);
         });
         btnPrev.setOnClickListener(v -> {
-            if (player != null) player.seekToPrevious();
+            if (player != null)
+                player.seekToPrevious();
             bubblyClick(v);
         });
 
         btnShuffle.setOnClickListener(v -> {
-            if (player != null) player.setShuffleModeEnabled(!player.getShuffleModeEnabled());
+            if (player != null)
+                player.setShuffleModeEnabled(!player.getShuffleModeEnabled());
             bubblyClick(v);
         });
 
         btnRepeat.setOnClickListener(v -> {
             if (player != null) {
                 int mode = player.getRepeatMode();
-                if (mode == Player.REPEAT_MODE_OFF) player.setRepeatMode(Player.REPEAT_MODE_ONE);
-                else if (mode == Player.REPEAT_MODE_ONE) player.setRepeatMode(Player.REPEAT_MODE_ALL);
-                else player.setRepeatMode(Player.REPEAT_MODE_OFF);
+                if (mode == Player.REPEAT_MODE_OFF)
+                    player.setRepeatMode(Player.REPEAT_MODE_ONE);
+                else if (mode == Player.REPEAT_MODE_ONE)
+                    player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                else
+                    player.setRepeatMode(Player.REPEAT_MODE_OFF);
             }
             bubblyClick(v);
         });
@@ -244,8 +281,14 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         });
 
         btnSpeed.setOnClickListener(v -> {
-            cycleSpeed();
+            showSpeedDialog();
             bubblyClick(v);
+        });
+        btnSpeed.setOnLongClickListener(v -> {
+            applyPlaybackSpeed(1.0f, keepOriginalPitch);
+            bubblyClick(v);
+            Toast.makeText(this, "Speed reset to 1.0x", Toast.LENGTH_SHORT).show();
+            return true;
         });
 
         btnQuickEQ.setOnClickListener(v -> {
@@ -276,13 +319,18 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     updateTimers(progress, player.getDuration());
                 }
             }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         updateAudioEffectsVisualState();
+        updateSpeedVisualState();
     }
 
     private void applyInitialState() {
@@ -310,10 +358,11 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             btnPlayPause.setImageResource(isPlaying ? R.drawable.ic_modern_pause : R.drawable.ic_modern_play);
             updateRepeatIcon(repeatMode);
             updateShuffleIcon(shuffleMode);
-            
+
             String mediaId = extras.getString("MEDIA_ID");
             if (mediaId != null) {
-                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                btnFavNow.setImageResource(
+                        favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
             }
 
             String uriStr = extras.getString("URI");
@@ -330,7 +379,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         View toolbar = findViewById(R.id.feature_toolbar);
         View controls = findViewById(R.id.player_controls);
 
-        View[] views = {albumCard, toolbar, controls};
+        View[] views = { albumCard, toolbar, controls };
         for (int i = 0; i < views.length; i++) {
             View view = views[i];
             if (view != null) {
@@ -368,7 +417,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void springClick(View v) {
-        if (v == null) return;
+        if (v == null)
+            return;
         v.animate().cancel();
         // Scale down on touch (inward, guaranteed zero overlap with neighbors)
         v.animate()
@@ -393,15 +443,19 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void toggleFavorite(String mediaId) {
+        if (mediaId == null || mediaId.isEmpty())
+            return;
         if (favoriteIds.contains(mediaId)) {
             favoriteIds.remove(mediaId);
         } else {
             favoriteIds.add(mediaId);
         }
-        sharedPreferences.edit().putStringSet("Favorites", favoriteIds).apply();
-        btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
-        
+        sharedPreferences.edit().putStringSet("Favorites", new HashSet<>(favoriteIds)).apply();
+        btnFavNow.setImageResource(
+                favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+
         Intent intent = new Intent("com.jandergy.myjandergymusic.FAVORITE_CHANGED");
+        intent.setPackage(getPackageName());
         sendBroadcast(intent);
     }
 
@@ -410,7 +464,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     // ==========================================
 
     private void initLocalEqualizer() {
-        if (localEqualizer != null) return;
+        if (localEqualizer != null)
+            return;
         try {
             localEqualizer = new Equalizer(0, 0);
         } catch (Exception e) {
@@ -434,25 +489,142 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         boolean eightDActive = sharedPreferences.getBoolean("RHYTHM_8D_ENABLED", false);
         btn8dToggle.setAlpha(eightDActive ? 1.0f : 0.6f);
         btn8dToggle.setColorFilter(eightDActive ? accentColor : defaultColor);
-        eightDLabel.setTextColor(eightDActive ? accentColor : ContextCompat.getColor(this, R.color.glass_text_secondary));
+        eightDLabel
+                .setTextColor(eightDActive ? accentColor : ContextCompat.getColor(this, R.color.glass_text_secondary));
     }
 
-    private void cycleSpeed() {
-        currentSpeedIndex = (currentSpeedIndex + 1) % SPEED_STEPS.length;
-        float speed = SPEED_STEPS[currentSpeedIndex];
+    private float clampSpeed(float speed) {
+        if (Float.isNaN(speed)) return 1.0f;
+        float clamped = Math.max(MIN_SPEED, Math.min(MAX_SPEED, speed));
+        return Math.round(clamped * 20f) / 20f;
+    }
+
+    private String formatSpeedLabel(float speed) {
+        float rounded = Math.round(speed * 100f) / 100f;
+        if (Math.abs(rounded * 10f - Math.round(rounded * 10f)) < 0.01f) {
+            return String.format(Locale.US, "%.1fx", rounded);
+        }
+        return String.format(Locale.US, "%.2fx", rounded);
+    }
+
+    private void applyPlaybackSpeed(float speed, boolean keepPitch) {
+        currentPlaybackSpeed = clampSpeed(speed);
+        keepOriginalPitch = keepPitch;
+
+        sharedPreferences.edit()
+                .putFloat("Playback_Speed", currentPlaybackSpeed)
+                .putBoolean("Playback_Keep_Pitch", keepOriginalPitch)
+                .apply();
 
         if (player != null) {
-            player.setPlaybackSpeed(speed);
+            float targetPitch = keepOriginalPitch ? 1.0f : currentPlaybackSpeed;
+            player.setPlaybackParameters(new PlaybackParameters(currentPlaybackSpeed, targetPitch));
         }
 
-        speedLabel.setText(String.format(Locale.US, "%.2fx", speed).replace(".00", ".0"));
+        updateSpeedVisualState();
+    }
+
+    private void updateSpeedVisualState() {
+        if (speedLabel == null || btnSpeed == null) return;
+        speedLabel.setText(formatSpeedLabel(currentPlaybackSpeed));
         int accentColor = ContextCompat.getColor(this, R.color.accent_neon);
         int defaultColor = Color.WHITE;
-        boolean isNonStandard = speed != 1.0f;
+        boolean isNonStandard = Math.abs(currentPlaybackSpeed - 1.0f) >= 0.01f;
 
         btnSpeed.setAlpha(isNonStandard ? 1.0f : 0.6f);
         btnSpeed.setColorFilter(isNonStandard ? accentColor : defaultColor);
         speedLabel.setTextColor(isNonStandard ? accentColor : ContextCompat.getColor(this, R.color.glass_text_secondary));
+    }
+
+    private void showSpeedDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_speed, null);
+        dialog.setContentView(dialogView);
+
+        View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet != null) {
+            bottomSheet.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+        TextView currentValueView = dialogView.findViewById(R.id.speed_current_value);
+        TextView modeSubtitleView = dialogView.findViewById(R.id.speed_mode_subtitle);
+        TextView btnReset = dialogView.findViewById(R.id.btn_speed_reset);
+        SeekBar speedSeekBar = dialogView.findViewById(R.id.speed_seekbar);
+        SwitchCompat keepPitchSwitch = dialogView.findViewById(R.id.keep_pitch_switch);
+
+        int[] presetIds = {
+                R.id.preset_050, R.id.preset_075, R.id.preset_085, R.id.preset_100,
+                R.id.preset_115, R.id.preset_125, R.id.preset_150, R.id.preset_200
+        };
+        float[] presetValues = {0.50f, 0.75f, 0.85f, 1.00f, 1.15f, 1.25f, 1.50f, 2.00f};
+        TextView[] presetViews = new TextView[presetIds.length];
+        for (int i = 0; i < presetIds.length; i++) {
+            presetViews[i] = dialogView.findViewById(presetIds[i]);
+        }
+
+        int accentColor = ContextCompat.getColor(this, R.color.accent_neon);
+        Runnable refreshDialogUI = () -> {
+            currentValueView.setText(String.format(Locale.US, "%.2fx", currentPlaybackSpeed));
+            modeSubtitleView.setText(keepOriginalPitch
+                    ? "Clean Time-Stretch (Keep Pitch)"
+                    : "TikTok Sped Up / Slowed (Tape Pitch)");
+            int targetProgress = Math.round((currentPlaybackSpeed - MIN_SPEED) / SPEED_STEP);
+            if (speedSeekBar.getProgress() != targetProgress) {
+                speedSeekBar.setProgress(Math.max(0, Math.min(speedSeekBar.getMax(), targetProgress)));
+            }
+            for (int i = 0; i < presetViews.length; i++) {
+                boolean selected = Math.abs(currentPlaybackSpeed - presetValues[i]) < 0.01f;
+                presetViews[i].setTextColor(selected ? accentColor : Color.WHITE);
+                presetViews[i].setAlpha(selected ? 1.0f : 0.78f);
+            }
+        };
+
+        keepPitchSwitch.setChecked(keepOriginalPitch);
+        refreshDialogUI.run();
+
+        for (int i = 0; i < presetViews.length; i++) {
+            final float targetSpeed = presetValues[i];
+            presetViews[i].setOnClickListener(v -> {
+                springClick(v);
+                applyPlaybackSpeed(targetSpeed, keepOriginalPitch);
+                refreshDialogUI.run();
+            });
+        }
+
+        btnReset.setOnClickListener(v -> {
+            springClick(v);
+            applyPlaybackSpeed(1.0f, keepOriginalPitch);
+            refreshDialogUI.run();
+        });
+
+        speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float speed = clampSpeed(MIN_SPEED + progress * SPEED_STEP);
+                currentValueView.setText(String.format(Locale.US, "%.2fx", speed));
+                if (fromUser) {
+                    for (int i = 0; i < presetViews.length; i++) {
+                        boolean selected = Math.abs(speed - presetValues[i]) < 0.01f;
+                        presetViews[i].setTextColor(selected ? accentColor : Color.WHITE);
+                        presetViews[i].setAlpha(selected ? 1.0f : 0.78f);
+                    }
+                }
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                float speed = clampSpeed(MIN_SPEED + seekBar.getProgress() * SPEED_STEP);
+                applyPlaybackSpeed(speed, keepOriginalPitch);
+                refreshDialogUI.run();
+            }
+        });
+
+        keepPitchSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            applyPlaybackSpeed(currentPlaybackSpeed, isChecked);
+            refreshDialogUI.run();
+        });
+
+        dialog.show();
     }
 
     private void toggleBassBoost() {
@@ -464,7 +636,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         intent.setAction("ACTION_SET_BASS_BOOST");
         intent.putExtra("enabled", newBass > 0);
         intent.putExtra("strength", (short) newBass);
-        startService(intent);
+        sendServiceCommand(intent);
 
         updateAudioEffectsVisualState();
         Toast.makeText(this, newBass > 0 ? "Bass Boost ON" : "Bass Boost OFF", Toast.LENGTH_SHORT).show();
@@ -478,15 +650,16 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PlaybackService.class);
         intent.setAction("ACTION_SET_8D_AUDIO");
         intent.putExtra("enabled", new8d);
-        startService(intent);
+        sendServiceCommand(intent);
 
         updateAudioEffectsVisualState();
         Toast.makeText(this, new8d ? "8D Spatializer ON" : "8D Spatializer OFF", Toast.LENGTH_SHORT).show();
     }
 
     private void showSleepTimerDialog() {
-        String[] options = {"Turn Off", "5 Minutes", "10 Minutes", "15 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"};
-        int[] minutes = {0, 5, 10, 15, 30, 45, 60};
+        String[] options = { "Turn Off", "5 Minutes", "10 Minutes", "15 Minutes", "30 Minutes", "45 Minutes",
+                "60 Minutes" };
+        int[] minutes = { 0, 5, 10, 15, 30, 45, 60 };
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                 .setTitle("Sleep Timer")
@@ -505,14 +678,16 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     } else {
                         long timerMs = (long) minutes[which] * 60 * 1000;
                         startSleepTimer(timerMs);
-                        Toast.makeText(this, "Sleep timer set for " + minutes[which] + " min", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Sleep timer set for " + minutes[which] + " min", Toast.LENGTH_SHORT)
+                                .show();
                     }
                 })
                 .show();
     }
 
     private void startSleepTimer(long durationMs) {
-        if (sleepTimer != null) sleepTimer.cancel();
+        if (sleepTimer != null)
+            sleepTimer.cancel();
 
         int accentColor = ContextCompat.getColor(this, R.color.accent_neon);
         btnSleepTimer.setAlpha(1.0f);
@@ -531,21 +706,27 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 sleepTimerRemainingMs = 0;
+                if (isFinishing() || isDestroyed()) {
+                    return;
+                }
                 sleepTimerLabel.setText("Sleep");
                 btnSleepTimer.setAlpha(0.6f);
                 btnSleepTimer.setColorFilter(Color.WHITE);
-                sleepTimerLabel.setTextColor(ContextCompat.getColor(FullScreenPlayerActivity.this, R.color.glass_text_secondary));
+                sleepTimerLabel.setTextColor(
+                        ContextCompat.getColor(FullScreenPlayerActivity.this, R.color.glass_text_secondary));
 
                 if (player != null && player.isPlaying()) {
                     player.pause();
                 }
-                Toast.makeText(FullScreenPlayerActivity.this, "Sleep timer finished. Playback paused.", Toast.LENGTH_LONG).show();
+                Toast.makeText(FullScreenPlayerActivity.this, "Sleep timer finished. Playback paused.",
+                        Toast.LENGTH_LONG).show();
             }
         }.start();
     }
 
     private void handleABLoopClick() {
-        if (player == null) return;
+        if (player == null)
+            return;
         long currentPos = player.getCurrentPosition();
         int accentColor = ContextCompat.getColor(this, R.color.accent_neon);
 
@@ -597,6 +778,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void showEqualizerDialog() {
+        initLocalEqualizer();
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_equalizer, null);
         dialog.setContentView(dialogView);
@@ -622,7 +804,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PlaybackService.class);
             intent.setAction("ACTION_SET_EQ_ENABLED");
             intent.putExtra("enabled", isChecked);
-            startService(intent);
+            sendServiceCommand(intent);
         });
 
         // Bass Boost
@@ -637,10 +819,15 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     sharedPreferences.edit().putInt("BassBoost_Strength", progress).apply();
                 }
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) seekBar.getProgress());
+                updateEffectInService("ACTION_SET_BASS_BOOST", seekBar.getProgress() > 0,
+                        (short) seekBar.getProgress());
                 updateAudioEffectsVisualState();
             }
         });
@@ -657,10 +844,15 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     sharedPreferences.edit().putInt("Spatializer_Strength", progress).apply();
                 }
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) seekBar.getProgress());
+                updateEffectInService("ACTION_SET_SPATIALIZER", seekBar.getProgress() > 0,
+                        (short) seekBar.getProgress());
             }
         });
 
@@ -671,7 +863,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PlaybackService.class);
             intent.setAction("ACTION_SET_8D_AUDIO");
             intent.putExtra("enabled", isChecked);
-            startService(intent);
+            sendServiceCommand(intent);
             updateAudioEffectsVisualState();
         });
 
@@ -685,14 +877,15 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                 for (short i = 0; i < numPresets; i++) {
                     presets.add(localEqualizer.getPresetName(i));
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, presets);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         presetSpinner.setAdapter(adapter);
 
         int savedPreset = sharedPreferences.getInt("EQ_Preset", 0);
-        if (savedPreset < presets.size()) {
+        if (savedPreset >= 0 && savedPreset < presets.size()) {
             presetSpinner.setSelection(savedPreset, false);
         }
 
@@ -700,15 +893,21 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         short bands = 5;
         int minLevel = -1500;
         int maxLevel = 1500;
-        String[] fallbackFreqLabels = {"60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz"};
+        String[] fallbackFreqLabels = { "60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz" };
 
         if (localEqualizer != null) {
             try {
-                bands = localEqualizer.getNumberOfBands();
+                short eqBands = localEqualizer.getNumberOfBands();
                 short[] range = localEqualizer.getBandLevelRange();
-                minLevel = range[0];
-                maxLevel = range[1];
-            } catch (Exception ignored) {}
+                if (eqBands > 0) {
+                    bands = eqBands;
+                }
+                if (range != null && range.length >= 2 && range[1] > range[0]) {
+                    minLevel = range[0];
+                    maxLevel = range[1];
+                }
+            } catch (Exception ignored) {
+            }
         }
 
         final int finalMinLevel = minLevel;
@@ -727,16 +926,18 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     int freq = localEqualizer.getCenterFreq(bandIndex) / 1000;
                     freqText.setText(freq >= 1000 ? (freq / 1000) + " kHz" : freq + " Hz");
                 } catch (Exception e) {
-                    freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+                    freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex]
+                            : "Band " + (bandIndex + 1));
                 }
             } else {
-                freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+                freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex]
+                        : "Band " + (bandIndex + 1));
             }
 
-            slider.setMax(finalMaxLevel - finalMinLevel);
+            slider.setMax(Math.max(1, finalMaxLevel - finalMinLevel));
 
             int savedLevel = sharedPreferences.getInt("EQ_Band_" + bandIndex, 0);
-            slider.setProgress(savedLevel - finalMinLevel);
+            slider.setProgress(Math.max(0, Math.min(finalMaxLevel - finalMinLevel, savedLevel - finalMinLevel)));
             levelText.setText((savedLevel / 100) + " dB");
 
             slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -746,11 +947,17 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     levelText.setText((newLevel / 100) + " dB");
                     if (fromUser) {
                         presetSpinner.setSelection(0);
-                        sharedPreferences.edit().putInt("EQ_Preset", 0).apply();
-                        sharedPreferences.edit().putInt("EQ_Band_" + bandIndex, newLevel).apply();
+                        sharedPreferences.edit()
+                                .putInt("EQ_Preset", 0)
+                                .putInt("EQ_Band_" + bandIndex, newLevel)
+                                .apply();
                     }
                 }
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     int newLevel = seekBar.getProgress() + finalMinLevel;
@@ -758,7 +965,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                     intent.setAction("ACTION_SET_EQ_BAND");
                     intent.putExtra("band", bandIndex);
                     intent.putExtra("level", (short) newLevel);
-                    startService(intent);
+                    sendServiceCommand(intent);
                 }
             });
 
@@ -778,27 +985,30 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
                         localEqualizer.usePreset((short) (position - 1));
                         short numBands = localEqualizer.getNumberOfBands();
                         short[] eqRange = localEqualizer.getBandLevelRange();
-                        int min = eqRange[0];
+                        int min = (eqRange != null && eqRange.length >= 2) ? eqRange[0] : finalMinLevel;
                         for (short b = 0; b < numBands; b++) {
                             short level = localEqualizer.getBandLevel(b);
                             sharedPreferences.edit().putInt("EQ_Band_" + b, level).apply();
                             View bv = bandsList.getChildAt(b);
                             if (bv != null) {
-                                ((SeekBar) bv.findViewById(R.id.band_seekbar)).setProgress(level - min);
+                                ((SeekBar) bv.findViewById(R.id.band_seekbar)).setProgress(Math.max(0, level - min));
                                 ((TextView) bv.findViewById(R.id.band_level)).setText((level / 100) + " dB");
                             }
                             Intent intent = new Intent(FullScreenPlayerActivity.this, PlaybackService.class);
                             intent.setAction("ACTION_SET_EQ_BAND");
                             intent.putExtra("band", b);
                             intent.putExtra("level", level);
-                            startService(intent);
+                            sendServiceCommand(intent);
                         }
                     } catch (Exception e) {
                         Log.e("FullScreenPlayerActivity", "Error applying preset", e);
                     }
                 }
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         dialog.show();
@@ -809,7 +1019,7 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         intent.setAction(action);
         intent.putExtra("enabled", enabled);
         intent.putExtra("strength", strength);
-        startService(intent);
+        sendServiceCommand(intent);
     }
 
     // ==========================================
@@ -825,44 +1035,73 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
+        favoriteIds = loadFavoriteIds();
         updateAudioEffectsVisualState();
-        if (player != null) syncUIWithPlayer();
+        if (player != null)
+            syncUIWithPlayer();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        handler.removeCallbacks(updateProgressAction);
+        if (player != null && playerListener != null) {
+            player.removeListener(playerListener);
+        }
+        playerListener = null;
+        player = null;
         if (controllerFuture != null) {
             MediaController.releaseFuture(controllerFuture);
+            controllerFuture = null;
         }
-        handler.removeCallbacks(updateProgressAction);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
         if (sleepTimer != null) {
             sleepTimer.cancel();
             sleepTimer = null;
         }
+        if (localEqualizer != null) {
+            try {
+                localEqualizer.release();
+            } catch (Exception ignored) {
+            }
+            localEqualizer = null;
+        }
     }
 
     private void initializeController() {
+        if (controllerFuture != null) {
+            MediaController.releaseFuture(controllerFuture);
+            controllerFuture = null;
+        }
         SessionToken sessionToken = new SessionToken(this, new ComponentName(this, PlaybackService.class));
-        controllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
-        controllerFuture.addListener(() -> {
+        final ListenableFuture<MediaController> future = new MediaController.Builder(this, sessionToken).buildAsync();
+        controllerFuture = future;
+        future.addListener(() -> {
+            if (isFinishing() || isDestroyed() || future != controllerFuture) {
+                return;
+            }
             try {
-                player = controllerFuture.get();
+                MediaController connectedPlayer = future.get();
+                if (isFinishing() || isDestroyed() || future != controllerFuture) {
+                    return;
+                }
+                player = connectedPlayer;
                 onControllerConnected();
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (ExecutionException | InterruptedException | IllegalStateException e) {
                 e.printStackTrace();
             }
-        }, MoreExecutors.directExecutor());
+        }, ContextCompat.getMainExecutor(this));
     }
 
     private void onControllerConnected() {
-        player.addListener(new Player.Listener() {
+        if (player == null)
+            return;
+        playerListener = new Player.Listener() {
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
                 updateUIForNowPlaying(mediaItem);
@@ -904,32 +1143,48 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
                 updateShuffleIcon(shuffleModeEnabled);
             }
-        });
+
+            @Override
+            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
+                currentPlaybackSpeed = clampSpeed(playbackParameters.speed);
+                keepOriginalPitch = Math.abs(playbackParameters.pitch - 1.0f) < 0.01f
+                        || Math.abs(playbackParameters.speed - 1.0f) < 0.01f
+                        ? sharedPreferences.getBoolean("Playback_Keep_Pitch", true)
+                        : false;
+                updateSpeedVisualState();
+            }
+        };
+        player.addListener(playerListener);
 
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
         updateRepeatIcon(player.getRepeatMode());
         updateTrackPosition();
 
-        // Restore playback speed if set
-        if (currentSpeedIndex != 2) {
-            player.setPlaybackSpeed(SPEED_STEPS[currentSpeedIndex]);
+        // Sync saved speed/pitch with active player
+        PlaybackParameters currentParams = player.getPlaybackParameters();
+        if (Math.abs(currentParams.speed - currentPlaybackSpeed) >= 0.01f
+                || Math.abs(currentParams.pitch - (keepOriginalPitch ? 1.0f : currentPlaybackSpeed)) >= 0.01f) {
+            float targetPitch = keepOriginalPitch ? 1.0f : currentPlaybackSpeed;
+            player.setPlaybackParameters(new PlaybackParameters(currentPlaybackSpeed, targetPitch));
         }
+        updateSpeedVisualState();
     }
 
     private void syncUIWithPlayer() {
-        if (player == null) return;
+        if (player == null || isFinishing() || isDestroyed())
+            return;
         updateUIForNowPlaying(player.getCurrentMediaItem());
-        long currentPos = player.getCurrentPosition();
+        long currentPos = Math.max(0L, player.getCurrentPosition());
         long duration = player.getDuration();
-        
+
         if (duration > 0) {
-            seekBar.setMax((int) duration);
+            seekBar.setMax(clampToInt(duration));
         } else {
             seekBar.setMax(100);
         }
-        
-        seekBar.setProgress((int) currentPos);
+
+        seekBar.setProgress(clampToInt(currentPos));
         updateTimers(currentPos, duration);
         updatePlayPauseIcon();
         updateTrackPosition();
@@ -942,17 +1197,21 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            String title = FormatUtils.cleanTitle(mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
-            String artist = FormatUtils.cleanArtist(mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
+            String title = FormatUtils.cleanTitle(
+                    mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
+            String artist = FormatUtils.cleanArtist(
+                    mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
 
             fullSongTitle.setText(title);
             fullArtistName.setText(artist);
             fullSongTitle.setSelected(true);
             fullArtistName.setSelected(true);
-            btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            btnFavNow.setImageResource(
+                    favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
 
             Uri uri = null;
-            if (mediaItem.requestMetadata != null) uri = mediaItem.requestMetadata.mediaUri;
+            if (mediaItem.requestMetadata != null)
+                uri = mediaItem.requestMetadata.mediaUri;
             loadAlbumArtAndPalette(uri);
         } else {
             fullSongTitle.setText("Select a song");
@@ -985,22 +1244,24 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             fullAlbumArt.setImageBitmap(cached);
         }
 
-        ArtworkLoader.loadBitmapAndPalette(getContentResolver(), uri, 480, this::paletteToHuePalette, (bitmap, palette) -> {
-            if (!requestKey.equals(activeArtworkRequestKey)) {
-                return;
-            }
-            if (bitmap != null) {
-                fullAlbumArt.setImageBitmap(bitmap);
-                backgroundBlur.setPalette(palette);
-            } else {
-                fullAlbumArt.setImageResource(R.drawable.cover_ep);
-                backgroundBlur.setPalette(null);
-            }
-        });
+        ArtworkLoader.loadBitmapAndPalette(getApplicationContext().getContentResolver(), uri, 480,
+                this::paletteToHuePalette, (bitmap, palette) -> {
+                    if (isFinishing() || isDestroyed() || !requestKey.equals(activeArtworkRequestKey)) {
+                        return;
+                    }
+                    if (bitmap != null && !bitmap.isRecycled()) {
+                        fullAlbumArt.setImageBitmap(bitmap);
+                        backgroundBlur.setPalette(palette);
+                    } else {
+                        fullAlbumArt.setImageResource(R.drawable.cover_ep);
+                        backgroundBlur.setPalette(null);
+                    }
+                });
     }
 
     private int[] paletteToHuePalette(Palette palette) {
-        if (palette == null) return null;
+        if (palette == null)
+            return null;
 
         int dominant = palette.getDominantColor(Color.TRANSPARENT);
         if (dominant == Color.TRANSPARENT) {
@@ -1015,17 +1276,20 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
         float saturation = Math.max(0.45f, hsv[1]);
         float value = Math.max(0.55f, hsv[2]);
 
-        return new int[]{
-                Color.HSVToColor(new float[]{normalizeHue(hsv[0]), saturation, value}),
-                Color.HSVToColor(new float[]{normalizeHue(hsv[0] + 22f), saturation * 0.9f, Math.min(1f, value + 0.1f)}),
-                Color.HSVToColor(new float[]{normalizeHue(hsv[0] - 22f), Math.min(1f, saturation + 0.1f), value}),
-                Color.HSVToColor(new float[]{normalizeHue(hsv[0] + 180f), Math.max(0.35f, saturation * 0.75f), Math.max(0.45f, value * 0.9f)})
+        return new int[] {
+                Color.HSVToColor(new float[] { normalizeHue(hsv[0]), saturation, value }),
+                Color.HSVToColor(
+                        new float[] { normalizeHue(hsv[0] + 22f), saturation * 0.9f, Math.min(1f, value + 0.1f) }),
+                Color.HSVToColor(new float[] { normalizeHue(hsv[0] - 22f), Math.min(1f, saturation + 0.1f), value }),
+                Color.HSVToColor(new float[] { normalizeHue(hsv[0] + 180f), Math.max(0.35f, saturation * 0.75f),
+                        Math.max(0.45f, value * 0.9f) })
         };
     }
 
     private float normalizeHue(float hue) {
         float normalized = hue % 360f;
-        if (normalized < 0f) normalized += 360f;
+        if (normalized < 0f)
+            normalized += 360f;
         return normalized;
     }
 
@@ -1044,8 +1308,10 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void updatePlayPauseIcon() {
-        if (player != null && player.isPlaying()) btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
-        else btnPlayPause.setImageResource(R.drawable.ic_modern_play);
+        if (player != null && player.isPlaying())
+            btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
+        else
+            btnPlayPause.setImageResource(R.drawable.ic_modern_play);
     }
 
     private void updateShuffleIcon(boolean enabled) {
@@ -1066,7 +1332,8 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void updateTimers(long currentPos, long duration) {
-        if (duration < 0) duration = 0;
+        if (duration < 0)
+            duration = 0;
         currentTimeText.setText(formatTime(currentPos));
         remainingTimeText.setText("-" + formatTime(Math.max(0, duration - currentPos)));
     }

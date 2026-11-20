@@ -37,10 +37,11 @@ public final class ArtworkLoader {
 
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(3);
-    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>(Math.max(4096, (int) (Runtime.getRuntime().maxMemory() / 1024L / CACHE_SIZE_DIVISOR))) {
+    private static final LruCache<String, Bitmap> BITMAP_CACHE = new LruCache<String, Bitmap>(
+            Math.max(4096, (int) (Runtime.getRuntime().maxMemory() / 1024L / CACHE_SIZE_DIVISOR))) {
         @Override
         protected int sizeOf(@NonNull String key, @NonNull Bitmap value) {
-            return value.getByteCount() / 1024;
+            return Math.max(1, value.getByteCount() / 1024);
         }
     };
     private static final LruCache<String, int[]> PALETTE_CACHE = new LruCache<>(64);
@@ -50,12 +51,17 @@ public final class ArtworkLoader {
 
     @Nullable
     static Bitmap getCachedBitmap(@NonNull Uri uri, int size) {
-        return BITMAP_CACHE.get(buildKey(uri, size));
+        Bitmap cached = BITMAP_CACHE.get(buildKey(uri, size));
+        if (cached != null && cached.isRecycled()) {
+            BITMAP_CACHE.remove(buildKey(uri, size));
+            return null;
+        }
+        return cached;
     }
 
     static void loadBitmap(@NonNull ContentResolver resolver, @NonNull Uri uri, int size, @NonNull BitmapCallback callback) {
         final String key = buildKey(uri, size);
-        Bitmap cachedBitmap = BITMAP_CACHE.get(key);
+        Bitmap cachedBitmap = getCachedBitmap(uri, size);
         if (cachedBitmap != null) {
             if (Looper.myLooper() == Looper.getMainLooper()) {
                 callback.onBitmapLoaded(cachedBitmap);
@@ -67,7 +73,7 @@ public final class ArtworkLoader {
 
         EXECUTOR.execute(() -> {
             Bitmap bitmap = decodeBitmap(resolver, uri, size);
-            if (bitmap != null) {
+            if (bitmap != null && !bitmap.isRecycled()) {
                 BITMAP_CACHE.put(key, bitmap);
             }
             Bitmap finalBitmap = bitmap;
@@ -81,7 +87,7 @@ public final class ArtworkLoader {
                                      @NonNull PaletteTransformer transformer,
                                      @NonNull ArtworkPaletteCallback callback) {
         final String key = buildKey(uri, size);
-        Bitmap cachedBitmap = BITMAP_CACHE.get(key);
+        Bitmap cachedBitmap = getCachedBitmap(uri, size);
         int[] cachedPalette = PALETTE_CACHE.get(key);
         if (cachedBitmap != null && cachedPalette != null) {
             if (Looper.myLooper() == Looper.getMainLooper()) {
@@ -94,19 +100,23 @@ public final class ArtworkLoader {
 
         EXECUTOR.execute(() -> {
             Bitmap bitmap = cachedBitmap != null ? cachedBitmap : decodeBitmap(resolver, uri, size);
-            if (bitmap != null && cachedBitmap == null) {
+            if (bitmap != null && !bitmap.isRecycled() && cachedBitmap == null) {
                 BITMAP_CACHE.put(key, bitmap);
             }
 
             int[] palette = cachedPalette;
-            if (bitmap != null && palette == null) {
-                palette = transformer.transform(Palette.from(bitmap).generate());
-                if (palette != null) {
-                    PALETTE_CACHE.put(key, palette);
+            if (bitmap != null && !bitmap.isRecycled() && palette == null) {
+                try {
+                    palette = transformer.transform(Palette.from(bitmap).generate());
+                    if (palette != null) {
+                        PALETTE_CACHE.put(key, palette);
+                    }
+                } catch (Throwable ignored) {
+                    palette = null;
                 }
             }
 
-            Bitmap finalBitmap = bitmap;
+            Bitmap finalBitmap = (bitmap != null && !bitmap.isRecycled()) ? bitmap : null;
             int[] finalPalette = palette;
             MAIN_HANDLER.post(() -> callback.onArtworkLoaded(finalBitmap, finalPalette));
         });
@@ -114,22 +124,49 @@ public final class ArtworkLoader {
 
     @Nullable
     static Bitmap decodeBitmap(@NonNull ContentResolver resolver, @NonNull Uri uri, int size) {
+        int safeSize = Math.max(64, size);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                return resolver.loadThumbnail(uri, new Size(size, size), null);
+                return resolver.loadThumbnail(uri, new Size(safeSize, safeSize), null);
             }
 
+            BitmapFactory.Options boundsOptions = new BitmapFactory.Options();
+            boundsOptions.inJustDecodeBounds = true;
+            try (InputStream boundsStream = resolver.openInputStream(uri)) {
+                if (boundsStream == null) {
+                    return null;
+                }
+                BitmapFactory.decodeStream(boundsStream, null, boundsOptions);
+            }
+
+            if (boundsOptions.outWidth <= 0 || boundsOptions.outHeight <= 0) {
+                return null;
+            }
+
+            BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
+            decodeOptions.inSampleSize = calculateInSampleSize(boundsOptions.outWidth, boundsOptions.outHeight, safeSize, safeSize);
+            decodeOptions.inPreferredConfig = Bitmap.Config.RGB_565;
             try (InputStream inputStream = resolver.openInputStream(uri)) {
                 if (inputStream == null) {
                     return null;
                 }
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.RGB_565;
-                return BitmapFactory.decodeStream(inputStream, null, options);
+                return BitmapFactory.decodeStream(inputStream, null, decodeOptions);
             }
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static int calculateInSampleSize(int width, int height, int reqWidth, int reqHeight) {
+        int inSampleSize = 1;
+        if (height > reqHeight || width > reqWidth) {
+            int halfHeight = height / 2;
+            int halfWidth = width / 2;
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
     }
 
     @NonNull

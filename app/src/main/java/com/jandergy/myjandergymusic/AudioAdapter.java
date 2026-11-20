@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> {
@@ -45,12 +46,12 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
     }
 
     public void setFavoriteIds(Set<String> favoriteIds) {
-        this.favoriteIds = favoriteIds;
+        this.favoriteIds = favoriteIds != null ? favoriteIds : new HashSet<>();
         notifyDataSetChanged();
     }
 
     public void updateList(List<AudioItem> newList) {
-        this.items = newList;
+        this.items = newList != null ? newList : new ArrayList<>();
         applyFilter(currentQuery);
     }
 
@@ -82,12 +83,12 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
             holder.albumArt.setImageBitmap(cachedBitmap);
         } else {
             holder.albumArt.setImageResource(R.drawable.cover_ep);
-            ArtworkLoader.loadBitmap(holder.itemView.getContext().getContentResolver(), item.uri, 160, bitmap -> {
+            ArtworkLoader.loadBitmap(holder.itemView.getContext().getApplicationContext().getContentResolver(), item.uri, 160, bitmap -> {
                 Object tag = holder.albumArt.getTag();
                 if (!(tag instanceof Long) || !tag.equals(item.id)) {
                     return;
                 }
-                if (bitmap != null) {
+                if (bitmap != null && !bitmap.isRecycled()) {
                     holder.albumArt.setImageBitmap(bitmap);
                 } else {
                     holder.albumArt.setImageResource(R.drawable.cover_ep);
@@ -146,6 +147,9 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
 
     @Override
     public long getItemId(int position) {
+        if (position < 0 || position >= filteredItems.size()) {
+            return RecyclerView.NO_ID;
+        }
         return filteredItems.get(position).id;
     }
 
@@ -156,8 +160,9 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
         } else {
             String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
             for (AudioItem item : items) {
-                if (item.title.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)
-                        || item.artist.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
+                String title = item.title != null ? item.title.toLowerCase(Locale.getDefault()) : "";
+                String artist = item.artist != null ? item.artist.toLowerCase(Locale.getDefault()) : "";
+                if (title.contains(lowerCaseQuery) || artist.contains(lowerCaseQuery)) {
                     nextFilteredItems.add(item);
                 }
             }
@@ -187,10 +192,10 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.ViewHolder> 
                         && oldItem.duration == newItem.duration
                         && oldItem.dateAdded == newItem.dateAdded
                         && oldItem.isFavorite == newItem.isFavorite
-                        && oldItem.title.equals(newItem.title)
-                        && oldItem.artist.equals(newItem.artist)
-                        && oldItem.folderName.equals(newItem.folderName)
-                        && oldItem.uri.equals(newItem.uri);
+                        && Objects.equals(oldItem.title, newItem.title)
+                        && Objects.equals(oldItem.artist, newItem.artist)
+                        && Objects.equals(oldItem.folderName, newItem.folderName)
+                        && Objects.equals(oldItem.uri, newItem.uri);
             }
         });
 

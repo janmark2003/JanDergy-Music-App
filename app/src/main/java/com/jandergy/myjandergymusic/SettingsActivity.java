@@ -34,6 +34,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -47,7 +48,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -62,7 +62,9 @@ import java.util.concurrent.ExecutionException;
 public class SettingsActivity extends AppCompatActivity {
 
     private MediaController player;
+    private Player.Listener playerListener;
     private ListenableFuture<MediaController> controllerFuture;
+    private boolean isActivityResumed = false;
 
     private MarqueeTextView nowPlayingTitle, nowPlayingArtist;
     private TextView currentTimeText, remainingTimeText;
@@ -88,20 +90,44 @@ public class SettingsActivity extends AppCompatActivity {
     private final Runnable updateProgressAction = new Runnable() {
         @Override
         public void run() {
-            if (player != null && player.isPlaying()) {
-                long currentPos = player.getCurrentPosition();
+            if (player != null && player.isPlaying() && !isFinishing() && !isDestroyed()) {
+                long currentPos = Math.max(0L, player.getCurrentPosition());
                 long duration = player.getDuration();
-                
-                if (duration > 0 && seekBar.getMax() != (int) duration) {
-                    seekBar.setMax((int) duration);
+
+                if (duration > 0) {
+                    int maxDuration = clampToInt(duration);
+                    if (seekBar.getMax() != maxDuration) {
+                        seekBar.setMax(maxDuration);
+                    }
                 }
-                
-                seekBar.setProgress((int) currentPos);
+
+                seekBar.setProgress(clampToInt(currentPos));
                 updateTimers(currentPos, duration);
                 handler.postDelayed(this, 200);
             }
         }
     };
+
+    private Set<String> loadFavoriteIds() {
+        Set<String> stored = sharedPreferences.getStringSet("Favorites", null);
+        return stored != null ? new HashSet<>(stored) : new HashSet<>();
+    }
+
+    private int clampToInt(long value) {
+        if (value <= 0L)
+            return 0;
+        if (value > Integer.MAX_VALUE)
+            return Integer.MAX_VALUE;
+        return (int) value;
+    }
+
+    private void sendServiceCommand(Intent intent) {
+        try {
+            startService(intent);
+        } catch (IllegalStateException | SecurityException e) {
+            Log.w("SettingsActivity", "Unable to send service command: " + intent.getAction(), e);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +155,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         sharedPreferences = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
+        favoriteIds = loadFavoriteIds();
 
         initUI();
         applyInitialState();
@@ -163,7 +189,8 @@ public class SettingsActivity extends AppCompatActivity {
 
             String mediaId = extras.getString("MEDIA_ID");
             if (mediaId != null) {
-                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                btnFavNow.setImageResource(
+                        favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
             }
         }
     }
@@ -183,8 +210,7 @@ public class SettingsActivity extends AppCompatActivity {
                     R.drawable.flyer_3,
                     R.drawable.flyer_4,
                     R.drawable.flyer_5,
-                    R.drawable.flyer_6
-            );
+                    R.drawable.flyer_6);
             FlyerPagerAdapter adapter = new FlyerPagerAdapter(flyerImages, v -> triggerBannerAnimation());
             flyerViewPager.setAdapter(adapter);
 
@@ -208,7 +234,8 @@ public class SettingsActivity extends AppCompatActivity {
                     super.onPageScrollStateChanged(state);
                     if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
                         slideHandler.removeCallbacks(slideRunnable);
-                    } else if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                    } else if (state == ViewPager2.SCROLL_STATE_IDLE && isActivityResumed && !isFinishing()
+                            && !isDestroyed()) {
                         slideHandler.removeCallbacks(slideRunnable);
                         slideHandler.postDelayed(slideRunnable, AUTO_SLIDE_INTERVAL_MS);
                     }
@@ -238,10 +265,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         findViewById(R.id.contact_link).setOnClickListener(v -> {
             springClick(v);
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-            emailIntent.setData(Uri.parse("mailto:janmarkthebluedragon@gmail.com"));
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "JanDergy Music - Concern");
-            startActivity(Intent.createChooser(emailIntent, "Send email"));
+            try {
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setData(Uri.parse("mailto:janmarkthebluedragon@gmail.com"));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "JanDergy Music - Concern");
+                startActivity(Intent.createChooser(emailIntent, "Send email"));
+            } catch (Exception e) {
+                Toast.makeText(this, "No email app available", Toast.LENGTH_SHORT).show();
+            }
         });
 
         if (characterImg != null) {
@@ -288,16 +319,26 @@ public class SettingsActivity extends AppCompatActivity {
         setupMiniPlayerCardClick(playerControls, this::launchFullScreenPlayer);
 
         btnPlayPause.setOnClickListener(v -> {
-            if (player == null) return;
-            if (player.isPlaying()) player.pause();
-            else player.play();
+            if (player == null)
+                return;
+            if (player.isPlaying())
+                player.pause();
+            else
+                player.play();
         });
 
-        btnNext.setOnClickListener(v -> { if (player != null) player.seekToNext(); });
-        btnPrev.setOnClickListener(v -> { if (player != null) player.seekToPrevious(); });
+        btnNext.setOnClickListener(v -> {
+            if (player != null)
+                player.seekToNext();
+        });
+        btnPrev.setOnClickListener(v -> {
+            if (player != null)
+                player.seekToPrevious();
+        });
 
         btnShuffle.setOnClickListener(v -> {
-            if (player != null) player.setShuffleModeEnabled(!player.getShuffleModeEnabled());
+            if (player != null)
+                player.setShuffleModeEnabled(!player.getShuffleModeEnabled());
         });
 
         btnRepeat.setOnClickListener(v -> {
@@ -319,15 +360,19 @@ public class SettingsActivity extends AppCompatActivity {
 
         btnFavNow.setOnClickListener(v -> {
             MediaItem item = (player != null) ? player.getCurrentMediaItem() : null;
-            if (item != null) {
+            if (item != null && item.mediaId != null && !item.mediaId.isEmpty()) {
                 String mediaId = item.mediaId;
                 if (favoriteIds.contains(mediaId)) {
                     favoriteIds.remove(mediaId);
                 } else {
                     favoriteIds.add(mediaId);
                 }
-                sharedPreferences.edit().putStringSet("Favorites", favoriteIds).apply();
-                btnFavNow.setImageResource(favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                sharedPreferences.edit().putStringSet("Favorites", new HashSet<>(favoriteIds)).apply();
+                btnFavNow.setImageResource(
+                        favoriteIds.contains(mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                Intent favIntent = new Intent("com.jandergy.myjandergymusic.FAVORITE_CHANGED");
+                favIntent.setPackage(getPackageName());
+                sendBroadcast(favIntent);
             }
         });
 
@@ -339,13 +384,20 @@ public class SettingsActivity extends AppCompatActivity {
                     updateTimers(progress, player.getDuration());
                 }
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
     }
 
     private void initLocalEqualizer() {
-        if (localEqualizer != null) return;
+        if (localEqualizer != null)
+            return;
         try {
             localEqualizer = new Equalizer(0, 0);
         } catch (Exception e) {
@@ -359,7 +411,7 @@ public class SettingsActivity extends AppCompatActivity {
         intent.setAction(action);
         intent.putExtra("enabled", enabled);
         intent.putExtra("strength", strength);
-        startService(intent);
+        sendServiceCommand(intent);
     }
 
     private void showCommunityDialog() {
@@ -374,7 +426,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         dialogView.findViewById(R.id.card_bluesky).setOnClickListener(v -> {
             try {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bsky.app/profile/janmarkbluederg.bsky.social"));
+                Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://bsky.app/profile/janmarkbluederg.bsky.social"));
                 startActivity(intent);
             } catch (Exception e) {
                 Toast.makeText(this, "Could not open link", Toast.LENGTH_SHORT).show();
@@ -514,6 +567,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void showEqualizerDialog() {
+        initLocalEqualizer();
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_equalizer, null);
         dialog.setContentView(dialogView);
@@ -539,7 +593,7 @@ public class SettingsActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PlaybackService.class);
             intent.setAction("ACTION_SET_EQ_ENABLED");
             intent.putExtra("enabled", isChecked);
-            startService(intent);
+            sendServiceCommand(intent);
         });
 
         // Bass Boost
@@ -554,10 +608,15 @@ public class SettingsActivity extends AppCompatActivity {
                     sharedPreferences.edit().putInt("BassBoost_Strength", progress).apply();
                 }
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                updateEffectInService("ACTION_SET_BASS_BOOST", true, (short) seekBar.getProgress());
+                updateEffectInService("ACTION_SET_BASS_BOOST", seekBar.getProgress() > 0,
+                        (short) seekBar.getProgress());
             }
         });
 
@@ -573,10 +632,15 @@ public class SettingsActivity extends AppCompatActivity {
                     sharedPreferences.edit().putInt("Spatializer_Strength", progress).apply();
                 }
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                updateEffectInService("ACTION_SET_SPATIALIZER", true, (short) seekBar.getProgress());
+                updateEffectInService("ACTION_SET_SPATIALIZER", seekBar.getProgress() > 0,
+                        (short) seekBar.getProgress());
             }
         });
 
@@ -587,7 +651,7 @@ public class SettingsActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PlaybackService.class);
             intent.setAction("ACTION_SET_8D_AUDIO");
             intent.putExtra("enabled", isChecked);
-            startService(intent);
+            sendServiceCommand(intent);
         });
 
         // Preset Spinner
@@ -600,14 +664,15 @@ public class SettingsActivity extends AppCompatActivity {
                 for (short i = 0; i < numPresets; i++) {
                     presets.add(localEqualizer.getPresetName(i));
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, presets);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         presetSpinner.setAdapter(adapter);
 
         int savedPreset = sharedPreferences.getInt("EQ_Preset", 0);
-        if (savedPreset < presets.size()) {
+        if (savedPreset >= 0 && savedPreset < presets.size()) {
             presetSpinner.setSelection(savedPreset, false);
         }
 
@@ -615,15 +680,21 @@ public class SettingsActivity extends AppCompatActivity {
         short bands = 5;
         int minLevel = -1500;
         int maxLevel = 1500;
-        String[] fallbackFreqLabels = {"60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz"};
+        String[] fallbackFreqLabels = { "60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz" };
 
         if (localEqualizer != null) {
             try {
-                bands = localEqualizer.getNumberOfBands();
+                short eqBands = localEqualizer.getNumberOfBands();
                 short[] range = localEqualizer.getBandLevelRange();
-                minLevel = range[0];
-                maxLevel = range[1];
-            } catch (Exception ignored) {}
+                if (eqBands > 0) {
+                    bands = eqBands;
+                }
+                if (range != null && range.length >= 2 && range[1] > range[0]) {
+                    minLevel = range[0];
+                    maxLevel = range[1];
+                }
+            } catch (Exception ignored) {
+            }
         }
 
         final int finalMinLevel = minLevel;
@@ -642,16 +713,18 @@ public class SettingsActivity extends AppCompatActivity {
                     int freq = localEqualizer.getCenterFreq(bandIndex) / 1000;
                     freqText.setText(freq >= 1000 ? (freq / 1000) + " kHz" : freq + " Hz");
                 } catch (Exception e) {
-                    freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+                    freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex]
+                            : "Band " + (bandIndex + 1));
                 }
             } else {
-                freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex] : "Band " + (bandIndex + 1));
+                freqText.setText(bandIndex < fallbackFreqLabels.length ? fallbackFreqLabels[bandIndex]
+                        : "Band " + (bandIndex + 1));
             }
 
-            slider.setMax(finalMaxLevel - finalMinLevel);
+            slider.setMax(Math.max(1, finalMaxLevel - finalMinLevel));
 
             int savedLevel = sharedPreferences.getInt("EQ_Band_" + bandIndex, 0);
-            slider.setProgress(savedLevel - finalMinLevel);
+            slider.setProgress(Math.max(0, Math.min(finalMaxLevel - finalMinLevel, savedLevel - finalMinLevel)));
             levelText.setText((savedLevel / 100) + " dB");
 
             slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -661,11 +734,17 @@ public class SettingsActivity extends AppCompatActivity {
                     levelText.setText((newLevel / 100) + " dB");
                     if (fromUser) {
                         presetSpinner.setSelection(0);
-                        sharedPreferences.edit().putInt("EQ_Preset", 0).apply();
-                        sharedPreferences.edit().putInt("EQ_Band_" + bandIndex, newLevel).apply();
+                        sharedPreferences.edit()
+                                .putInt("EQ_Preset", 0)
+                                .putInt("EQ_Band_" + bandIndex, newLevel)
+                                .apply();
                     }
                 }
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     int newLevel = seekBar.getProgress() + finalMinLevel;
@@ -673,7 +752,7 @@ public class SettingsActivity extends AppCompatActivity {
                     intent.setAction("ACTION_SET_EQ_BAND");
                     intent.putExtra("band", bandIndex);
                     intent.putExtra("level", (short) newLevel);
-                    startService(intent);
+                    sendServiceCommand(intent);
                 }
             });
 
@@ -694,27 +773,30 @@ public class SettingsActivity extends AppCompatActivity {
                         localEqualizer.usePreset((short) (position - 1));
                         short numBands = localEqualizer.getNumberOfBands();
                         short[] eqRange = localEqualizer.getBandLevelRange();
-                        int min = eqRange[0];
+                        int min = (eqRange != null && eqRange.length >= 2) ? eqRange[0] : finalMinLevel;
                         for (short b = 0; b < numBands; b++) {
                             short level = localEqualizer.getBandLevel(b);
                             sharedPreferences.edit().putInt("EQ_Band_" + b, level).apply();
                             View bv = bandsList.getChildAt(b);
                             if (bv != null) {
-                                ((SeekBar) bv.findViewById(R.id.band_seekbar)).setProgress(level - min);
+                                ((SeekBar) bv.findViewById(R.id.band_seekbar)).setProgress(Math.max(0, level - min));
                                 ((TextView) bv.findViewById(R.id.band_level)).setText((level / 100) + " dB");
                             }
                             Intent intent = new Intent(SettingsActivity.this, PlaybackService.class);
                             intent.setAction("ACTION_SET_EQ_BAND");
                             intent.putExtra("band", b);
                             intent.putExtra("level", level);
-                            startService(intent);
+                            sendServiceCommand(intent);
                         }
                     } catch (Exception e) {
                         Log.e("SettingsActivity", "Error applying preset", e);
                     }
                 }
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         dialog.show();
@@ -728,7 +810,8 @@ public class SettingsActivity extends AppCompatActivity {
         String appVersion = "1.0";
         try {
             appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException ignored) {}
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
 
         appVerText.setText(String.format(Locale.US, "App Version: %s", appVersion));
         deviceModelText.setText(String.format(Locale.US, "Device Model: %s", Build.MODEL));
@@ -761,7 +844,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void springClick(View v) {
-        if (v == null) return;
+        if (v == null)
+            return;
         v.animate().cancel();
         v.animate()
                 .scaleX(0.94f)
@@ -796,7 +880,8 @@ public class SettingsActivity extends AppCompatActivity {
             MediaItem item = player.getCurrentMediaItem();
             if (item != null) {
                 bundle.putString("TITLE", item.mediaMetadata.title != null ? item.mediaMetadata.title.toString() : "");
-                bundle.putString("ARTIST", item.mediaMetadata.artist != null ? item.mediaMetadata.artist.toString() : "");
+                bundle.putString("ARTIST",
+                        item.mediaMetadata.artist != null ? item.mediaMetadata.artist.toString() : "");
                 bundle.putString("MEDIA_ID", item.mediaId);
                 if (item.requestMetadata != null && item.requestMetadata.mediaUri != null) {
                     bundle.putString("URI", item.requestMetadata.mediaUri.toString());
@@ -812,13 +897,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setupMiniPlayerCardClick(View playerControlsCard, Runnable onOpenPlayer) {
-        if (playerControlsCard == null) return;
+        if (playerControlsCard == null)
+            return;
         View.OnClickListener clickListener = v -> onOpenPlayer.run();
         attachNonFunctionalClicks(playerControlsCard, clickListener);
     }
 
     private void attachNonFunctionalClicks(View view, View.OnClickListener clickListener) {
-        if (view == null) return;
+        if (view == null)
+            return;
         int id = view.getId();
         if (id == R.id.btn_play_pause || id == R.id.btn_next || id == R.id.btn_prev
                 || id == R.id.btn_shuffle || id == R.id.btn_repeat || id == R.id.btn_fav_now
@@ -849,10 +936,13 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void showAnimatedNoteFromBanner() {
+        if (musicNotesContainer == null || flyerCard == null || isFinishing() || isDestroyed()) {
+            return;
+        }
         ImageView note = new ImageView(this);
         note.setImageResource(R.drawable.ic_music_note);
 
-        int[] colors = {0xFFFF1493, 0xFF00BFFF, 0xFFFFD700, 0xFF32CD32, 0xFFFF4500, 0xFF9370DB};
+        int[] colors = { 0xFFFF1493, 0xFF00BFFF, 0xFFFFD700, 0xFF32CD32, 0xFFFF4500, 0xFF9370DB };
         int color = colors[(int) (Math.random() * colors.length)];
         note.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
 
@@ -870,8 +960,10 @@ public class SettingsActivity extends AppCompatActivity {
         float startX = location[0] + flyerCard.getWidth() / 2f - params.width / 2f;
         float startY = location[1] + flyerCard.getHeight() / 2f - params.height / 2f;
 
-        // Note: locationInWindow might need offset if container is not full screen or has padding
-        // Since music_notes_container is match_parent, we can just use raw coords if it's the root child.
+        // Note: locationInWindow might need offset if container is not full screen or
+        // has padding
+        // Since music_notes_container is match_parent, we can just use raw coords if
+        // it's the root child.
         // Better: use relative to container
         int[] containerLoc = new int[2];
         musicNotesContainer.getLocationInWindow(containerLoc);
@@ -896,7 +988,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .translationX(endX)
                 .translationY(endY)
                 .rotation((float) (Math.random() * 720 - 360))
-                .setDuration(800 + (long)(Math.random() * 600))
+                .setDuration(800 + (long) (Math.random() * 600))
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .withEndAction(() -> {
                     // Pop animation
@@ -922,7 +1014,8 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        favoriteIds = new HashSet<>(sharedPreferences.getStringSet("Favorites", new HashSet<>()));
+        isActivityResumed = true;
+        favoriteIds = loadFavoriteIds();
         if (player != null) {
             syncUIWithPlayer();
             nowPlayingTitle.setSelected(true);
@@ -937,6 +1030,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        isActivityResumed = false;
         if (slideRunnable != null) {
             slideHandler.removeCallbacks(slideRunnable);
         }
@@ -945,10 +1039,16 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        handler.removeCallbacks(updateProgressAction);
+        if (player != null && playerListener != null) {
+            player.removeListener(playerListener);
+        }
+        playerListener = null;
+        player = null;
         if (controllerFuture != null) {
             MediaController.releaseFuture(controllerFuture);
+            controllerFuture = null;
         }
-        handler.removeCallbacks(updateProgressAction);
         if (slideRunnable != null) {
             slideHandler.removeCallbacks(slideRunnable);
         }
@@ -957,43 +1057,59 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (slideRunnable != null) {
-            slideHandler.removeCallbacks(slideRunnable);
-        }
+        handler.removeCallbacksAndMessages(null);
+        slideHandler.removeCallbacksAndMessages(null);
         if (localEqualizer != null) {
-            localEqualizer.release();
+            try {
+                localEqualizer.release();
+            } catch (Exception ignored) {
+            }
             localEqualizer = null;
         }
     }
 
     @UnstableApi
     private void initializeController() {
+        if (controllerFuture != null) {
+            MediaController.releaseFuture(controllerFuture);
+            controllerFuture = null;
+        }
         SessionToken sessionToken = new SessionToken(this, new ComponentName(this, PlaybackService.class));
-        controllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
-        controllerFuture.addListener(() -> {
+        final ListenableFuture<MediaController> future = new MediaController.Builder(this, sessionToken).buildAsync();
+        controllerFuture = future;
+        future.addListener(() -> {
+            if (isFinishing() || isDestroyed() || future != controllerFuture) {
+                return;
+            }
             try {
-                player = controllerFuture.get();
+                MediaController connectedPlayer = future.get();
+                if (isFinishing() || isDestroyed() || future != controllerFuture) {
+                    return;
+                }
+                player = connectedPlayer;
                 onControllerConnected();
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (ExecutionException | InterruptedException | IllegalStateException e) {
                 e.printStackTrace();
             }
-        }, MoreExecutors.directExecutor());
+        }, ContextCompat.getMainExecutor(this));
     }
 
     @UnstableApi
     private void onControllerConnected() {
-        initLocalEqualizer();
-
-        player.addListener(new Player.Listener() {
+        if (player == null)
+            return;
+        playerListener = new Player.Listener() {
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
                 updateUIForNowPlaying(mediaItem);
             }
+
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 syncUIWithPlayer();
                 updatePlayPauseIcon();
             }
+
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 updatePlayPauseIcon();
@@ -1004,15 +1120,18 @@ public class SettingsActivity extends AppCompatActivity {
                     handler.removeCallbacks(updateProgressAction);
                 }
             }
+
             @Override
             public void onRepeatModeChanged(int repeatMode) {
                 updateRepeatIcon(repeatMode);
             }
+
             @Override
             public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
                 updateShuffleIcon(shuffleModeEnabled);
             }
-        });
+        };
+        player.addListener(playerListener);
 
         syncUIWithPlayer();
         updateShuffleIcon(player.getShuffleModeEnabled());
@@ -1023,19 +1142,20 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void syncUIWithPlayer() {
-        if (player == null) return;
+        if (player == null || isFinishing() || isDestroyed())
+            return;
         updateUIForNowPlaying(player.getCurrentMediaItem());
 
-        long currentPos = player.getCurrentPosition();
+        long currentPos = Math.max(0L, player.getCurrentPosition());
         long duration = player.getDuration();
-        
+
         if (duration > 0) {
-            seekBar.setMax((int) duration);
+            seekBar.setMax(clampToInt(duration));
         } else {
             seekBar.setMax(100);
         }
-        
-        seekBar.setProgress((int) currentPos);
+
+        seekBar.setProgress(clampToInt(currentPos));
         updateTimers(currentPos, duration);
 
         updatePlayPauseIcon();
@@ -1048,8 +1168,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void updateUIForNowPlaying(MediaItem mediaItem) {
         if (mediaItem != null) {
-            String title = FormatUtils.cleanTitle(mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
-            String artist = FormatUtils.cleanArtist(mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
+            String title = FormatUtils.cleanTitle(
+                    mediaItem.mediaMetadata.title != null ? mediaItem.mediaMetadata.title.toString() : null, null);
+            String artist = FormatUtils.cleanArtist(
+                    mediaItem.mediaMetadata.artist != null ? mediaItem.mediaMetadata.artist.toString() : null);
 
             if (!nowPlayingTitle.getText().toString().equals(title)) {
                 nowPlayingTitle.setText(title);
@@ -1058,7 +1180,8 @@ public class SettingsActivity extends AppCompatActivity {
                 nowPlayingArtist.setText(artist);
             }
 
-            btnFavNow.setImageResource(favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+            btnFavNow.setImageResource(
+                    favoriteIds.contains(mediaItem.mediaId) ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
         } else {
             if (!nowPlayingTitle.getText().toString().equals("Select a song")) {
                 nowPlayingTitle.setText("Select a song");
@@ -1069,8 +1192,10 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updatePlayPauseIcon() {
-        if (player != null && player.isPlaying()) btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
-        else btnPlayPause.setImageResource(R.drawable.ic_modern_play);
+        if (player != null && player.isPlaying())
+            btnPlayPause.setImageResource(R.drawable.ic_modern_pause);
+        else
+            btnPlayPause.setImageResource(R.drawable.ic_modern_play);
     }
 
     private void updateShuffleIcon(boolean enabled) {
@@ -1091,7 +1216,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateTimers(long currentPos, long durationMs) {
-        if (durationMs < 0) durationMs = 0;
+        if (durationMs < 0)
+            durationMs = 0;
         currentTimeText.setText(formatTime(currentPos));
         remainingTimeText.setText("-" + formatTime(Math.max(0, durationMs - currentPos)));
     }

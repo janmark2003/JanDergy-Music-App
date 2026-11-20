@@ -3,34 +3,42 @@ package com.jandergy.myjandergymusic;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.audiofx.Equalizer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
+import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
+import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
+import androidx.media3.common.util.BitmapLoader;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.MediaSessionService;
-import com.jandergy.myjandergymusic.audio.AudioUtils;
+
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.jandergy.myjandergymusic.audio.BitPerfectRenderersFactory;
 import com.jandergy.myjandergymusic.audio.Rhythm8DProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmBassBoostProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmSpatializationProcessor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import androidx.media3.common.util.BitmapLoader;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 public class PlaybackService extends MediaSessionService {
+    private static final String TAG = "PlaybackService";
+
     private MediaSession mediaSession = null;
     private RhythmBassBoostProcessor bassBoostProcessor;
     private RhythmSpatializationProcessor spatializationProcessor;
@@ -38,16 +46,19 @@ public class PlaybackService extends MediaSessionService {
     private Equalizer equalizer;
     private ExoPlayer player;
     private int activeSessionId = -1;
+    private final ExecutorService bitmapExecutor = Executors.newSingleThreadExecutor();
+    private volatile Bitmap fallbackCoverBitmap;
 
     @UnstableApi
     @Override
     public void onCreate() {
         super.onCreate();
-        
+
         bassBoostProcessor = new RhythmBassBoostProcessor();
         spatializationProcessor = new RhythmSpatializationProcessor();
         eightDProcessor = new Rhythm8DProcessor();
-        
+        applySavedDspSettings();
+
         BitPerfectRenderersFactory renderersFactory = new BitPerfectRenderersFactory(
                 this,
                 false, // Bit-perfect disabled by default
@@ -55,7 +66,7 @@ public class PlaybackService extends MediaSessionService {
                 spatializationProcessor,
                 eightDProcessor
         );
-        
+
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
                 .setBufferDurationsMs(
                         30000, // minBufferMs
@@ -66,11 +77,19 @@ public class PlaybackService extends MediaSessionService {
                 .setPrioritizeTimeOverSizeThresholds(true)
                 .build();
 
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                .build();
+
         player = new ExoPlayer.Builder(this, renderersFactory)
                 .setLoadControl(loadControl)
+                .setAudioAttributes(audioAttributes, true)
                 .setHandleAudioBecomingNoisy(true)
                 .build();
-        
+
+        applySavedPlaybackSpeed();
+
         player.addListener(new Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
@@ -79,7 +98,7 @@ public class PlaybackService extends MediaSessionService {
                 }
             }
         });
-        
+
         // PendingIntent that launches MainActivity when user taps media controls
         Intent sessionIntent = new Intent(this, MainActivity.class);
         sessionIntent.putExtra("OPEN_PLAYER", true);
@@ -92,7 +111,7 @@ public class PlaybackService extends MediaSessionService {
 
         Bundle extras = new Bundle();
         extras.putInt("audio_session_id", player.getAudioSessionId());
-        
+
         mediaSession = new MediaSession.Builder(this, player)
                 .setExtras(extras)
                 .setSessionActivity(pendingIntent)
@@ -100,134 +119,221 @@ public class PlaybackService extends MediaSessionService {
                 .build();
     }
 
-    private final ExecutorService bitmapExecutor = Executors.newSingleThreadExecutor();
+    @Nullable
+    private Bitmap getFallbackCoverBitmap() {
+        Bitmap cached = fallbackCoverBitmap;
+        if (cached != null && !cached.isRecycled()) {
+            return cached;
+        }
+        try {
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeResource(getResources(), R.drawable.cover_ep, bounds);
+
+            int sampleSize = 1;
+            int maxDim = 512;
+            while ((bounds.outWidth / sampleSize) > maxDim || (bounds.outHeight / sampleSize) > maxDim) {
+                sampleSize *= 2;
+            }
+
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = sampleSize;
+            opts.inPreferredConfig = Bitmap.Config.RGB_565;
+            Bitmap decoded = BitmapFactory.decodeResource(getResources(), R.drawable.cover_ep, opts);
+            fallbackCoverBitmap = decoded;
+            return decoded;
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to decode fallback cover artwork", t);
+            return null;
+        }
+    }
 
     private class CustomBitmapLoader implements BitmapLoader {
         @Override
-        public boolean supportsMimeType(String mimeType) {
+        public boolean supportsMimeType(@Nullable String mimeType) {
             return mimeType == null || mimeType.startsWith("image/");
         }
 
+        @NonNull
         @Override
-        public ListenableFuture<Bitmap> decodeBitmap(byte[] data) {
+        public ListenableFuture<Bitmap> decodeBitmap(@NonNull byte[] data) {
             try {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                Bitmap bitmap = null;
+                if (data.length > 0) {
+                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                    opts.inPreferredConfig = Bitmap.Config.RGB_565;
+                    bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+                }
+                if (bitmap == null) {
+                    bitmap = getFallbackCoverBitmap();
+                }
+                if (bitmap == null) {
+                    return Futures.immediateFailedFuture(new IllegalStateException("Unable to decode bitmap"));
+                }
                 return Futures.immediateFuture(bitmap);
-            } catch (Exception e) {
-                return Futures.immediateFailedFuture(e);
+            } catch (Throwable t) {
+                return Futures.immediateFailedFuture(t);
             }
         }
 
+        @NonNull
         @Override
-        public ListenableFuture<Bitmap> loadBitmap(Uri uri) {
+        public ListenableFuture<Bitmap> loadBitmap(@NonNull Uri uri) {
+            if (bitmapExecutor.isShutdown()) {
+                return Futures.immediateFailedFuture(new IllegalStateException("Service destroyed"));
+            }
             SettableFuture<Bitmap> future = SettableFuture.create();
-            bitmapExecutor.execute(() -> {
-                Bitmap bitmap = ArtworkLoader.decodeBitmap(getContentResolver(), uri, 512);
-                if (bitmap == null) {
-                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cover_ep);
-                }
-                future.set(bitmap);
-            });
+            try {
+                bitmapExecutor.execute(() -> {
+                    try {
+                        Bitmap bitmap = ArtworkLoader.decodeBitmap(getContentResolver(), uri, 512);
+                        if (bitmap == null || bitmap.isRecycled()) {
+                            bitmap = getFallbackCoverBitmap();
+                        }
+                        if (bitmap != null && !bitmap.isRecycled()) {
+                            future.set(bitmap);
+                        } else {
+                            future.setException(new IllegalStateException("Artwork unavailable"));
+                        }
+                    } catch (Throwable t) {
+                        future.setException(t);
+                    }
+                });
+            } catch (RejectedExecutionException e) {
+                future.setException(e);
+            }
             return future;
         }
     }
 
     @UnstableApi
     private void ensureEqualizerInitialized() {
+        if (player == null) return;
         int currentSessionId = player.getAudioSessionId();
-        if (currentSessionId != 0 && currentSessionId != activeSessionId) {
+        if (currentSessionId > 0 && currentSessionId != C.AUDIO_SESSION_ID_UNSET && currentSessionId != activeSessionId) {
             try {
                 if (equalizer != null) {
-                    equalizer.release();
+                    try {
+                        equalizer.release();
+                    } catch (Exception ignored) {}
+                    equalizer = null;
                 }
-                Log.d("PlaybackService", "Initializing hardware EQ for session: " + currentSessionId);
+                Log.d(TAG, "Initializing hardware EQ for session: " + currentSessionId);
                 equalizer = new Equalizer(0, currentSessionId);
-                
-                applySavedSettings(); // Load and apply user settings
-                
-                equalizer.setEnabled(true);
                 activeSessionId = currentSessionId;
-                Log.d("PlaybackService", "Hardware EQ attached and enabled for session " + currentSessionId);
-            } catch (Exception e) {
-                Log.e("PlaybackService", "Failed to initialize hardware EQ", e);
+                applySavedSettings();
+                Log.d(TAG, "Hardware EQ attached for session " + currentSessionId);
+            } catch (Throwable e) {
+                Log.e(TAG, "Failed to initialize hardware EQ", e);
+                equalizer = null;
+                activeSessionId = -1;
             }
         }
+    }
+
+    private void applySavedDspSettings() {
+        SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
+
+        int bbStrength = prefs.getInt("BassBoost_Strength", 0);
+        if (bassBoostProcessor != null) {
+            bassBoostProcessor.setEnabled(bbStrength > 0);
+            bassBoostProcessor.setStrength((short) bbStrength);
+        }
+
+        int spStrength = prefs.getInt("Spatializer_Strength", 0);
+        if (spatializationProcessor != null) {
+            spatializationProcessor.setEnabled(spStrength > 0);
+            spatializationProcessor.setStrength((short) spStrength);
+        }
+
+        boolean eightDEnabled = prefs.getBoolean("RHYTHM_8D_ENABLED", false);
+        if (eightDProcessor != null) {
+            eightDProcessor.setEnabled(eightDEnabled);
+        }
+    }
+
+    private void applySavedPlaybackSpeed() {
+        if (player == null) return;
+        SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
+        float savedSpeed = prefs.getFloat("Playback_Speed", 1.0f);
+        if (Float.isNaN(savedSpeed) || savedSpeed < 0.5f || savedSpeed > 2.0f) {
+            savedSpeed = 1.0f;
+        }
+        boolean keepPitch = prefs.getBoolean("Playback_Keep_Pitch", true);
+        float pitch = keepPitch ? 1.0f : savedSpeed;
+        player.setPlaybackParameters(new PlaybackParameters(savedSpeed, pitch));
     }
 
     private void applySavedSettings() {
         SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-        
-        // Apply EQ bands
+
         if (equalizer != null) {
-            short numBands = equalizer.getNumberOfBands();
-            float[] uiLevels = new float[10];
-            for (int i = 0; i < 10; i++) {
-                uiLevels[i] = prefs.getFloat("UI_EQ_Band_" + i, 0f);
+            try {
+                short numBands = equalizer.getNumberOfBands();
+                short[] range = equalizer.getBandLevelRange();
+                short minLevel = (range != null && range.length >= 2) ? range[0] : -1500;
+                short maxLevel = (range != null && range.length >= 2) ? range[1] : 1500;
+
+                for (short i = 0; i < numBands; i++) {
+                    try {
+                        int savedLevel = prefs.getInt("EQ_Band_" + i, 0);
+                        short clamped = (short) Math.max(minLevel, Math.min(maxLevel, savedLevel));
+                        equalizer.setBandLevel(i, clamped);
+                    } catch (Exception ignored) {}
+                }
+
+                boolean eqEnabled = prefs.getBoolean("EQ_Enabled", true);
+                equalizer.setEnabled(eqEnabled);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to apply saved EQ settings", e);
             }
-            short[] hardwareLevels = AudioUtils.interpolateBands(uiLevels, numBands);
-            for (short i = 0; i < numBands; i++) {
-                try {
-                    equalizer.setBandLevel(i, hardwareLevels[i]);
-                } catch (Exception ignored) {}
-            }
-            
-            boolean eqEnabled = prefs.getBoolean("EQ_Enabled", true);
-            equalizer.setEnabled(eqEnabled);
         }
-        
-        // Apply Bass Boost
-        int bbStrength = prefs.getInt("BassBoost_Strength", 0);
-        bassBoostProcessor.setEnabled(bbStrength > 0);
-        bassBoostProcessor.setStrength((short) bbStrength);
 
-        // Apply Spatializer
-        int spStrength = prefs.getInt("Spatializer_Strength", 0);
-        spatializationProcessor.setEnabled(spStrength > 0);
-        spatializationProcessor.setStrength((short) spStrength);
-
-        // Apply 8D Audio
-        boolean eightDEnabled = prefs.getBoolean("RHYTHM_8D_ENABLED", false);
-        eightDProcessor.setEnabled(eightDEnabled);
+        applySavedDspSettings();
     }
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
             String action = intent.getAction();
             switch (action) {
                 case "ACTION_SET_BASS_BOOST": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
                     short strength = intent.getShortExtra("strength", (short) 0);
-                    bassBoostProcessor.setEnabled(enabled);
-                    bassBoostProcessor.setStrength(strength);
+                    if (bassBoostProcessor != null) {
+                        bassBoostProcessor.setEnabled(enabled && strength > 0);
+                        bassBoostProcessor.setStrength(strength);
+                    }
                     break;
                 }
                 case "ACTION_SET_SPATIALIZER": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
                     short strength = intent.getShortExtra("strength", (short) 0);
-                    spatializationProcessor.setEnabled(enabled);
-                    spatializationProcessor.setStrength(strength);
+                    if (spatializationProcessor != null) {
+                        spatializationProcessor.setEnabled(enabled && strength > 0);
+                        spatializationProcessor.setStrength(strength);
+                    }
                     break;
                 }
                 case "ACTION_SET_8D_AUDIO": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
-                    eightDProcessor.setEnabled(enabled);
+                    if (eightDProcessor != null) {
+                        eightDProcessor.setEnabled(enabled);
+                    }
                     break;
                 }
                 case "ACTION_SET_EQ_ENABLED": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
+                    ensureEqualizerInitialized();
                     if (equalizer != null) {
                         try {
                             equalizer.setEnabled(enabled);
-                            Log.d("PlaybackService", "Hardware EQ toggled: " + enabled);
+                            Log.d(TAG, "Hardware EQ toggled: " + enabled);
                         } catch (Exception e) {
-                            Log.e("PlaybackService", "Error toggling hardware EQ", e);
-                            activeSessionId = -1; // Force re-init on next check
-                            ensureEqualizerInitialized();
+                            Log.e(TAG, "Error toggling hardware EQ", e);
+                            activeSessionId = -1;
                         }
-                    } else {
-                        ensureEqualizerInitialized();
                     }
                     break;
                 }
@@ -235,11 +341,19 @@ public class PlaybackService extends MediaSessionService {
                     short band = intent.getShortExtra("band", (short) -1);
                     short level = intent.getShortExtra("level", (short) 0);
                     ensureEqualizerInitialized();
-                    if (equalizer != null && band != -1) {
+                    if (equalizer != null && band >= 0) {
                         try {
-                            equalizer.setBandLevel(band, level);
+                            short numBands = equalizer.getNumberOfBands();
+                            if (band < numBands) {
+                                short[] range = equalizer.getBandLevelRange();
+                                short clamped = level;
+                                if (range != null && range.length >= 2) {
+                                    clamped = (short) Math.max(range[0], Math.min(range[1], level));
+                                }
+                                equalizer.setBandLevel(band, clamped);
+                            }
                         } catch (Exception e) {
-                            Log.e("PlaybackService", "Error setting band level", e);
+                            Log.e(TAG, "Error setting band level", e);
                         }
                     }
                     break;
@@ -247,6 +361,14 @@ public class PlaybackService extends MediaSessionService {
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onTaskRemoved(@Nullable Intent rootIntent) {
+        if (player == null || !player.getPlayWhenReady() || player.getMediaItemCount() == 0) {
+            stopSelf();
+        }
+        super.onTaskRemoved(rootIntent);
     }
 
     @Nullable
@@ -257,14 +379,24 @@ public class PlaybackService extends MediaSessionService {
 
     @Override
     public void onDestroy() {
+        bitmapExecutor.shutdownNow();
+        if (equalizer != null) {
+            try {
+                equalizer.release();
+            } catch (Exception ignored) {}
+            equalizer = null;
+        }
         if (mediaSession != null) {
-            mediaSession.getPlayer().release();
-            mediaSession.release();
+            try {
+                mediaSession.getPlayer().release();
+            } catch (Exception ignored) {}
+            try {
+                mediaSession.release();
+            } catch (Exception ignored) {}
             mediaSession = null;
         }
-        if (equalizer != null) {
-            equalizer.release();
-        }
+        player = null;
+        fallbackCoverBitmap = null;
         super.onDestroy();
     }
 }

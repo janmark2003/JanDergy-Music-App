@@ -53,7 +53,7 @@ public class MusicListFragment extends Fragment {
     public boolean handleBack() {
         if (isArtistTab() && showingSongsInArtistTab) {
             showingSongsInArtistTab = false;
-            if (artistAdapter != null) {
+            if (recyclerView != null && artistAdapter != null) {
                 recyclerView.setAdapter(artistAdapter);
             }
             return true;
@@ -101,16 +101,17 @@ public class MusicListFragment extends Fragment {
     }
 
     private void showArtistSongs(List<AudioAdapter.AudioItem> songs) {
+        if (recyclerView == null) return;
         showingSongsInArtistTab = true;
-        adapter = new AudioAdapter(songs, listener);
+        adapter = new AudioAdapter(songs != null ? songs : new ArrayList<>(), listener);
         adapter.setFavoriteIds(favoriteIds);
         recyclerView.setAdapter(adapter);
     }
 
     public void setFavoriteIds(Set<String> favoriteIds) {
-        this.favoriteIds = favoriteIds;
+        this.favoriteIds = favoriteIds != null ? favoriteIds : new HashSet<>();
         if (adapter != null) {
-            adapter.setFavoriteIds(favoriteIds);
+            adapter.setFavoriteIds(this.favoriteIds);
         }
     }
 

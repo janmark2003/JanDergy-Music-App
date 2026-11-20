@@ -10,9 +10,19 @@ public class AudioUtils {
      * @return Array of short levels for hardware bands in milliBel (100 * dB)
      */
     public static short[] interpolateBands(float[] uiLevels, int hardwareBands) {
+        if (hardwareBands <= 0) {
+            return new short[0];
+        }
         short[] result = new short[hardwareBands];
-        if (uiLevels.length != 10) {
-            Log.w("AudioUtils", "Expected 10 UI bands, got " + uiLevels.length);
+        if (uiLevels == null || uiLevels.length != 10) {
+            Log.w("AudioUtils", "Expected 10 UI bands, got " + (uiLevels == null ? "null" : uiLevels.length));
+            return result;
+        }
+
+        if (hardwareBands == 1) {
+            float sum = 0f;
+            for (float level : uiLevels) sum += level;
+            result[0] = (short) ((sum / uiLevels.length) * 100f);
             return result;
         }
 
