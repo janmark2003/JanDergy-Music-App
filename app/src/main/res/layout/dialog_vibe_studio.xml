@@ -344,7 +344,7 @@
                 app:trackTint="@color/accent_neon" />
         </RelativeLayout>
 
-        <!-- Per-Song DSP & Loop Memory -->
+        <!-- Per-Song A-B Loop Memory -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -361,7 +361,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Per-Song DSP &amp; Loop Memory"
+                    android:text="Per-Song A-B Loop Memory"
                     android:textColor="@android:color/white"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -369,7 +369,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Auto-remember speed, vibe, vocal, bass &amp; A-B loop per song"
+                    android:text="Remember A-B loops per song while keeping Vibe &amp; FX active"
                     android:textColor="@color/glass_text_secondary"
                     android:textSize="10.5sp" />
             </LinearLayout>

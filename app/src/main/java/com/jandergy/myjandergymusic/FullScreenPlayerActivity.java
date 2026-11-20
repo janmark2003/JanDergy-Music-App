@@ -625,11 +625,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
             return;
 
         SongDspMemoryStore.Profile p = new SongDspMemoryStore.Profile();
-        p.speed = currentPlaybackSpeed;
-        p.keepPitch = keepOriginalPitch;
-        p.vibeMode = sharedPreferences.getInt("Vibe_Mode", RhythmVibeProcessor.MODE_OFF);
-        p.vocalMode = sharedPreferences.getInt("Vocal_Mode", RhythmVocalProcessor.MODE_OFF);
-        p.bassBoost = sharedPreferences.getInt("BassBoost_Strength", 0);
         p.abLoopA = abLoopPointA;
         p.abLoopB = abLoopPointB;
         p.abLoopActive = (abLoopState == AB_STATE_LOOPING && abLoopPointA >= 0 && abLoopPointB > abLoopPointA);
@@ -637,8 +632,6 @@ public class FullScreenPlayerActivity extends AppCompatActivity {
     }
 
     private void syncStateFromPreferencesAndSongMemory(String mediaId) {
-        currentPlaybackSpeed = clampSpeed(sharedPreferences.getFloat("Playback_Speed", 1.0f));
-        keepOriginalPitch = sharedPreferences.getBoolean("Playback_Keep_Pitch", true);
         updateSpeedVisualState();
         updateAudioEffectsVisualState();
         restoreSongABLoopIfSaved(mediaId);

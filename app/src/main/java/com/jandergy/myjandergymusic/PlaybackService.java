@@ -176,8 +176,13 @@ public class PlaybackService extends MediaSessionService {
 
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+                // Keep Vibe, Vocal, Speed/Pitch, and Studio FX active across song changes
+                // unless the user explicitly turns them off.
                 if (mediaItem != null) {
-                    restorePerSongProfileIfEnabled(mediaItem.mediaId);
+                    Intent intent = new Intent(ACTION_DSP_PROFILE_APPLIED);
+                    intent.setPackage(getPackageName());
+                    intent.putExtra("mediaId", mediaItem.mediaId);
+                    sendBroadcast(intent);
                 }
             }
         });
@@ -200,57 +205,6 @@ public class PlaybackService extends MediaSessionService {
                 .setSessionActivity(pendingIntent)
                 .setBitmapLoader(new CustomBitmapLoader())
                 .build();
-    }
-
-    private void restorePerSongProfileIfEnabled(@Nullable String mediaId) {
-        if (player == null || mediaId == null || mediaId.isEmpty()) return;
-        SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
-        if (!prefs.getBoolean("PerSong_Memory_Enabled", true)) {
-            return;
-        }
-
-        SongDspMemoryStore.Profile profile = SongDspMemoryStore.load(this, mediaId);
-        float speed;
-        boolean keepPitch;
-        int vibeMode;
-        int vocalMode;
-        int bassBoost;
-
-        if (profile != null) {
-            speed = profile.speed;
-            keepPitch = profile.keepPitch;
-            vibeMode = profile.vibeMode;
-            vocalMode = profile.vocalMode;
-            bassBoost = profile.bassBoost;
-        } else {
-            speed = 1.0f;
-            keepPitch = true;
-            vibeMode = RhythmVibeProcessor.MODE_OFF;
-            vocalMode = RhythmVocalProcessor.MODE_OFF;
-            bassBoost = prefs.getInt("Global_BassBoost_Strength", prefs.getInt("BassBoost_Strength", 0));
-        }
-
-        prefs.edit()
-                .putFloat("Playback_Speed", speed)
-                .putBoolean("Playback_Keep_Pitch", keepPitch)
-                .putInt("Vibe_Mode", vibeMode)
-                .putInt("Vocal_Mode", vocalMode)
-                .putInt("BassBoost_Strength", bassBoost)
-                .apply();
-
-        float targetPitch = keepPitch ? 1.0f : speed;
-        player.setPlaybackParameters(new PlaybackParameters(speed, targetPitch));
-        if (vibeProcessor != null) vibeProcessor.setMode(vibeMode);
-        if (vocalProcessor != null) vocalProcessor.setMode(vocalMode);
-        if (bassBoostProcessor != null) {
-            bassBoostProcessor.setEnabled(bassBoost > 0);
-            bassBoostProcessor.setStrength((short) bassBoost);
-        }
-
-        Intent intent = new Intent(ACTION_DSP_PROFILE_APPLIED);
-        intent.setPackage(getPackageName());
-        intent.putExtra("mediaId", mediaId);
-        sendBroadcast(intent);
     }
 
     private void broadcastSleepTimerUpdate(long remainingMs, boolean finished) {
