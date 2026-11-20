@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_glass_panel_strong"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:alpha="0.5"
+        android:background="@drawable/bg_glass_panel" />
+
+    <!-- Header: Title + Master 8D Switch -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8D Spatial Radar"
+                android:textColor="@android:color/white"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/radar_mode_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Orbiting smoothly around your head"
+                android:textColor="@color/glass_text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/radar_8d_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:thumbTint="@color/accent_neon"
+            app:trackTint="@color/accent_neon" />
+    </RelativeLayout>
+
+    <!-- Mode Selector: Auto Orbit | Touch Pad | Phone Gyro -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/mode_8d_auto"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_opaque_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="Auto Orbit"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/mode_8d_touch"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_opaque_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="Touch Pad"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/mode_8d_gyro"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_opaque_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="Phone Gyro"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Live Interactive 2D Radar Canvas -->
+    <com.jandergy.myjandergymusic.SpatialRadarView
+        android:id="@+id/spatial_radar_view"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginVertical="6dp" />
+
+    <!-- Auto Orbit Speed Slider + Reverse Toggle -->
+    <LinearLayout
+        android:id="@+id/auto_orbit_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Orbit Speed"
+                android:textColor="#B0FFFFFF"
+                android:textSize="11.5sp" />
+
+            <TextView
+                android:id="@+id/radar_speed_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="Normal"
+                android:textColor="@color/accent_neon"
+                android:textSize="11.5sp" />
+        </RelativeLayout>
+
+        <SeekBar
+            android:id="@+id/radar_speed_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="40"
+            android:progress="9"
+            android:progressTint="@color/accent_neon"
+            android:thumbTint="@color/accent_neon" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="Reverse Orbit Direction"
+                android:textColor="@android:color/white"
+                android:textSize="12.5sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/radar_reverse_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:thumbTint="@color/accent_neon"
+                app:trackTint="@color/accent_neon" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</LinearLayout>

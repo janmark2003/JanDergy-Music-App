@@ -321,10 +321,24 @@ public class SettingsActivity extends AppCompatActivity {
         btnPlayPause.setOnClickListener(v -> {
             if (player == null)
                 return;
-            if (player.isPlaying())
-                player.pause();
-            else
-                player.play();
+            boolean tapeStopOn = sharedPreferences.getBoolean("TapeStop_Enabled", false);
+            if (player.isPlaying()) {
+                if (tapeStopOn) {
+                    Intent intent = new Intent(this, PlaybackService.class);
+                    intent.setAction("ACTION_TAPE_STOP_PAUSE");
+                    sendServiceCommand(intent);
+                } else {
+                    player.pause();
+                }
+            } else {
+                if (tapeStopOn) {
+                    Intent intent = new Intent(this, PlaybackService.class);
+                    intent.setAction("ACTION_TAPE_SPIN_UP");
+                    sendServiceCommand(intent);
+                } else {
+                    player.play();
+                }
+            }
         });
 
         btnNext.setOnClickListener(v -> {

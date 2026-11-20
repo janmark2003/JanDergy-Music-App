@@ -54,13 +54,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo_panel">
 
-        <ImageView
-            android:id="@+id/full_album_art"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/cover_ep"
-            android:transitionName="album_art_transition" />
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/full_album_art"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/cover_ep"
+                android:transitionName="album_art_transition" />
+
+            <TextView
+                android:id="@+id/gesture_speed_pill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_glass_panel_strong"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="⏩ 2.0x"
+                android:textColor="@color/accent_neon"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </FrameLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Feature Toolbar Strip -->
@@ -156,6 +176,43 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1.0x"
+                        android:textColor="@color/glass_text_secondary"
+                        android:textSize="9sp"
+                        android:layout_marginTop="1dp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- Vibe & Studio FX -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_gravity="center">
+
+                    <ImageButton
+                        android:id="@+id/btn_vibe_studio"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="fitCenter"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_vibe"
+                        android:alpha="0.6"
+                        app:tint="@android:color/white"
+                        android:contentDescription="Vibe Studio" />
+
+                    <TextView
+                        android:id="@+id/vibe_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vibe"
                         android:textColor="@color/glass_text_secondary"
                         android:textSize="9sp"
                         android:layout_marginTop="1dp" />

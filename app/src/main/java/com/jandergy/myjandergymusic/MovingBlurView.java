@@ -30,6 +30,14 @@ public class MovingBlurView extends View {
     private int[] currentPalette = getDefaultPalette();
     private ValueAnimator animator;
     private long lastFrameTimeMs = 0L;
+    private float beatBoost = 0f;
+
+    public void setBeatBoost(float pulse) {
+        float clamped = Math.max(0f, Math.min(1f, pulse));
+        if (Math.abs(clamped - beatBoost) > 0.01f) {
+            beatBoost = clamped;
+        }
+    }
 
     public MovingBlurView(Context context) {
         super(context);
@@ -150,8 +158,10 @@ public class MovingBlurView extends View {
         }
 
         float maxDim = Math.max(width, height);
+        float radiusBoost = 1.0f + beatBoost * 0.26f;
+        int alpha = Math.min(200, (int) (100 + beatBoost * 75f));
         for (Blob blob : blobs) {
-            float radius = blob.radius * maxDim;
+            float radius = blob.radius * maxDim * radiusBoost;
             if (radius <= 0f) {
                 continue;
             }
@@ -164,7 +174,7 @@ public class MovingBlurView extends View {
             blob.gradient.setLocalMatrix(shaderMatrix);
 
             paint.setShader(blob.gradient);
-            paint.setAlpha(100);
+            paint.setAlpha(alpha);
             canvas.drawCircle(cx, cy, radius, paint);
         }
     }

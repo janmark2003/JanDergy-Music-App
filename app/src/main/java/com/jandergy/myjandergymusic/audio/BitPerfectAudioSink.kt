@@ -13,7 +13,7 @@ import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 
 /**
  * Factory for creating AudioSink instances configured with our TikTok-grade
- * time-stretch/varispeed engine and Rhythm audio DSP effects.
+ * time-stretch/varispeed engine and full Rhythm Studio DSP pipeline.
  */
 @OptIn(UnstableApi::class)
 object BitPerfectAudioSink {
@@ -23,9 +23,13 @@ object BitPerfectAudioSink {
     fun create(
         context: Context,
         enableBitPerfect: Boolean,
+        tapeStopProcessor: RhythmTapeStopProcessor? = null,
+        vocalProcessor: RhythmVocalProcessor? = null,
+        vibeProcessor: RhythmVibeProcessor? = null,
         bassBoostProcessor: RhythmBassBoostProcessor? = null,
         spatializationProcessor: RhythmSpatializationProcessor? = null,
-        eightDProcessor: Rhythm8DProcessor? = null
+        eightDProcessor: Rhythm8DProcessor? = null,
+        beatAnalyzerProcessor: RhythmBeatAnalyzerProcessor? = null
     ): AudioSink {
         Log.d(TAG, "Creating AudioSink (bit-perfect: $enableBitPerfect)")
 
@@ -39,12 +43,16 @@ object BitPerfectAudioSink {
             builder.setEnableFloatOutput(false)
 
             val effectProcessors = listOfNotNull(
+                tapeStopProcessor,
+                vocalProcessor,
+                vibeProcessor,
                 bassBoostProcessor,
                 spatializationProcessor,
-                eightDProcessor
+                eightDProcessor,
+                beatAnalyzerProcessor
             )
             val chain = TikTokAudioProcessorChain(effectProcessors)
-            Log.d(TAG, "Configuring TikTok-grade audio processor chain with ${chain.audioProcessors.size} processors")
+            Log.d(TAG, "Configuring Studio DSP audio chain with ${chain.audioProcessors.size} processors")
             builder.setAudioProcessorChain(chain)
         }
 
@@ -52,9 +60,9 @@ object BitPerfectAudioSink {
     }
 
     /**
-     * Custom AudioProcessorChain that replaces ExoPlayer's choppy SonicAudioProcessor
-     * with [TikTokSpeedAudioProcessor], running BEFORE BassBoost/Spatializer/8D so
-     * time-stretching operates on clean source PCM and downstream DSP filters never glitch.
+     * Custom AudioProcessorChain replacing ExoPlayer's SonicAudioProcessor with
+     * [TikTokSpeedAudioProcessor], followed by TapeStop, Vocal, Vibe, Bass, Spatial, 8D,
+     * and BeatAnalyzer so every stage operates on clean, continuous audio.
      */
     private class TikTokAudioProcessorChain(
         effectProcessors: List<AudioProcessor>

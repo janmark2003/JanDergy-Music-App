@@ -556,10 +556,32 @@ public class MainActivity extends AppCompatActivity {
             springClick(v);
             if (player == null)
                 return;
-            if (player.isPlaying())
-                player.pause();
-            else
-                player.play();
+            boolean tapeStopOn = sharedPreferences.getBoolean("TapeStop_Enabled", false);
+            if (player.isPlaying()) {
+                if (tapeStopOn) {
+                    try {
+                        Intent intent = new Intent(this, PlaybackService.class);
+                        intent.setAction("ACTION_TAPE_STOP_PAUSE");
+                        startService(intent);
+                    } catch (Exception e) {
+                        player.pause();
+                    }
+                } else {
+                    player.pause();
+                }
+            } else {
+                if (tapeStopOn) {
+                    try {
+                        Intent intent = new Intent(this, PlaybackService.class);
+                        intent.setAction("ACTION_TAPE_SPIN_UP");
+                        startService(intent);
+                    } catch (Exception e) {
+                        player.play();
+                    }
+                } else {
+                    player.play();
+                }
+            }
         });
 
         btnNext.setOnClickListener(v -> {

@@ -8,6 +8,9 @@ import android.graphics.BitmapFactory;
 import android.media.audiofx.Equalizer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -15,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.BitmapLoader;
@@ -27,10 +31,15 @@ import androidx.media3.session.MediaSessionService;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.jandergy.myjandergymusic.audio.AudioTelemetry;
 import com.jandergy.myjandergymusic.audio.BitPerfectRenderersFactory;
 import com.jandergy.myjandergymusic.audio.Rhythm8DProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmBassBoostProcessor;
+import com.jandergy.myjandergymusic.audio.RhythmBeatAnalyzerProcessor;
 import com.jandergy.myjandergymusic.audio.RhythmSpatializationProcessor;
+import com.jandergy.myjandergymusic.audio.RhythmTapeStopProcessor;
+import com.jandergy.myjandergymusic.audio.RhythmVibeProcessor;
+import com.jandergy.myjandergymusic.audio.RhythmVocalProcessor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,33 +47,90 @@ import java.util.concurrent.RejectedExecutionException;
 
 public class PlaybackService extends MediaSessionService {
     private static final String TAG = "PlaybackService";
+    private static final long SLEEP_FADE_DURATION_MS = 15_000L;
+
+    public static final String ACTION_SLEEP_TIMER_UPDATED = "com.jandergy.myjandergymusic.SLEEP_TIMER_UPDATED";
+    public static final String ACTION_DSP_PROFILE_APPLIED = "com.jandergy.myjandergymusic.DSP_PROFILE_APPLIED";
+
+    private static volatile long sleepTimerEndElapsedMs = 0L;
 
     private MediaSession mediaSession = null;
+    private RhythmTapeStopProcessor tapeStopProcessor;
+    private RhythmVocalProcessor vocalProcessor;
+    private RhythmVibeProcessor vibeProcessor;
     private RhythmBassBoostProcessor bassBoostProcessor;
     private RhythmSpatializationProcessor spatializationProcessor;
     private Rhythm8DProcessor eightDProcessor;
+    private RhythmBeatAnalyzerProcessor beatAnalyzerProcessor;
     private Equalizer equalizer;
     private ExoPlayer player;
     private int activeSessionId = -1;
+
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService bitmapExecutor = Executors.newSingleThreadExecutor();
     private volatile Bitmap fallbackCoverBitmap;
+
+    private final Runnable sleepTimerTick = new Runnable() {
+        @Override
+        public void run() {
+            if (sleepTimerEndElapsedMs <= 0L || player == null) {
+                return;
+            }
+            long remainingMs = sleepTimerEndElapsedMs - SystemClock.elapsedRealtime();
+            if (remainingMs <= 0L) {
+                sleepTimerEndElapsedMs = 0L;
+                if (player.isPlaying()) {
+                    player.pause();
+                }
+                player.setVolume(1.0f);
+                broadcastSleepTimerUpdate(0L, true);
+                return;
+            }
+
+            if (remainingMs <= SLEEP_FADE_DURATION_MS) {
+                // Smooth equal-power cosine fade-out over the final 15 seconds
+                float progress = 1.0f - (remainingMs / (float) SLEEP_FADE_DURATION_MS);
+                float gain = (float) Math.cos(progress * Math.PI * 0.5);
+                player.setVolume(Math.max(0f, Math.min(1f, gain)));
+            } else {
+                player.setVolume(1.0f);
+            }
+
+            broadcastSleepTimerUpdate(remainingMs, false);
+            mainHandler.postDelayed(this, remainingMs <= SLEEP_FADE_DURATION_MS ? 150L : 500L);
+        }
+    };
+
+    public static long getSleepTimerRemainingMs() {
+        long end = sleepTimerEndElapsedMs;
+        if (end <= 0L) return 0L;
+        return Math.max(0L, end - SystemClock.elapsedRealtime());
+    }
 
     @UnstableApi
     @Override
     public void onCreate() {
         super.onCreate();
 
+        tapeStopProcessor = new RhythmTapeStopProcessor();
+        vocalProcessor = new RhythmVocalProcessor();
+        vibeProcessor = new RhythmVibeProcessor();
         bassBoostProcessor = new RhythmBassBoostProcessor();
         spatializationProcessor = new RhythmSpatializationProcessor();
         eightDProcessor = new Rhythm8DProcessor();
+        beatAnalyzerProcessor = new RhythmBeatAnalyzerProcessor();
         applySavedDspSettings();
 
         BitPerfectRenderersFactory renderersFactory = new BitPerfectRenderersFactory(
                 this,
                 false, // Bit-perfect disabled by default
+                tapeStopProcessor,
+                vocalProcessor,
+                vibeProcessor,
                 bassBoostProcessor,
                 spatializationProcessor,
-                eightDProcessor
+                eightDProcessor,
+                beatAnalyzerProcessor
         );
 
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
@@ -97,6 +163,23 @@ public class PlaybackService extends MediaSessionService {
                     ensureEqualizerInitialized();
                 }
             }
+
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                if (isPlaying && player != null && sleepTimerEndElapsedMs <= 0L) {
+                    player.setVolume(1.0f);
+                }
+                if (!isPlaying) {
+                    AudioTelemetry.INSTANCE.resetAudioLevels();
+                }
+            }
+
+            @Override
+            public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+                if (mediaItem != null) {
+                    restorePerSongProfileIfEnabled(mediaItem.mediaId);
+                }
+            }
         });
 
         // PendingIntent that launches MainActivity when user taps media controls
@@ -117,6 +200,65 @@ public class PlaybackService extends MediaSessionService {
                 .setSessionActivity(pendingIntent)
                 .setBitmapLoader(new CustomBitmapLoader())
                 .build();
+    }
+
+    private void restorePerSongProfileIfEnabled(@Nullable String mediaId) {
+        if (player == null || mediaId == null || mediaId.isEmpty()) return;
+        SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
+        if (!prefs.getBoolean("PerSong_Memory_Enabled", true)) {
+            return;
+        }
+
+        SongDspMemoryStore.Profile profile = SongDspMemoryStore.load(this, mediaId);
+        float speed;
+        boolean keepPitch;
+        int vibeMode;
+        int vocalMode;
+        int bassBoost;
+
+        if (profile != null) {
+            speed = profile.speed;
+            keepPitch = profile.keepPitch;
+            vibeMode = profile.vibeMode;
+            vocalMode = profile.vocalMode;
+            bassBoost = profile.bassBoost;
+        } else {
+            speed = 1.0f;
+            keepPitch = true;
+            vibeMode = RhythmVibeProcessor.MODE_OFF;
+            vocalMode = RhythmVocalProcessor.MODE_OFF;
+            bassBoost = prefs.getInt("Global_BassBoost_Strength", prefs.getInt("BassBoost_Strength", 0));
+        }
+
+        prefs.edit()
+                .putFloat("Playback_Speed", speed)
+                .putBoolean("Playback_Keep_Pitch", keepPitch)
+                .putInt("Vibe_Mode", vibeMode)
+                .putInt("Vocal_Mode", vocalMode)
+                .putInt("BassBoost_Strength", bassBoost)
+                .apply();
+
+        float targetPitch = keepPitch ? 1.0f : speed;
+        player.setPlaybackParameters(new PlaybackParameters(speed, targetPitch));
+        if (vibeProcessor != null) vibeProcessor.setMode(vibeMode);
+        if (vocalProcessor != null) vocalProcessor.setMode(vocalMode);
+        if (bassBoostProcessor != null) {
+            bassBoostProcessor.setEnabled(bassBoost > 0);
+            bassBoostProcessor.setStrength((short) bassBoost);
+        }
+
+        Intent intent = new Intent(ACTION_DSP_PROFILE_APPLIED);
+        intent.setPackage(getPackageName());
+        intent.putExtra("mediaId", mediaId);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastSleepTimerUpdate(long remainingMs, boolean finished) {
+        Intent intent = new Intent(ACTION_SLEEP_TIMER_UPDATED);
+        intent.setPackage(getPackageName());
+        intent.putExtra("remainingMs", remainingMs);
+        intent.putExtra("finished", finished);
+        sendBroadcast(intent);
     }
 
     @Nullable
@@ -234,6 +376,21 @@ public class PlaybackService extends MediaSessionService {
     private void applySavedDspSettings() {
         SharedPreferences prefs = getSharedPreferences("MusicPrefs", MODE_PRIVATE);
 
+        boolean tapeStopEnabled = prefs.getBoolean("TapeStop_Enabled", false);
+        if (tapeStopProcessor != null) {
+            tapeStopProcessor.setFeatureEnabled(tapeStopEnabled);
+        }
+
+        int vocalMode = prefs.getInt("Vocal_Mode", RhythmVocalProcessor.MODE_OFF);
+        if (vocalProcessor != null) {
+            vocalProcessor.setMode(vocalMode);
+        }
+
+        int vibeMode = prefs.getInt("Vibe_Mode", RhythmVibeProcessor.MODE_OFF);
+        if (vibeProcessor != null) {
+            vibeProcessor.setMode(vibeMode);
+        }
+
         int bbStrength = prefs.getInt("BassBoost_Strength", 0);
         if (bassBoostProcessor != null) {
             bassBoostProcessor.setEnabled(bbStrength > 0);
@@ -247,8 +404,23 @@ public class PlaybackService extends MediaSessionService {
         }
 
         boolean eightDEnabled = prefs.getBoolean("RHYTHM_8D_ENABLED", false);
+        int eightDMode = prefs.getInt("RHYTHM_8D_MODE", Rhythm8DProcessor.MODE_AUTO);
+        float eightDSpeed = prefs.getFloat("RHYTHM_8D_SPEED", 0.12f);
+        boolean eightDReverse = prefs.getBoolean("RHYTHM_8D_REVERSE", false);
+        float eightDX = prefs.getFloat("RHYTHM_8D_X", 0f);
+        float eightDY = prefs.getFloat("RHYTHM_8D_Y", 1f);
         if (eightDProcessor != null) {
+            eightDProcessor.setSpatialMode(eightDMode);
+            eightDProcessor.setRotationSpeed(eightDSpeed);
+            eightDProcessor.setReverse(eightDReverse);
+            eightDProcessor.setManualPosition(eightDX, eightDY);
             eightDProcessor.setEnabled(eightDEnabled);
+        }
+
+        boolean beatEnabled = prefs.getBoolean("Beat_Visuals_Enabled", true)
+                || prefs.getBoolean("Haptic_Bass_Enabled", false);
+        if (beatAnalyzerProcessor != null) {
+            beatAnalyzerProcessor.setEnabled(beatEnabled);
         }
     }
 
@@ -323,6 +495,123 @@ public class PlaybackService extends MediaSessionService {
                     }
                     break;
                 }
+                case "ACTION_SET_8D_CONFIG": {
+                    if (eightDProcessor != null) {
+                        if (intent.hasExtra("enabled")) {
+                            eightDProcessor.setEnabled(intent.getBooleanExtra("enabled", false));
+                        }
+                        if (intent.hasExtra("mode")) {
+                            eightDProcessor.setSpatialMode(intent.getIntExtra("mode", Rhythm8DProcessor.MODE_AUTO));
+                        }
+                        if (intent.hasExtra("speed")) {
+                            eightDProcessor.setRotationSpeed(intent.getFloatExtra("speed", 0.12f));
+                        }
+                        if (intent.hasExtra("reverse")) {
+                            eightDProcessor.setReverse(intent.getBooleanExtra("reverse", false));
+                        }
+                        if (intent.hasExtra("x") && intent.hasExtra("y")) {
+                            eightDProcessor.setManualPosition(
+                                    intent.getFloatExtra("x", 0f),
+                                    intent.getFloatExtra("y", 1f)
+                            );
+                        }
+                    }
+                    break;
+                }
+                case "ACTION_SET_8D_POSITION": {
+                    if (eightDProcessor != null) {
+                        eightDProcessor.setManualPosition(
+                                intent.getFloatExtra("x", 0f),
+                                intent.getFloatExtra("y", 1f)
+                        );
+                    }
+                    break;
+                }
+                case "ACTION_SET_VIBE_MODE": {
+                    int mode = intent.getIntExtra("mode", RhythmVibeProcessor.MODE_OFF);
+                    if (vibeProcessor != null) {
+                        vibeProcessor.setMode(mode);
+                    }
+                    break;
+                }
+                case "ACTION_SET_VOCAL_MODE": {
+                    int mode = intent.getIntExtra("mode", RhythmVocalProcessor.MODE_OFF);
+                    if (vocalProcessor != null) {
+                        vocalProcessor.setMode(mode);
+                    }
+                    break;
+                }
+                case "ACTION_SET_TAPE_STOP": {
+                    boolean enabled = intent.getBooleanExtra("enabled", false);
+                    if (tapeStopProcessor != null) {
+                        tapeStopProcessor.setFeatureEnabled(enabled);
+                    }
+                    break;
+                }
+                case "ACTION_TAPE_STOP_PAUSE": {
+                    if (player != null && player.isPlaying()) {
+                        if (tapeStopProcessor != null && !tapeStopProcessor.isStopping()) {
+                            tapeStopProcessor.setFeatureEnabled(true);
+                            tapeStopProcessor.triggerStop(() -> mainHandler.post(() -> {
+                                if (player != null && player.isPlaying()) {
+                                    player.pause();
+                                }
+                                if (tapeStopProcessor != null) {
+                                    tapeStopProcessor.cancelEffect();
+                                }
+                            }));
+                            // Fallback safety timeout in case audio buffer wasn't actively draining
+                            mainHandler.postDelayed(() -> {
+                                if (tapeStopProcessor != null && tapeStopProcessor.isStopping()) {
+                                    if (player != null && player.isPlaying()) {
+                                        player.pause();
+                                    }
+                                    tapeStopProcessor.cancelEffect();
+                                }
+                            }, 550L);
+                        } else {
+                            player.pause();
+                        }
+                    }
+                    break;
+                }
+                case "ACTION_TAPE_SPIN_UP": {
+                    if (player != null) {
+                        if (tapeStopProcessor != null) {
+                            tapeStopProcessor.setFeatureEnabled(true);
+                            tapeStopProcessor.triggerSpinUp();
+                        }
+                        if (!player.isPlaying()) {
+                            player.play();
+                        }
+                    }
+                    break;
+                }
+                case "ACTION_SET_BEAT_ANALYZER": {
+                    boolean enabled = intent.getBooleanExtra("enabled", true);
+                    if (beatAnalyzerProcessor != null) {
+                        beatAnalyzerProcessor.setEnabled(enabled);
+                    }
+                    break;
+                }
+                case "ACTION_SET_SLEEP_TIMER": {
+                    long durationMs = intent.getLongExtra("durationMs", 0L);
+                    mainHandler.removeCallbacks(sleepTimerTick);
+                    if (durationMs <= 0L) {
+                        sleepTimerEndElapsedMs = 0L;
+                        if (player != null) {
+                            player.setVolume(1.0f);
+                        }
+                        broadcastSleepTimerUpdate(0L, false);
+                    } else {
+                        sleepTimerEndElapsedMs = SystemClock.elapsedRealtime() + durationMs;
+                        if (player != null) {
+                            player.setVolume(1.0f);
+                        }
+                        mainHandler.post(sleepTimerTick);
+                    }
+                    break;
+                }
                 case "ACTION_SET_EQ_ENABLED": {
                     boolean enabled = intent.getBooleanExtra("enabled", false);
                     ensureEqualizerInitialized();
@@ -379,6 +668,9 @@ public class PlaybackService extends MediaSessionService {
 
     @Override
     public void onDestroy() {
+        mainHandler.removeCallbacksAndMessages(null);
+        sleepTimerEndElapsedMs = 0L;
+        AudioTelemetry.INSTANCE.resetAudioLevels();
         bitmapExecutor.shutdownNow();
         if (equalizer != null) {
             try {
